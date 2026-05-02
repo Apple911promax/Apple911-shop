@@ -589,6 +589,13 @@
                 if(!document.getElementById('home-name').value || !document.getElementById('home-phone').value || !document.getElementById('home-addr').value) return showToast('請完整填寫宅配資料');
             }
             const id = 'ORD' + Date.now().toString().slice(-6); 
+            orders.push({
+    id: id,
+    items: [...cart],
+    total: cart.reduce((sum, i) => sum + i.price, 0),
+    status: '未付款',
+    time: new Date().toLocaleString()
+});
             document.getElementById('success-order-id').innerText = id; 
             cart = []; renderCart(); agreeCheckbox.checked = false;
             showSection('order-success'); 
