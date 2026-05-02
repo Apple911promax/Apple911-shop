@@ -1,633 +1,117 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Apple 911 | 科技配件與專業維修</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&family=Orbitron:wght@500;700;900&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
-    
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: { sans: ['Noto Sans TC', 'sans-serif'], tech: ['Rajdhani', 'sans-serif'], esport: ['Orbitron', 'sans-serif'] },
-                    colors: { darkbg: '#050505', panelbg: '#0a0f18', neoncyan: '#00f3ff', neonred: '#ff003c', goldlight: '#e2c78e', golddark: '#b38539' }
-                }
-            }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Apple 911 | 科技配件與專業維修</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&family=Orbitron:wght@500;700;900&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Noto Sans TC', 'sans-serif'], tech: ['Rajdhani', 'sans-serif'], esport: ['Orbitron', 'sans-serif'] },
+          colors: { darkbg: '#050505', panelbg: '#0a0f18', neoncyan: '#00f3ff', neonred: '#ff003c', goldlight: '#e2c78e', golddark: '#b38539' }
         }
-    </script>
-    <style>
-        body { background-color: #050505; background-image: radial-gradient(rgba(0, 243, 255, 0.05) 1px, transparent 1px); background-size: 30px 30px; color: #e2e8f0; min-height: 100vh; display: flex; flex-direction: column; }
-        .text-gold-gradient { background: linear-gradient(135deg, #e2c78e 0%, #b38539 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .tech-clip { clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px); }
-        .tech-btn { clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px); transition: all 0.2s; }
-        .tech-btn:active { transform: scale(0.95); }
-        .drawer-transition { transition: transform 0.3s ease; }
-        .cart-drawer { transform: translateX(100%); }
-        .cart-drawer.open { transform: translateX(0); }
-        .menu-drawer { transform: translateX(-100%); }
-        .menu-drawer.open { transform: translateX(0); }
-        .submenu { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
-        .submenu.open { max-height: 400px; }
-        .menu-arrow { transition: transform 0.3s ease; }
-        .menu-arrow.open { transform: rotate(180deg); }
-        .overlay { opacity: 0; pointer-events: none; transition: opacity 0.3s ease; backdrop-filter: blur(5px); }
-        .overlay.open { opacity: 1; pointer-events: auto; }
-        .member-tab-active { color: #00f3ff !important; border-bottom: 2px solid #00f3ff !important; text-shadow: 0 0 10px rgba(0,243,255,0.5); }
-        .en-sub { font-size: 0.75em; opacity: 0.7; font-family: 'Rajdhani'; letter-spacing: 0.05em; text-transform: uppercase; }
-        .fab-menu { transform: translateY(20px); opacity: 0; pointer-events: none; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        .fab-menu.open { transform: translateY(0); opacity: 1; pointer-events: auto; }
-        .fab-main-icon { transition: transform 0.3s ease; }
-        .fab-main-icon.open { transform: rotate(45deg); }
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-thumb { background: #00f3ff; border-radius: 4px; }
-        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #00f3ff; border-radius: 10px; }
-    </style>
+      }
+    }
+  </script>
+  <style>
+    body { background-color:#050505; background-image:radial-gradient(rgba(0,243,255,.05) 1px,transparent 1px); background-size:30px 30px; color:#e2e8f0; min-height:100vh; display:flex; flex-direction:column; }
+    .text-gold-gradient{background:linear-gradient(135deg,#e2c78e 0%,#b38539 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+    .tech-clip{clip-path:polygon(15px 0,100% 0,100% calc(100% - 15px),calc(100% - 15px) 100%,0 100%,0 15px);}
+    .tech-btn{clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px);transition:all .2s;}
+    .tech-btn:active{transform:scale(.95);}
+    .drawer-transition{transition:transform .3s ease;}.cart-drawer{transform:translateX(100%);}.cart-drawer.open{transform:translateX(0);}.menu-drawer{transform:translateX(-100%);}.menu-drawer.open{transform:translateX(0);}
+    .submenu{max-height:0;overflow:hidden;transition:max-height .3s ease;}.submenu.open{max-height:400px;}.menu-arrow{transition:transform .3s ease;}.menu-arrow.open{transform:rotate(180deg);}
+    .overlay{opacity:0;pointer-events:none;transition:opacity .3s ease;backdrop-filter:blur(5px);}.overlay.open{opacity:1;pointer-events:auto;}
+    .member-tab-active{color:#00f3ff!important;border-bottom:2px solid #00f3ff!important;text-shadow:0 0 10px rgba(0,243,255,.5);}
+    .en-sub{font-size:.75em;opacity:.7;font-family:'Rajdhani';letter-spacing:.05em;text-transform:uppercase;}
+    .fab-menu{transform:translateY(20px);opacity:0;pointer-events:none;transition:all .3s cubic-bezier(.175,.885,.32,1.275);}.fab-menu.open{transform:translateY(0);opacity:1;pointer-events:auto;}.fab-main-icon{transition:transform .3s ease;}.fab-main-icon.open{transform:rotate(45deg);}
+    ::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-thumb{background:#00f3ff;border-radius:4px;}.custom-scrollbar::-webkit-scrollbar{width:4px;}.custom-scrollbar::-webkit-scrollbar-thumb{background:#00f3ff;border-radius:10px;}
+  </style>
 </head>
 <body class="font-sans antialiased relative">
-
-    <nav class="sticky top-0 z-40 bg-panelbg/90 backdrop-blur-md border-b-2 border-neoncyan/50 shadow-[0_0_15px_rgba(0,243,255,0.2)]">
-        <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
-            <div class="flex items-center gap-3">
-                <button onclick="toggleMenu()" class="p-2 text-neoncyan hover:text-white transition duration-300"><i class="fa-solid fa-bars text-2xl drop-shadow-[0_0_8px_#00f3ff]"></i></button>
-                <div class="font-esport text-2xl font-black tracking-widest text-white flex items-center cursor-pointer" onclick="showSection('home')">APPLE<span class="text-gold-gradient ml-1">911</span></div>
-            </div>
-            <div class="flex items-center gap-2">
-                <button onclick="handleUserClick()" class="p-2 text-neoncyan hover:text-white transition duration-300 relative">
-                    <i class="fa-solid fa-user text-xl"></i><span id="user-status-dot" class="absolute top-2 right-2 w-2 h-2 bg-slate-600 rounded-full"></span>
-                </button>
-                <button onclick="toggleCart()" class="relative p-2 text-neoncyan hover:text-white transition duration-300">
-                    <i class="fa-solid fa-cart-shopping text-xl"></i>
-                    <span id="cart-count" class="absolute -top-1 -right-1 bg-neonred text-white text-[10px] font-bold rounded-sm w-5 h-5 flex items-center justify-center scale-0 transition-transform font-esport tech-btn">0</span>
-                </button>
-            </div>
-        </div>
-    </nav>
-
-    <!-- 左側選單 -->
-    <div class="menu-drawer drawer-transition bg-panelbg border-r border-neoncyan fixed inset-y-0 left-0 w-[85vw] md:w-[350px] shadow-[10px_0_30px_rgba(0,243,255,0.1)] z-[60] flex flex-col">
-        <div class="p-5 border-b border-neoncyan/30 flex justify-between items-center bg-darkbg">
-            <h2 class="text-lg font-bold text-white tracking-widest uppercase">系統選單庫 <span class="en-sub block mt-1">SYSTEM DATABASE</span></h2>
-            <button onclick="toggleMenu()" class="text-neoncyan"><i class="fa-solid fa-xmark text-2xl"></i></button>
-        </div>
-        <div class="flex-grow overflow-y-auto p-4 space-y-3">
-            <button onclick="applyFilter('all')" class="w-full text-left p-4 bg-darkbg border border-neoncyan text-neoncyan font-bold tech-clip transition uppercase hover:bg-white/5">
-                <i class="fa-solid fa-globe mr-2"></i>全部商品與維修 <span class="en-sub block mt-1">ALL ASSETS & REPAIR</span>
-            </button>
-            <div class="bg-darkbg border border-slate-700 tech-clip">
-                <button onclick="toggleSubmenu('cat-case')" class="w-full text-left p-4 text-white font-bold tracking-widest flex justify-between items-center transition hover:bg-white/5">
-                    <span><i class="fa-solid fa-mobile-screen mr-2 text-neoncyan"></i>精選手機殼 <span class="en-sub block mt-1">PROTECTIVE CASES</span></span>
-                    <i id="arrow-cat-case" class="fa-solid fa-chevron-down text-sm menu-arrow text-slate-500"></i>
-                </button>
-                <div id="cat-case" class="submenu bg-slate-900/50"><div class="p-2 space-y-1 text-sm border-t border-slate-700">
-                    <button onclick="applyFilter('case')" class="block w-full text-left px-4 py-3 text-gray-400 hover:text-white transition">▶ 全部款式</button>
-                </div></div>
-            </div>
-            <div class="bg-darkbg border border-slate-700 tech-clip">
-                <button onclick="toggleSubmenu('cat-repair')" class="w-full text-left p-4 text-white font-bold tracking-widest flex justify-between items-center transition hover:bg-white/5">
-                    <span><i class="fa-solid fa-screwdriver-wrench mr-2 text-neoncyan"></i>專業主機板維修 <span class="en-sub block mt-1">PROFESSIONAL REPAIR</span></span>
-                    <i id="arrow-cat-repair" class="fa-solid fa-chevron-down text-sm menu-arrow text-slate-500"></i>
-                </button>
-                <div id="cat-repair" class="submenu bg-slate-900/50"><div class="p-2 space-y-1 text-sm border-t border-slate-700">
-                    <button onclick="applyFilter('repair')" class="block w-full text-left px-4 py-3 text-gray-400 hover:text-white transition">▶ 維修報價預約</button>
-                </div></div>
-            </div>
-        </div>
+  <nav class="sticky top-0 z-40 bg-panelbg/90 backdrop-blur-md border-b-2 border-neoncyan/50 shadow-[0_0_15px_rgba(0,243,255,0.2)]">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+      <div class="flex items-center gap-3">
+        <button onclick="toggleMenu()" class="p-2 text-neoncyan hover:text-white transition duration-300"><i class="fa-solid fa-bars text-2xl drop-shadow-[0_0_8px_#00f3ff]"></i></button>
+        <div class="font-esport text-2xl font-black tracking-widest text-white flex items-center cursor-pointer" onclick="showSection('home')">APPLE<span class="text-gold-gradient ml-1">911</span></div>
+      </div>
+      <div class="flex items-center gap-2">
+        <button onclick="handleUserClick()" class="p-2 text-neoncyan hover:text-white transition duration-300 relative"><i class="fa-solid fa-user text-xl"></i><span id="user-status-dot" class="absolute top-2 right-2 w-2 h-2 bg-slate-600 rounded-full"></span></button>
+        <button onclick="toggleCart()" class="relative p-2 text-neoncyan hover:text-white transition duration-300"><i class="fa-solid fa-cart-shopping text-xl"></i><span id="cart-count" class="absolute -top-1 -right-1 bg-neonred text-white text-[10px] font-bold rounded-sm w-5 h-5 flex items-center justify-center scale-0 transition-transform font-esport tech-btn">0</span></button>
+      </div>
     </div>
+  </nav>
 
-    <header class="relative py-8 text-center border-b border-neoncyan/30 flex-shrink-0">
-        <h1 class="text-3xl font-black mb-2 text-white uppercase font-esport">APPLE<span class="text-gold-gradient">911</span></h1>
-        <p class="text-neoncyan font-bold tracking-widest text-sm">配件怪獸 X 專業維修</p>
-        <p class="en-sub text-neoncyan mt-1">ASSETS MONSTER & PROFESSIONAL REPAIR</p>
-    </header>
-
-    <main class="flex-grow flex flex-col max-w-7xl mx-auto w-full pb-20">
-        <!-- 首頁 -->
-        <div id="home-view" class="px-4 py-8">
-            <h2 class="text-sm font-bold flex items-center text-white tracking-widest border-l-4 border-neoncyan pl-2 mb-4">服務選單 <span class="en-sub ml-2">SELECT SERVICE</span></h2>
-            <div class="grid grid-cols-2 gap-4">
-                <div class="bg-darkbg border border-slate-800 p-6 tech-clip text-center cursor-pointer hover:border-neonred transition group" onclick="applyFilter('repair')">
-                    <i class="fa-solid fa-screwdriver-wrench text-4xl text-slate-600 mb-3 group-hover:text-neonred transition"></i>
-                    <h3 class="font-bold text-white text-sm">專業硬體維修 <span class="en-sub block mt-1">REPAIR</span></h3>
-                </div>
-                <div class="bg-darkbg border border-slate-800 p-6 tech-clip text-center cursor-pointer hover:border-neoncyan transition group" onclick="applyFilter('case')">
-                    <i class="fa-solid fa-mobile-screen text-4xl text-slate-600 mb-3 group-hover:text-neoncyan transition"></i>
-                    <h3 class="font-bold text-white text-sm">精選手機殼 <span class="en-sub block mt-1">CASES</span></h3>
-                </div>
-                <div class="bg-slate-900 border border-slate-700 p-6 tech-clip text-center cursor-pointer hover:border-goldlight transition col-span-2 group" onclick="applyFilter('all')">
-                    <i class="fa-solid fa-globe text-4xl text-slate-500 mb-3 group-hover:text-goldlight transition"></i>
-                    <h3 class="font-bold text-gold-gradient text-sm">瀏覽全部 <span class="en-sub block mt-1">VIEW ALL</span></h3>
-                </div>
-            </div>
-        </div>
-
-        <!-- 產品列表 -->
-        <div id="product-view" class="px-4 py-8 hidden">
-            <div class="flex justify-between items-end mb-6 border-b border-slate-800 pb-2">
-                <h2 class="text-lg font-bold text-white tracking-widest" id="current-view-title">全部商品與服務</h2>
-                <button onclick="showSection('home')" class="text-xs text-gray-500 font-bold hover:text-white transition"><i class="fa-solid fa-arrow-left"></i> 返回</button>
-            </div>
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4" id="product-list"></div>
-        </div>
-
-        <!-- 結帳頁面 -->
-        <div id="checkout-view" class="px-4 py-8 hidden">
-            <div class="flex justify-between items-end mb-6 border-b border-slate-800 pb-2">
-                <h2 class="text-lg font-bold text-white tracking-widest">訂單結帳 <span class="en-sub inline ml-1">CHECKOUT</span></h2>
-                <button onclick="showSection('home')" class="text-xs text-gray-500 font-bold hover:text-white transition"><i class="fa-solid fa-arrow-left"></i> 繼續購物</button>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="bg-darkbg border border-slate-700 p-5 rounded space-y-4 shadow-lg h-fit">
-                    <h4 class="text-white font-bold border-l-4 border-neoncyan pl-2 text-sm">購物清單明細</h4>
-                    <div id="checkout-cart-items" class="space-y-3"></div>
-                    <div class="border-t border-slate-700 pt-4 flex justify-between text-white font-bold">
-                        <span>總計金額</span><span id="checkout-total" class="text-goldlight font-tech text-lg">NT$ 0</span>
-                    </div>
-                </div>
-                <div class="space-y-6">
-                    <div class="bg-darkbg border border-slate-700 p-5 rounded space-y-4 shadow-lg">
-                        <h4 class="text-white font-bold border-l-4 border-neoncyan pl-2 text-sm">配送與付款方式</h4>
-                        <div>
-                            <label class="text-xs text-gray-400 block mb-1">配送方式 <span class="text-neonred">*</span></label>
-                            <select id="ship-method" onchange="handleShippingChange()" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none focus:border-neoncyan transition">
-                                <option value="">請選擇配送方式</option>
-                                <option value="cvs">超商取貨 (需先付款)</option>
-                                <option value="home">宅配到府 (需先付款)</option>
-                                <option value="store">到店取貨 (可現場付款)</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="text-xs text-gray-400 block mb-1">付款方式 <span class="text-neonred">*</span></label>
-                            <select id="pay-method" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none focus:border-neoncyan transition">
-                                <option value="">請先選擇配送方式</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="bg-darkbg border border-slate-700 p-5 rounded space-y-4 shadow-lg">
-                        <h4 class="text-white font-bold border-l-4 border-neoncyan pl-2 text-sm">顧客資料</h4>
-                        <div id="ship-cvs-fields" class="hidden space-y-4">
-                            <div><label class="text-xs text-gray-400 block mb-1">超商類型 <span class="text-neonred">*</span></label><select id="cvs-type" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none"><option value="">請選擇超商</option><option value="7-11">7-11</option><option value="FamilyMart">全家</option></select></div>
-                            <div class="grid grid-cols-2 gap-4">
-                                <div><label class="text-xs text-gray-400 block mb-1">縣市 <span class="text-neonred">*</span></label><select id="cvs-city" onchange="updateDistricts()" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none"></select></div>
-                                <div><label class="text-xs text-gray-400 block mb-1">地區 <span class="text-neonred">*</span></label><select id="cvs-district" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none"><option value="">請選擇地區</option></select></div>
-                            </div>
-                            <div class="grid grid-cols-2 gap-4">
-                                <div><label class="text-xs text-gray-400 block mb-1">取貨門市名稱 <span class="text-neonred">*</span></label><input type="text" id="cvs-store" placeholder="某某門市" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none"></div>
-                                <div><label class="text-xs text-gray-400 block mb-1">門市店號 (選填)</label><input type="text" id="cvs-id" placeholder="6位數字" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none"></div>
-                            </div>
-                            <div><label class="text-xs text-gray-400 block mb-1">取貨人姓名 <span class="text-neonred">*</span></label><input type="text" id="cvs-name" placeholder="請填寫證件真實姓名" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none"></div>
-                            <div><label class="text-xs text-gray-400 block mb-1">取貨人手機 <span class="text-neonred">*</span></label><input type="tel" id="cvs-phone" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none"></div>
-                        </div>
-                        <div id="ship-home-fields" class="hidden space-y-4">
-                            <div><label class="text-xs text-gray-400 block mb-1">收件人姓名 <span class="text-neonred">*</span></label><input type="text" id="home-name" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none"></div>
-                            <div><label class="text-xs text-gray-400 block mb-1">收件人手機 <span class="text-neonred">*</span></label><input type="tel" id="home-phone" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none"></div>
-                            <div><label class="text-xs text-gray-400 block mb-1">宅配地址 <span class="text-neonred">*</span></label><textarea id="home-addr" rows="2" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none"></textarea></div>
-                        </div>
-                        <div id="ship-store-fields" class="hidden space-y-2">
-                            <p class="text-neoncyan text-sm font-bold"><i class="fa-solid fa-circle-info mr-2"></i>請於營業時間內到 Apple 911 門市取貨</p>
-                        </div>
-                    </div>
-                    <div class="flex items-start gap-2 mb-2 px-1">
-                        <input type="checkbox" id="agree-terms" class="mt-1 w-4 h-4 accent-neoncyan cursor-pointer">
-                        <label for="agree-terms" class="text-xs text-gray-400 leading-relaxed cursor-pointer">
-                            我已閱讀並同意以下內容：<br>
-                            <span class="text-neoncyan underline hover:text-white transition" onclick="openTerms('payment')">付款資訊</span>、
-                            <span class="text-neoncyan underline hover:text-white transition" onclick="openTerms('shipping')">配送取件</span>、
-                            <span class="text-neoncyan underline hover:text-white transition" onclick="openTerms('returns')">退換貨政策</span>、
-                            <span class="text-neoncyan underline hover:text-white transition" onclick="openTerms('warranty')">維修保固</span>、
-                            <span class="text-neoncyan underline hover:text-white transition" onclick="openTerms('terms')">服務條款</span>
-                        </label>
-                    </div>
-                    <button onclick="submitOrder()" class="w-full py-4 bg-neoncyan text-black font-bold tech-clip text-sm hover:bg-white transition shadow-lg tracking-widest uppercase">確認送出訂單 SUBMIT ORDER</button>
-                </div>
-            </div>
-        </div>
-
-        <div id="order-success-view" class="px-4 py-8 hidden max-w-2xl mx-auto w-full">
-            <div class="bg-darkbg border border-neoncyan p-8 rounded text-center shadow-lg mb-6 tech-clip">
-                <i class="fa-regular fa-circle-check text-6xl text-neoncyan mb-4"></i>
-                <h2 class="text-2xl font-bold text-white mb-2 tracking-widest">訂單已成立</h2>
-                <p class="text-gray-400 text-sm">您的訂單編號：<span id="success-order-id" class="text-white font-tech font-bold"></span></p>
-            </div>
-            <div id="payment-instruction-box" class="bg-panelbg border border-slate-700 p-6 rounded space-y-4 shadow-lg hidden">
-                <h4 class="text-neonred font-bold text-sm">請於 24 小時內完成付款，否則訂單將自動取消</h4>
-                <div class="bg-darkbg p-4 rounded border border-slate-800 text-gray-300 text-sm leading-relaxed" id="payment-details-text"></div>
-                <div class="border-t border-slate-700 pt-4 mt-4">
-                    <button onclick="handleUserClick()" class="w-full py-3 bg-slate-800 text-neoncyan font-bold tech-clip text-sm hover:bg-neoncyan hover:text-black transition uppercase tracking-widest">前往訂單紀錄查看與回報</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- 會員中心 -->
-        <div id="member-view" class="px-4 py-8 hidden">
-            <div class="bg-darkbg border border-neoncyan/50 p-5 tech-clip mb-6 flex items-center gap-4 shadow-lg">
-                <div class="w-16 h-16 rounded-full border-2 border-neoncyan flex items-center justify-center"><i class="fa-solid fa-user-astronaut text-3xl text-neoncyan"></i></div>
-                <div class="flex-grow"><h3 class="text-xl font-bold text-white" id="member-name">Apple 客戶</h3></div>
-                <button onclick="logout()" class="text-gray-500 hover:text-neonred text-xl transition"><i class="fa-solid fa-right-from-bracket"></i></button>
-            </div>
-            <div class="flex gap-4 border-b border-slate-800 mb-6">
-                <button onclick="switchMemberTab('orders')" id="tab-btn-orders" class="member-tab-btn pb-2 text-sm font-bold text-gray-500 transition">訂單紀錄</button>
-                <button onclick="switchMemberTab('profile')" id="tab-btn-profile" class="member-tab-btn member-tab-active pb-2 text-sm font-bold text-gray-500 transition">個人設定</button>
-            </div>
-            <div id="member-tab-orders" class="hidden space-y-4"><div id="orders-container" class="space-y-4"></div><div class="text-center py-10 text-gray-500 text-sm">尚無紀錄</div></div>
-            <div id="member-tab-profile" class="space-y-6">
-                <div class="bg-darkbg border border-slate-700 p-5 rounded space-y-4">
-                    <div><label class="text-xs text-gray-400 block mb-1">真實姓名</label><input type="text" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded"></div>
-                    <div><label class="text-xs text-gray-400 block mb-1">LINE ID</label><input type="text" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded"></div>
-                </div>
-                <div class="flex justify-end"><button onclick="saveProfile()" class="px-6 py-3 bg-neoncyan text-black font-bold tech-clip text-sm hover:bg-white transition shadow-lg">儲存設定</button></div>
-            </div>
-        </div>
-
-    </main>
-
-    <footer class="bg-panelbg border-t border-slate-800 mt-auto py-10 relative z-10">
-        <div class="text-center mb-6">
-            <h2 class="text-xl font-black text-white tracking-widest font-esport">APPLE <span class="text-gold-gradient">911</span></h2>
-            <p class="text-neoncyan text-[10px] font-bold mt-1 tracking-widest uppercase">OFFICIAL SERVICE HUB</p>
-        </div>
-        <div class="max-w-md mx-auto grid grid-cols-2 gap-3 px-4 text-xs font-bold text-gray-400 text-center">
-            <button onclick="openTerms('payment')" class="bg-darkbg border border-slate-800 p-4 tech-clip hover:text-neoncyan hover:border-neoncyan transition">付款資訊</button>
-            <button onclick="openTerms('shipping')" class="bg-darkbg border border-slate-800 p-4 tech-clip hover:text-neoncyan hover:border-neoncyan transition">配送取件</button>
-            <button onclick="openTerms('tracking')" class="bg-darkbg border border-slate-800 p-4 tech-clip hover:text-neoncyan hover:border-neoncyan transition">進度查詢</button>
-            <button onclick="openTerms('returns')" class="bg-darkbg border border-slate-800 p-4 tech-clip hover:text-neoncyan hover:border-neoncyan transition">退換貨政策</button>
-            <button onclick="openTerms('warranty')" class="bg-darkbg border border-slate-800 p-4 tech-clip hover:text-neoncyan hover:border-neoncyan transition">維修保固</button>
-            <button onclick="openTerms('terms')" class="bg-darkbg border border-slate-800 p-4 tech-clip hover:text-neoncyan hover:border-neoncyan transition">服務條款</button>
-        </div>
-        <div class="text-center mt-8 text-[9px] text-slate-600 tracking-widest">&copy; 2026 APPLE 911.</div>
-    </footer>
-
-    <!-- FAB 浮動按鈕 -->
-    <div class="fixed bottom-6 right-6 z-[70] flex flex-col items-end">
-        <div id="fab-menu" class="fab-menu flex flex-col gap-3 mb-3 mr-1 items-center">
-            <a href="#" class="w-10 h-10 bg-white rounded-full flex items-center justify-center text-blue-500 shadow-lg transition"><i class="fa-solid fa-location-dot text-xl"></i></a>
-            <a href="#" class="w-10 h-10 bg-[#1877F2] rounded-full flex items-center justify-center text-white shadow-lg transition"><i class="fa-brands fa-facebook-f text-xl"></i></a>
-            <a href="#" class="w-10 h-10 bg-[#06C755] rounded-full flex items-center justify-center text-white shadow-lg transition"><i class="fa-brands fa-line text-2xl"></i></a>
-            <a href="#" class="w-10 h-10 rounded-full flex items-center justify-center text-white shadow-lg transition" style="background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%,#d6249f 60%,#285AEB 90%);"><i class="fa-brands fa-instagram text-xl"></i></a>
-        </div>
-        <button onclick="toggleFab()" class="w-14 h-14 bg-neoncyan text-black rounded-full flex items-center justify-center shadow-lg tech-btn animate-pulse transition">
-            <i id="fab-icon" class="fa-solid fa-headset text-2xl fab-main-icon"></i>
-        </button>
+  <div class="menu-drawer drawer-transition bg-panelbg border-r border-neoncyan fixed inset-y-0 left-0 w-[85vw] md:w-[350px] shadow-[10px_0_30px_rgba(0,243,255,0.1)] z-[60] flex flex-col">
+    <div class="p-5 border-b border-neoncyan/30 flex justify-between items-center bg-darkbg"><h2 class="text-lg font-bold text-white tracking-widest uppercase">系統選單庫 <span class="en-sub block mt-1">SYSTEM DATABASE</span></h2><button onclick="toggleMenu()" class="text-neoncyan"><i class="fa-solid fa-xmark text-2xl"></i></button></div>
+    <div class="flex-grow overflow-y-auto p-4 space-y-3">
+      <button onclick="applyFilter('all')" class="w-full text-left p-4 bg-darkbg border border-neoncyan text-neoncyan font-bold tech-clip transition uppercase hover:bg-white/5"><i class="fa-solid fa-globe mr-2"></i>全部商品與維修 <span class="en-sub block mt-1">ALL ASSETS & REPAIR</span></button>
+      <div class="bg-darkbg border border-slate-700 tech-clip"><button onclick="toggleSubmenu('cat-case')" class="w-full text-left p-4 text-white font-bold tracking-widest flex justify-between items-center transition hover:bg-white/5"><span><i class="fa-solid fa-mobile-screen mr-2 text-neoncyan"></i>精選手機殼 <span class="en-sub block mt-1">PROTECTIVE CASES</span></span><i class="fa-solid fa-chevron-down text-sm menu-arrow text-slate-500"></i></button><div id="cat-case" class="submenu bg-slate-900/50"><div class="p-2 space-y-1 text-sm border-t border-slate-700"><button onclick="applyFilter('case')" class="block w-full text-left px-4 py-3 text-gray-400 hover:text-white transition">▶ 全部款式</button></div></div></div>
+      <div class="bg-darkbg border border-slate-700 tech-clip"><button onclick="toggleSubmenu('cat-repair')" class="w-full text-left p-4 text-white font-bold tracking-widest flex justify-between items-center transition hover:bg-white/5"><span><i class="fa-solid fa-screwdriver-wrench mr-2 text-neoncyan"></i>專業主機板維修 <span class="en-sub block mt-1">PROFESSIONAL REPAIR</span></span><i class="fa-solid fa-chevron-down text-sm menu-arrow text-slate-500"></i></button><div id="cat-repair" class="submenu bg-slate-900/50"><div class="p-2 space-y-1 text-sm border-t border-slate-700"><button onclick="applyFilter('repair')" class="block w-full text-left px-4 py-3 text-gray-400 hover:text-white transition">▶ 維修報價預約</button></div></div></div>
     </div>
+  </div>
 
-    <!-- 購物說明彈窗 Modal -->
-    <div id="terms-modal" class="fixed inset-0 bg-black/90 z-[100] hidden items-center justify-center p-4 backdrop-blur-sm" onclick="closeTerms(event)">
-        <div class="bg-panelbg border-t-4 border-neoncyan w-full max-w-lg tech-clip flex flex-col max-h-[85vh] overflow-hidden shadow-[0_0_30px_rgba(0,243,255,0.2)]" onclick="event.stopPropagation()">
-            <div class="p-5 flex justify-between items-center border-b border-white/10 shrink-0">
-                <h3 id="modal-title" class="font-bold text-neoncyan tracking-widest text-lg"></h3>
-                <button onclick="closeTerms()" class="text-gray-400 hover:text-white transition"><i class="fa-solid fa-xmark text-xl"></i></button>
-            </div>
-            <div id="modal-content" class="p-6 overflow-y-auto space-y-4 text-sm text-gray-300 leading-relaxed custom-scrollbar font-sans"></div>
-            <div class="p-4 bg-darkbg border-t border-white/5 shrink-0">
-                <button onclick="closeTerms()" class="w-full py-4 bg-slate-800 text-neoncyan font-bold tech-clip hover:bg-white hover:text-black transition tracking-widest uppercase">我已了解關閉</button>
-            </div>
-        </div>
-    </div>
+  <header class="relative py-8 text-center border-b border-neoncyan/30 flex-shrink-0"><h1 class="text-3xl font-black mb-2 text-white uppercase font-esport">APPLE<span class="text-gold-gradient">911</span></h1><p class="text-neoncyan font-bold tracking-widest text-sm">配件怪獸 X 專業維修</p><p class="en-sub text-neoncyan mt-1">ASSETS MONSTER & PROFESSIONAL REPAIR</p></header>
 
-    <!-- 🌟 恢復：完整登入與註冊視窗 🌟 -->
-    <div id="auth-modal" class="fixed inset-0 bg-black/95 z-[80] hidden items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-panelbg border-t-2 border-neoncyan w-full max-w-sm tech-clip overflow-hidden shadow-[0_0_30px_rgba(0,243,255,0.2)]">
-            <div class="p-4 flex justify-between items-center border-b border-white/5">
-                <h3 class="font-bold text-neoncyan tracking-widest font-esport text-lg flex items-center gap-2">
-                    <i class="fa-solid fa-fingerprint"></i> <span id="auth-title">SYSTEM LOGIN</span>
-                </h3>
-                <button onclick="closeAuth()" class="text-gray-400 hover:text-white transition"><i class="fa-solid fa-xmark text-xl"></i></button>
-            </div>
+  <main class="flex-grow flex flex-col max-w-7xl mx-auto w-full pb-20">
+    <div id="home-view" class="px-4 py-8"><h2 class="text-sm font-bold flex items-center text-white tracking-widest border-l-4 border-neoncyan pl-2 mb-4">服務選單 <span class="en-sub ml-2">SELECT SERVICE</span></h2><div class="grid grid-cols-2 gap-4"><div class="bg-darkbg border border-slate-800 p-6 tech-clip text-center cursor-pointer hover:border-neonred transition group" onclick="applyFilter('repair')"><i class="fa-solid fa-screwdriver-wrench text-4xl text-slate-600 mb-3 group-hover:text-neonred transition"></i><h3 class="font-bold text-white text-sm">專業硬體維修 <span class="en-sub block mt-1">REPAIR</span></h3></div><div class="bg-darkbg border border-slate-800 p-6 tech-clip text-center cursor-pointer hover:border-neoncyan transition group" onclick="applyFilter('case')"><i class="fa-solid fa-mobile-screen text-4xl text-slate-600 mb-3 group-hover:text-neoncyan transition"></i><h3 class="font-bold text-white text-sm">精選手機殼 <span class="en-sub block mt-1">CASES</span></h3></div><div class="bg-slate-900 border border-slate-700 p-6 tech-clip text-center cursor-pointer hover:border-goldlight transition col-span-2 group" onclick="applyFilter('all')"><i class="fa-solid fa-globe text-4xl text-slate-500 mb-3 group-hover:text-goldlight transition"></i><h3 class="font-bold text-gold-gradient text-sm">瀏覽全部 <span class="en-sub block mt-1">VIEW ALL</span></h3></div></div></div>
+    <div id="product-view" class="px-4 py-8 hidden"><div class="flex justify-between items-end mb-6 border-b border-slate-800 pb-2"><h2 class="text-lg font-bold text-white tracking-widest" id="current-view-title">全部商品與服務</h2><button onclick="showSection('home')" class="text-xs text-gray-500 font-bold hover:text-white transition"><i class="fa-solid fa-arrow-left"></i> 返回</button></div><div class="grid grid-cols-2 lg:grid-cols-4 gap-4" id="product-list"></div></div>
+    <div id="checkout-view" class="px-4 py-8 hidden"><div class="flex justify-between items-end mb-6 border-b border-slate-800 pb-2"><h2 class="text-lg font-bold text-white tracking-widest">訂單結帳 <span class="en-sub inline ml-1">CHECKOUT</span></h2><button onclick="showSection('home')" class="text-xs text-gray-500 font-bold hover:text-white transition"><i class="fa-solid fa-arrow-left"></i> 繼續購物</button></div><div class="grid grid-cols-1 md:grid-cols-2 gap-6"><div class="bg-darkbg border border-slate-700 p-5 rounded space-y-4 shadow-lg h-fit"><h4 class="text-white font-bold border-l-4 border-neoncyan pl-2 text-sm">購物清單明細</h4><div id="checkout-cart-items" class="space-y-3"></div><div class="border-t border-slate-700 pt-4 flex justify-between text-white font-bold"><span>總計金額</span><span id="checkout-total" class="text-goldlight font-tech text-lg">NT$ 0</span></div></div><div class="space-y-6"><div class="bg-darkbg border border-slate-700 p-5 rounded space-y-4 shadow-lg"><h4 class="text-white font-bold border-l-4 border-neoncyan pl-2 text-sm">配送與付款方式</h4><div><label class="text-xs text-gray-400 block mb-1">配送方式 <span class="text-neonred">*</span></label><select id="ship-method" onchange="handleShippingChange()" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none focus:border-neoncyan transition"><option value="">請選擇配送方式</option><option value="cvs">超商取貨 (需先付款)</option><option value="home">宅配到府 (需先付款)</option><option value="store">到店取貨 (可現場付款)</option></select></div><div><label class="text-xs text-gray-400 block mb-1">付款方式 <span class="text-neonred">*</span></label><select id="pay-method" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none focus:border-neoncyan transition"><option value="">請先選擇配送方式</option></select></div></div><div class="bg-darkbg border border-slate-700 p-5 rounded space-y-4 shadow-lg"><h4 class="text-white font-bold border-l-4 border-neoncyan pl-2 text-sm">顧客資料</h4><div id="ship-cvs-fields" class="hidden space-y-4"><div><label class="text-xs text-gray-400 block mb-1">超商類型 <span class="text-neonred">*</span></label><select id="cvs-type" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none"><option value="">請選擇超商</option><option value="7-11">7-11</option><option value="FamilyMart">全家</option></select></div><div class="grid grid-cols-2 gap-4"><div><label class="text-xs text-gray-400 block mb-1">縣市 <span class="text-neonred">*</span></label><select id="cvs-city" onchange="updateDistricts()" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none"></select></div><div><label class="text-xs text-gray-400 block mb-1">地區 <span class="text-neonred">*</span></label><select id="cvs-district" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none"><option value="">請選擇地區</option></select></div></div><div class="grid grid-cols-2 gap-4"><div><label class="text-xs text-gray-400 block mb-1">取貨門市名稱 <span class="text-neonred">*</span></label><input type="text" id="cvs-store" placeholder="某某門市" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none"></div><div><label class="text-xs text-gray-400 block mb-1">門市店號 (選填)</label><input type="text" id="cvs-id" placeholder="6位數字" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none"></div></div><div><label class="text-xs text-gray-400 block mb-1">取貨人姓名 <span class="text-neonred">*</span></label><input type="text" id="cvs-name" placeholder="請填寫證件真實姓名" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none"></div><div><label class="text-xs text-gray-400 block mb-1">取貨人手機 <span class="text-neonred">*</span></label><input type="tel" id="cvs-phone" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none"></div></div><div id="ship-home-fields" class="hidden space-y-4"><div><label class="text-xs text-gray-400 block mb-1">收件人姓名 <span class="text-neonred">*</span></label><input type="text" id="home-name" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none"></div><div><label class="text-xs text-gray-400 block mb-1">收件人手機 <span class="text-neonred">*</span></label><input type="tel" id="home-phone" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none"></div><div><label class="text-xs text-gray-400 block mb-1">宅配地址 <span class="text-neonred">*</span></label><textarea id="home-addr" rows="2" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none"></textarea></div></div><div id="ship-store-fields" class="hidden space-y-2"><p class="text-neoncyan text-sm font-bold"><i class="fa-solid fa-circle-info mr-2"></i>請於營業時間內到 Apple 911 門市取貨</p></div></div><div class="flex items-start gap-2 mb-2 px-1"><input type="checkbox" id="agree-terms" class="mt-1 w-4 h-4 accent-neoncyan cursor-pointer"><label for="agree-terms" class="text-xs text-gray-400 leading-relaxed cursor-pointer">我已閱讀並同意以下內容：<br><span class="text-neoncyan underline hover:text-white transition" onclick="openTerms('payment')">付款資訊</span>、<span class="text-neoncyan underline hover:text-white transition" onclick="openTerms('shipping')">配送取件</span>、<span class="text-neoncyan underline hover:text-white transition" onclick="openTerms('returns')">退換貨政策</span>、<span class="text-neoncyan underline hover:text-white transition" onclick="openTerms('warranty')">維修保固</span>、<span class="text-neoncyan underline hover:text-white transition" onclick="openTerms('terms')">服務條款</span></label></div><button onclick="submitOrder()" class="w-full py-4 bg-neoncyan text-black font-bold tech-clip text-sm hover:bg-white transition shadow-lg tracking-widest uppercase">確認送出訂單 SUBMIT ORDER</button></div></div></div>
+    <div id="order-success-view" class="px-4 py-8 hidden max-w-2xl mx-auto w-full"><div class="bg-darkbg border border-neoncyan p-8 rounded text-center shadow-lg mb-6 tech-clip"><i class="fa-regular fa-circle-check text-6xl text-neoncyan mb-4"></i><h2 class="text-2xl font-bold text-white mb-2 tracking-widest">訂單已成立</h2><p class="text-gray-400 text-sm">您的訂單編號：<span id="success-order-id" class="text-white font-tech font-bold"></span></p></div><div id="payment-instruction-box" class="bg-panelbg border border-slate-700 p-6 rounded space-y-4 shadow-lg hidden"><h4 class="text-neonred font-bold text-sm">請於 24 小時內完成付款，否則訂單將自動取消</h4><div class="bg-darkbg p-4 rounded border border-slate-800 text-gray-300 text-sm leading-relaxed" id="payment-details-text"></div><div class="border-t border-slate-700 pt-4 mt-4"><button onclick="handleUserClick(); switchMemberTab('orders');" class="w-full py-3 bg-slate-800 text-neoncyan font-bold tech-clip text-sm hover:bg-neoncyan hover:text-black transition uppercase tracking-widest">前往訂單紀錄查看與回報</button></div></div></div>
+    <div id="member-view" class="px-4 py-8 hidden"><div class="bg-darkbg border border-neoncyan/50 p-5 tech-clip mb-6 flex items-center gap-4 shadow-lg"><div class="w-16 h-16 rounded-full border-2 border-neoncyan flex items-center justify-center"><i class="fa-solid fa-user-astronaut text-3xl text-neoncyan"></i></div><div class="flex-grow"><h3 class="text-xl font-bold text-white" id="member-name">Apple 客戶</h3></div><button onclick="logout()" class="text-gray-500 hover:text-neonred text-xl transition"><i class="fa-solid fa-right-from-bracket"></i></button></div><div class="flex gap-4 border-b border-slate-800 mb-6"><button onclick="switchMemberTab('orders')" id="tab-btn-orders" class="member-tab-btn pb-2 text-sm font-bold text-gray-500 transition">訂單紀錄</button><button onclick="switchMemberTab('profile')" id="tab-btn-profile" class="member-tab-btn member-tab-active pb-2 text-sm font-bold text-gray-500 transition">個人設定</button></div><div id="member-tab-orders" class="hidden space-y-4"><div id="orders-container" class="space-y-4"></div></div><div id="member-tab-profile" class="space-y-6"><div class="bg-darkbg border border-slate-700 p-5 rounded space-y-4"><div><label class="text-xs text-gray-400 block mb-1">真實姓名</label><input id="profile-name" type="text" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded"></div><div><label class="text-xs text-gray-400 block mb-1">手機號碼</label><input id="profile-phone" type="tel" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded"></div><div><label class="text-xs text-gray-400 block mb-1">電子信箱</label><input id="profile-email" type="email" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded"></div><div><label class="text-xs text-gray-400 block mb-1">LINE ID</label><input id="profile-line" type="text" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded"></div><div><label class="text-xs text-gray-400 block mb-1">常用地址</label><textarea id="profile-address" rows="2" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded"></textarea></div></div><div class="flex justify-end"><button onclick="saveProfile()" class="px-6 py-3 bg-neoncyan text-black font-bold tech-clip text-sm hover:bg-white transition shadow-lg">儲存設定</button></div></div></div>
+  </main>
 
-            <!-- 登入畫面 -->
-            <div id="auth-view-login" class="p-6">
-                <div class="space-y-4">
-                    <input type="text" placeholder="手機 或 信箱 PHONE / EMAIL" class="w-full bg-darkbg border border-slate-700 text-white p-3 tech-clip text-sm outline-none focus:border-neoncyan transition">
-                    <input type="password" placeholder="登入密碼 PASSWORD" class="w-full bg-darkbg border border-slate-700 text-white p-3 tech-clip text-sm outline-none focus:border-neoncyan transition">
-                </div>
-                <button onclick="simLogin('登入成功')" class="w-full py-4 bg-neoncyan text-black font-bold tech-clip mt-6 text-sm tracking-widest shadow-[0_0_15px_rgba(0,243,255,0.2)] hover:bg-white transition">登入系統 CONNECT</button>
-                
-                <div class="relative flex items-center my-6">
-                    <div class="flex-grow border-t border-slate-800"></div>
-                    <span class="px-3 text-[10px] text-gray-500 tracking-widest uppercase">快速連線 SSO</span>
-                    <div class="flex-grow border-t border-slate-800"></div>
-                </div>
-                
-                <div class="space-y-3">
-                    <button onclick="simLogin('Google 授權成功')" class="w-full py-3 bg-darkbg border border-gray-600 text-gray-300 font-bold tech-clip flex justify-center items-center gap-2 hover:bg-white/5 transition"><i class="fa-brands fa-google text-lg"></i> GOOGLE</button>
-                    <button onclick="simLogin('LINE 授權成功')" class="w-full py-3 bg-darkbg border border-[#06C755] text-[#06C755] font-bold tech-clip flex justify-center items-center gap-2 hover:bg-[#06C755]/10 transition"><i class="fa-brands fa-line text-lg"></i> LINE</button>
-                </div>
-                
-                <div class="text-center mt-6 text-xs text-gray-500">尚未加入？ <button onclick="switchAuth('register')" class="text-neoncyan font-bold hover:underline">建立帳號 REGISTER</button></div>
-            </div>
+  <footer class="bg-panelbg border-t border-slate-800 mt-auto py-10 relative z-10"><div class="text-center mb-6"><h2 class="text-xl font-black text-white tracking-widest font-esport">APPLE <span class="text-gold-gradient">911</span></h2><p class="text-neoncyan text-[10px] font-bold mt-1 tracking-widest uppercase">OFFICIAL SERVICE HUB</p></div><div class="max-w-md mx-auto grid grid-cols-2 gap-3 px-4 text-xs font-bold text-gray-400 text-center"><button onclick="openTerms('payment')" class="bg-darkbg border border-slate-800 p-4 tech-clip hover:text-neoncyan hover:border-neoncyan transition">付款資訊</button><button onclick="openTerms('shipping')" class="bg-darkbg border border-slate-800 p-4 tech-clip hover:text-neoncyan hover:border-neoncyan transition">配送取件</button><button onclick="openTerms('tracking')" class="bg-darkbg border border-slate-800 p-4 tech-clip hover:text-neoncyan hover:border-neoncyan transition">進度查詢</button><button onclick="openTerms('returns')" class="bg-darkbg border border-slate-800 p-4 tech-clip hover:text-neoncyan hover:border-neoncyan transition">退換貨政策</button><button onclick="openTerms('warranty')" class="bg-darkbg border border-slate-800 p-4 tech-clip hover:text-neoncyan hover:border-neoncyan transition">維修保固</button><button onclick="openTerms('terms')" class="bg-darkbg border border-slate-800 p-4 tech-clip hover:text-neoncyan hover:border-neoncyan transition">服務條款</button></div><div class="text-center mt-8 text-[9px] text-slate-600 tracking-widest">&copy; 2026 APPLE 911.</div></footer>
 
-            <!-- 註冊畫面 -->
-            <div id="auth-view-register" class="p-6 hidden">
-                <div class="space-y-4">
-                    <input type="text" placeholder="真實姓名 (取件核對用)" class="w-full bg-darkbg border border-slate-700 text-white p-3 tech-clip text-sm outline-none focus:border-neoncyan transition">
-                    <input type="tel" placeholder="手機號碼 (登入帳號)" class="w-full bg-darkbg border border-slate-700 text-white p-3 tech-clip text-sm outline-none focus:border-neoncyan transition">
-                    <input type="password" placeholder="設定密碼 (至少6位數)" class="w-full bg-darkbg border border-slate-700 text-white p-3 tech-clip text-sm outline-none focus:border-neoncyan transition">
-                </div>
-                <button onclick="simLogin('註冊成功')" class="w-full py-4 bg-neoncyan text-black font-bold tech-clip mt-6 text-sm tracking-widest shadow-[0_0_15px_rgba(0,243,255,0.2)] hover:bg-white transition">加入會員 REGISTER</button>
-                <div class="text-center mt-6 text-xs text-gray-500">已有帳號？ <button onclick="switchAuth('login')" class="text-neoncyan font-bold hover:underline">返回登入 LOGIN</button></div>
-            </div>
-        </div>
-    </div>
+  <div class="fixed bottom-6 right-6 z-[70] flex flex-col items-end"><div id="fab-menu" class="fab-menu flex flex-col gap-3 mb-3 mr-1 items-center"><a href="#" class="w-10 h-10 bg-white rounded-full flex items-center justify-center text-blue-500 shadow-lg transition"><i class="fa-solid fa-location-dot text-xl"></i></a><a href="#" class="w-10 h-10 bg-[#1877F2] rounded-full flex items-center justify-center text-white shadow-lg transition"><i class="fa-brands fa-facebook-f text-xl"></i></a><a href="#" class="w-10 h-10 bg-[#06C755] rounded-full flex items-center justify-center text-white shadow-lg transition"><i class="fa-brands fa-line text-2xl"></i></a><a href="#" class="w-10 h-10 rounded-full flex items-center justify-center text-white shadow-lg transition" style="background:radial-gradient(circle at 30% 107%,#fdf497 0%,#fdf497 5%,#fd5949 45%,#d6249f 60%,#285AEB 90%);"><i class="fa-brands fa-instagram text-xl"></i></a></div><button onclick="toggleFab()" class="w-14 h-14 bg-neoncyan text-black rounded-full flex items-center justify-center shadow-lg tech-btn animate-pulse transition"><i id="fab-icon" class="fa-solid fa-headset text-2xl fab-main-icon"></i></button></div>
+  <div id="terms-modal" class="fixed inset-0 bg-black/90 z-[100] hidden items-center justify-center p-4 backdrop-blur-sm" onclick="closeTerms(event)"><div class="bg-panelbg border-t-4 border-neoncyan w-full max-w-lg tech-clip flex flex-col max-h-[85vh] overflow-hidden shadow-[0_0_30px_rgba(0,243,255,0.2)]" onclick="event.stopPropagation()"><div class="p-5 flex justify-between items-center border-b border-white/10 shrink-0"><h3 id="modal-title" class="font-bold text-neoncyan tracking-widest text-lg"></h3><button onclick="closeTerms()" class="text-gray-400 hover:text-white transition"><i class="fa-solid fa-xmark text-xl"></i></button></div><div id="modal-content" class="p-6 overflow-y-auto space-y-4 text-sm text-gray-300 leading-relaxed custom-scrollbar font-sans"></div><div class="p-4 bg-darkbg border-t border-white/5 shrink-0"><button onclick="closeTerms()" class="w-full py-4 bg-slate-800 text-neoncyan font-bold tech-clip hover:bg-white hover:text-black transition tracking-widest uppercase">我已了解關閉</button></div></div></div>
+  <div id="auth-modal" class="fixed inset-0 bg-black/95 z-[80] hidden items-center justify-center p-4 backdrop-blur-sm"><div class="bg-panelbg border-t-2 border-neoncyan w-full max-w-sm tech-clip overflow-hidden shadow-[0_0_30px_rgba(0,243,255,0.2)]"><div class="p-4 flex justify-between items-center border-b border-white/5"><h3 class="font-bold text-neoncyan tracking-widest font-esport text-lg flex items-center gap-2"><i class="fa-solid fa-fingerprint"></i> <span id="auth-title">SYSTEM LOGIN</span></h3><button onclick="closeAuth()" class="text-gray-400 hover:text-white transition"><i class="fa-solid fa-xmark text-xl"></i></button></div><div id="auth-view-login" class="p-6"><div class="space-y-4"><input id="login-account" type="text" placeholder="手機 或 信箱 PHONE / EMAIL" class="w-full bg-darkbg border border-slate-700 text-white p-3 tech-clip text-sm outline-none focus:border-neoncyan transition"><input id="login-password" type="password" placeholder="登入密碼 PASSWORD" class="w-full bg-darkbg border border-slate-700 text-white p-3 tech-clip text-sm outline-none focus:border-neoncyan transition"></div><button onclick="simLogin('登入成功')" class="w-full py-4 bg-neoncyan text-black font-bold tech-clip mt-6 text-sm tracking-widest shadow-[0_0_15px_rgba(0,243,255,0.2)] hover:bg-white transition">登入系統 CONNECT</button><div class="relative flex items-center my-6"><div class="flex-grow border-t border-slate-800"></div><span class="px-3 text-[10px] text-gray-500 tracking-widest uppercase">快速連線 SSO</span><div class="flex-grow border-t border-slate-800"></div></div><div class="space-y-3"><button onclick="simLogin('Google 授權成功')" class="w-full py-3 bg-darkbg border border-gray-600 text-gray-300 font-bold tech-clip flex justify-center items-center gap-2 hover:bg-white/5 transition"><i class="fa-brands fa-google text-lg"></i> GOOGLE</button><button onclick="simLogin('LINE 授權成功')" class="w-full py-3 bg-darkbg border border-[#06C755] text-[#06C755] font-bold tech-clip flex justify-center items-center gap-2 hover:bg-[#06C755]/10 transition"><i class="fa-brands fa-line text-lg"></i> LINE</button></div><div class="text-center mt-6 text-xs text-gray-500">尚未加入？ <button onclick="switchAuth('register')" class="text-neoncyan font-bold hover:underline">建立帳號 REGISTER</button></div></div><div id="auth-view-register" class="p-6 hidden"><div class="space-y-4"><input type="text" placeholder="真實姓名 (取件核對用)" class="w-full bg-darkbg border border-slate-700 text-white p-3 tech-clip text-sm outline-none focus:border-neoncyan transition"><input type="tel" placeholder="手機號碼 (登入帳號)" class="w-full bg-darkbg border border-slate-700 text-white p-3 tech-clip text-sm outline-none focus:border-neoncyan transition"><input type="password" placeholder="設定密碼 (至少6位數)" class="w-full bg-darkbg border border-slate-700 text-white p-3 tech-clip text-sm outline-none focus:border-neoncyan transition"></div><button onclick="simLogin('註冊成功')" class="w-full py-4 bg-neoncyan text-black font-bold tech-clip mt-6 text-sm tracking-widest shadow-[0_0_15px_rgba(0,243,255,0.2)] hover:bg-white transition">加入會員 REGISTER</button><div class="text-center mt-6 text-xs text-gray-500">已有帳號？ <button onclick="switchAuth('login')" class="text-neoncyan font-bold hover:underline">返回登入 LOGIN</button></div></div></div></div>
+  <div class="overlay fixed inset-0 bg-black/60 z-[50]" onclick="closeAllDrawers()"></div>
+  <div class="cart-drawer drawer-transition bg-panelbg border-l border-neoncyan fixed inset-y-0 right-0 w-full md:w-[400px] z-[60] flex flex-col shadow-2xl"><div class="p-5 border-b border-slate-800 flex justify-between items-center shrink-0"><h2 class="font-bold text-white tracking-widest">CART</h2><button onclick="closeAllDrawers()" class="text-neoncyan transition hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button></div><div class="flex-grow p-4 space-y-3 overflow-y-auto" id="cart-items"></div><div class="p-5 bg-darkbg border-t border-slate-800 shrink-0"><div class="flex justify-between text-white font-bold mb-4"><span>總計金額</span><span id="cart-total" class="text-goldlight font-tech text-lg">NT$ 0</span></div><button onclick="checkout()" class="w-full py-4 mb-3 bg-blue-600 text-white font-bold tech-clip hover:bg-blue-500 transition">結帳 CHECKOUT</button><button onclick="closeAllDrawers()" class="w-full py-4 bg-transparent border border-slate-700 text-gray-400 font-bold tech-clip transition">繼續購物 CONTINUE</button></div></div>
+  <div id="toast" class="fixed bottom-10 left-1/2 transform -translate-x-1/2 bg-neoncyan text-black px-6 py-3 font-bold tech-clip z-[100] opacity-0 transition-opacity whitespace-nowrap shadow-2xl"></div>
 
-    <div class="overlay fixed inset-0 bg-black/60 z-[50]" onclick="closeAllDrawers()"></div>
-    <div class="cart-drawer drawer-transition bg-panelbg border-l border-neoncyan fixed inset-y-0 right-0 w-full md:w-[400px] z-[60] flex flex-col shadow-2xl">
-        <div class="p-5 border-b border-slate-800 flex justify-between items-center shrink-0"><h2 class="font-bold text-white tracking-widest">CART</h2><button onclick="closeAllDrawers()" class="text-neoncyan transition hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button></div>
-        <div class="flex-grow p-4 space-y-3 overflow-y-auto" id="cart-items"></div>
-        <div class="p-5 bg-darkbg border-t border-slate-800 shrink-0">
-            <div class="flex justify-between text-white font-bold mb-4"><span>總計金額</span><span id="cart-total" class="text-goldlight font-tech text-lg">NT$ 0</span></div>
-            <button onclick="checkout()" class="w-full py-4 mb-3 bg-blue-600 text-white font-bold tech-clip hover:bg-blue-500 transition">結帳 CHECKOUT</button>
-            <button onclick="closeAllDrawers()" class="w-full py-4 bg-transparent border border-slate-700 text-gray-400 font-bold tech-clip transition">繼續購物 CONTINUE</button>
-        </div>
-    </div>
-    
-    <div id="toast" class="fixed bottom-10 left-1/2 transform -translate-x-1/2 bg-neoncyan text-black px-6 py-3 font-bold tech-clip z-[100] opacity-0 transition-opacity whitespace-nowrap shadow-2xl"></div>
-
-    <script>
-        const products = [
-            { id: 1, name: '惡魔防摔殼 終極版', price: 890, cat: 'case', img: 'fa-mobile-screen' },
-            { id: 2, name: '太空艙滿版保護貼', price: 450, cat: 'case', img: 'fa-shield-halved' },
-            { id: 3, name: '螢幕總成維修', price: 0, tag: '現場報價', cat: 'repair', img: 'fa-screwdriver-wrench' },
-            { id: 4, name: '電池檢測與更換', price: 0, tag: '現場報價', cat: 'repair', img: 'fa-battery-half' }
-        ];
-
-        const twData = {
-            "台北市": ["中正區", "大同區", "中山區", "松山區", "大安區", "萬華區", "信義區", "士林區", "北投區", "內湖區", "南港區", "文山區"],
-            "新北市": ["板橋區", "三重區", "中和區", "永和區", "新莊區", "新店區", "樹林區", "鶯歌區", "三峽區", "淡水區", "汐止區", "瑞芳區", "土城區", "蘆洲區", "五股區", "泰山區", "林口區", "深坑區", "石碇區", "坪林區", "三芝區", "石門區", "八里區", "平溪區", "雙溪區", "貢寮區", "金山區", "萬里區", "烏來區"],
-            "台中市": ["中區", "東區", "南區", "西區", "北區", "北屯區", "西屯區", "南屯區", "太平區", "大里區", "霧峰區", "烏日區", "豐原區", "後里區", "石岡區", "東勢區", "和平區", "新社區", "潭子區", "大雅區", "神岡區", "大肚區", "沙鹿區", "龍井區", "梧棲區", "清水區", "大甲區", "外埔區", "大安區"],
-            "高雄市": ["新興區", "前金區", "苓雅區", "鹽埕區", "鼓山區", "旗津區", "前鎮區", "三民區", "楠梓區", "小港區", "左營區", "仁武區", "大社區", "岡山區", "路竹區", "阿蓮區", "田寮區", "燕巢區", "橋頭區", "梓官區", "彌陀區", "永安區", "湖內區", "鳳山區", "大寮區", "林園區", "鳥松區", "大樹區", "旗山區", "美濃區", "六龜區", "內門區", "杉林區", "甲仙區", "桃源區", "那瑪夏區", "茂林區", "茄萣區"],
-            "基隆市": ["仁愛區", "信義區", "中正區", "中山區", "安樂區", "暖暖區", "七堵區"],
-            "桃園市": ["中壢區", "平鎮區", "龍潭區", "楊梅區", "新屋區", "觀音區", "桃園區", "龜山區", "八德區", "大溪區", "復興區", "大園區", "蘆竹區"],
-            "新竹市": ["東區", "北區", "香山區"],
-            "新竹縣": ["竹北市", "竹東鎮", "新埔鎮", "關西鎮", "湖口鄉", "新豐鄉", "芎林鄉", "橫山鄉", "北埔鄉", "寶山鄉", "峨眉鄉", "尖石鄉", "五峰鄉"],
-            "苗栗縣": ["苗栗市", "通霄鎮", "苑裡鎮", "竹南鎮", "頭份市", "後龍鎮", "卓蘭鎮", "大湖鄉", "公館鄉", "銅鑼鄉", "南庄鄉", "頭屋鄉", "三義鄉", "西湖鄉", "造橋鄉", "三灣鄉", "獅潭鄉", "泰安鄉"],
-            "彰化縣": ["彰化市", "鹿港鎮", "和美鎮", "線西鄉", "伸港鄉", "福興鄉", "秀水鄉", "花壇鄉", "芬園鄉", "員林市", "溪湖鎮", "田中鎮", "大村鄉", "埔鹽鄉", "埔心鄉", "永靖鄉", "社頭鄉", "二水鄉", "北斗鎮", "二林鎮", "田尾鄉", "埤頭鄉", "芳苑鄉", "大城鄉", "竹塘鄉", "溪州鄉"],
-            "南投縣": ["南投市", "埔里鎮", "草屯鎮", "竹山鎮", "集集鎮", "名間鄉", "鹿谷鄉", "中寮鄉", "魚池鄉", "國姓鄉", "信義鄉", "仁愛鄉", "水里鄉"],
-            "雲林縣": ["斗六市", "斗南鎮", "虎尾鎮", "西螺鎮", "土庫鎮", "北港鎮", "古坑鄉", "大埤鄉", "莿桐鄉", "林內鄉", "二崙鄉", "崙背鄉", "麥寮鄉", "東勢鄉", "褒忠鄉", "台西鄉", "元長鄉", "四湖鄉", "口湖鄉", "水林鄉"],
-            "嘉義市": ["東區", "西區"],
-            "嘉義縣": ["太保市", "朴子市", "布袋鎮", "大林鎮", "民雄鄉", "溪口鄉", "新港鄉", "六腳鄉", "東石鄉", "義竹鄉", "鹿草鄉", "水上鄉", "中埔鄉", "竹崎鄉", "梅山鄉", "番路鄉", "大埔鄉", "阿里山鄉"],
-            "台南市": ["中西區", "東區", "南區", "北區", "安平區", "安南區", "永康區", "歸仁區", "新化區", "左鎮區", "玉井區", "楠西區", "南化區", "仁德區", "關廟區", "龍崎區", "官田區", "麻豆區", "佳里區", "西港區", "七股區", "將軍區", "學甲區", "北門區", "新營區", "後壁區", "白河區", "東山區", "六甲區", "下營區", "柳營區", "鹽水區", "善化區", "大內區", "山上區", "新市區", "安定區"],
-            "屏東縣": ["屏東市", "三地門鄉", "霧臺鄉", "瑪家鄉", "九如鄉", "里港鄉", "高樹鄉", "鹽埔鄉", "長治鄉", "麟洛鄉", "竹田鄉", "內埔鄉", "萬丹鄉", "萬巒鄉", "崁頂鄉", "新埤鄉", "南州鄉", "林邊鄉", "東港鎮", "琉球鄉", "佳冬鄉", "新園鄉", "枋寮鄉", "枋山鄉", "春日鄉", "獅子鄉", "車城鄉", "牡丹鄉", "恆春鎮", "滿州鄉", "來義鄉", "泰武鄉", "潮州鎮"],
-            "宜蘭縣": ["宜蘭市", "羅東鎮", "蘇澳鎮", "頭城鎮", "礁溪鄉", "壯圍鄉", "員山鄉", "冬山鄉", "五結鄉", "三星鄉", "大同鄉", "南澳鄉"],
-            "花蓮縣": ["花蓮市", "新城鄉", "秀林鄉", "吉安鄉", "壽豐鄉", "鳳林鎮", "光復鄉", "豐濱鄉", "瑞穗鄉", "萬榮鄉", "玉里鎮", "卓溪鄉", "富里鄉"],
-            "台東縣": ["台東市", "綠島鄉", "蘭嶼鄉", "延平鄉", "卑南鄉", "鹿野鄉", "關山鎮", "海端鄉", "池上鄉", "東河鄉", "成功鎮", "長濱鄉", "太麻里鄉", "金峰鄉", "大武鄉", "達仁鄉"],
-            "澎湖縣": ["馬公市", "湖西鄉", "白沙鄉", "西嶼鄉", "望安鄉", "七美鄉"],
-            "金門縣": ["金城鎮", "金湖鎮", "金沙鎮", "金寧鄉", "烈嶼鄉", "烏坵鄉"],
-            "連江縣": ["南竿鄉", "北竿鄉", "莒光鄉", "東引鄉"]
-        };
-
-        const termsData = {
-            payment: { 
-                title: "付款資訊", 
-                content: `<p class="mb-4">本網站採「先付款後出貨」制度（到店取貨除外），請詳閱以下說明：</p>
-                <h4 class="text-neoncyan font-bold mb-2">付款方式：</h4><ol class="list-decimal ml-5 mb-4"><li>銀行轉帳</li><li>LINE Pay</li><li>到店付款（限到店取貨）</li></ol>
-                <h4 class="text-neoncyan font-bold mb-2">付款規則：</h4><ul class="list-disc ml-5 mb-4"><li>超商取貨 / 宅配到府訂單，需完成付款後才會出貨</li><li>訂單成立後請於 24 小時內完成付款</li><li>未於期限內付款，本店有權自動取消訂單，不另行通知</li></ul>
-                <h4 class="text-neoncyan font-bold mb-2">付款確認：</h4><ul class="list-disc ml-5 mb-4"><li>請上傳付款截圖或填寫帳號末五碼</li><li>若未提供付款證明，將無法確認訂單並安排出貨</li></ul>
-                <h4 class="text-neoncyan font-bold mb-2">缺貨與付款處理：</h4><ul class="list-disc ml-5 mb-4"><li>若付款後遇商品缺貨，本店會主動聯繫客戶</li><li>客戶可選擇等待補貨、更換其他商品，或申請退款</li><li>若因缺貨導致訂單無法成立，本店將協助退款，不另行賠償</li></ul>
-                <h4 class="text-neoncyan font-bold mb-2">重要聲明：</h4><ul class="list-disc ml-5 mb-4"><li>若因填寫錯誤或未回傳付款資訊導致出貨延誤，本店不負相關責任</li></ul>
-                <h4 class="text-neoncyan font-bold mb-2">【付款異常說明】</h4>
-                <ul class="list-disc ml-5 mb-4 text-gray-400">
-                    <li>若因銀行系統、LINE Pay 或第三方支付異常導致付款延遲，本店不負相關責任</li>
-                    <li>訂單將以實際入帳時間為準進行處理與出貨安排</li>
-                </ul>` 
-            },
-            shipping: { 
-                title: "配送取件", 
-                content: `<h4 class="text-neoncyan font-bold mb-2">配送方式：</h4><ol class="list-decimal ml-5 mb-4"><li>超商取貨（需先付款）</li><li>宅配到府（需先付款）</li><li>到店取貨（可現場付款）</li></ol>
-                <h4 class="text-neoncyan font-bold mb-2">運費說明：</h4><ul class="list-disc ml-5 mb-4"><li>到店取貨：免運費</li><li>宅配：本島 NT$100 / 離島 NT$200</li><li>滿 NT$699 免運</li><li>實際運費以結帳頁面顯示為準</li></ul>
-                <h4 class="text-neoncyan font-bold mb-2">出貨時間：</h4><ul class="list-disc ml-5 mb-4"><li>付款完成且確認有庫存後，約 1～3 個工作天內安排出貨</li><li>若遇商品缺貨、供應商延遲、物流繁忙、天災或不可抗力因素，出貨時間將順延</li><li>若商品需調貨或預購，實際出貨時間以客服通知為準</li></ul>
-                <h4 class="text-neoncyan font-bold mb-2">配送責任：</h4><ul class="list-disc ml-5 mb-4"><li>商品一經交由物流公司後，配送時間與狀況由物流業者負責</li><li>若因地址填寫錯誤、電話錯誤、無人收件、拒收等原因導致配送失敗，相關費用需由訂購人自行負擔</li><li>若因物流延誤導致到貨時間延後，本店不負賠償責任</li></ul>
-                <h4 class="text-neoncyan font-bold mb-2">到店取貨：</h4><ul class="list-disc ml-5 mb-4"><li>商品備妥後，本店會通知客戶取貨</li><li>商品保留 3 日，逾期未取，本店有權取消訂單</li><li>若已付款訂單逾期未取，請聯繫客服協助後續處理</li></ul>
-                <h4 class="text-neoncyan font-bold mb-2">【物流風險說明】</h4>
-                <ul class="list-disc ml-5 mb-4 text-gray-400">
-                    <li>商品交由物流公司後，其運送過程風險由物流業者負責</li>
-                    <li>若商品於運送過程中損壞或遺失，將依物流公司規範協助處理</li>
-                    <li>本店不負運送期間造成之直接或間接損失賠償責任</li>
-                </ul>
-                <h4 class="text-neoncyan font-bold mb-2">【未取貨與拒收處理】</h4>
-                <ul class="list-disc ml-5 mb-4 text-gray-400">
-                    <li>超商取貨未領取或宅配拒收，導致商品退回，本店有權暫停該帳號訂單服務</li>
-                    <li>若需重新寄送，需由客戶自行負擔來回運費</li>
-                    <li>多次未取貨或拒收紀錄，本店有權拒絕未來訂單</li>
-                </ul>` 
-            },
-            tracking: { 
-                title: "進度查詢", 
-                content: `<h4 class="text-neoncyan font-bold mb-2">訂單狀態說明：</h4><ul class="list-disc ml-5 mb-4"><li>未付款：尚未完成付款</li><li>已付款：已確認款項</li><li>理貨中：訂單確認中或備貨中</li><li>缺貨通知：商品暫時缺貨，客服將協助處理</li><li>已出貨：商品已寄出</li><li>已完成：訂單已結案</li><li>待取貨：可至門市取件</li></ul>
-                <h4 class="text-neoncyan font-bold mb-2">訂單修改：</h4><ul class="list-disc ml-5 mb-4"><li>未付款或未出貨前可申請修改</li><li>已出貨後恕無法變更配送資料</li><li>若需修改商品、數量、收件資訊，請盡快聯繫客服</li></ul>
-                <h4 class="text-neoncyan font-bold mb-2">缺貨處理：</h4><ul class="list-disc ml-5 mb-4"><li>若訂單商品缺貨，本店會主動通知客戶</li><li>客戶可選擇等待補貨、更換商品、取消缺貨商品或取消整筆訂單</li><li>若訂單中部分商品缺貨，本店會與客戶確認是否分批出貨或調整訂單</li></ul>
-                <h4 class="text-neoncyan font-bold mb-2">重要提醒：</h4><ul class="list-disc ml-5 mb-4"><li>本店不保證訂單成立後一定出貨</li><li>若遇缺貨、停產、價格錯誤、供應異常或系統異常，本店保留取消訂單或調整訂單之權利</li></ul>` 
-            },
-            returns: { 
-                title: "退換貨政策", 
-                content: `<h4 class="text-neoncyan font-bold mb-2">退換貨申請：</h4><p class="mb-4">請於收到商品後 3 日內聯繫客服並提供照片證明。</p>
-                <h4 class="text-neoncyan font-bold mb-2">可退換貨情況：</h4><ul class="list-disc ml-5 mb-4"><li>商品瑕疵</li><li>商品寄錯</li><li>商品缺件</li><li>商品於運送過程中明顯受損</li></ul>
-                <h4 class="text-neoncyan font-bold mb-2">退貨條件：</h4><ul class="list-disc ml-5 mb-4"><li>商品須為全新未使用</li><li>包裝、配件、贈品需完整</li><li>不得有安裝、拆封、使用、刮傷 or 人為損壞痕跡</li></ul>
-                <h4 class="text-neoncyan font-bold mb-2">以下情況不接受退貨：</h4><ul class="list-disc ml-5 mb-4"><li>商品已使用或安裝（包含手機殼、保護貼、線材、充電器等）</li><li>人為損壞（摔傷、刮傷、泡水、擠壓）</li><li>包裝、配件、贈品不完整</li><li>非本店販售商品</li><li>個人主觀因素（不喜歡、不適用、買錯型號但已拆封使用）</li><li>客製化、代訂、預購或特殊規格商品，除商品本身瑕疵外，不接受取消或退貨</li></ul>
-                <h4 class="text-neoncyan font-bold mb-2">重要聲明：</h4><ul class="list-disc ml-5 mb-4"><li>3C 產品專非試用商品，鑑賞期非試用期</li><li>退貨商品若不符合條件，本店有權拒絕退貨</li><li>若因退貨後未達免運或活動門檻，退款金額將扣除原優惠、運費或活動差額</li></ul>
-                <h4 class="text-neoncyan font-bold mb-2">【優惠與活動說明】</h4>
-                <ul class="list-disc ml-5 mb-4 text-gray-400">
-                    <li>訂單優惠、滿額活動與贈品，需於訂單成立時符合條件方適用</li>
-                    <li>若因退貨、取消或分批出貨導致未達優惠門檻，本店有權調整優惠內容或補收差額</li>
-                    <li>贈品如未一併退回，本店有權依市價扣除相關費用</li>
-                </ul>` 
-            },
-            warranty: { 
-                title: "維修保固", 
-                content: `<h4 class="text-neoncyan font-bold mb-2">維修說明：</h4><ul class="list-disc ml-5 mb-4"><li>維修前皆會提供報價</li><li>確認報價後才會進行維修</li><li>部分維修需收訂金或檢測費</li><li>若需訂料、特殊零件或代訂料件，確認後恕無法任意取消</li></ul>
-                <h4 class="text-neoncyan font-bold mb-2">維修風險說明：</h4><ul class="list-disc ml-5 mb-4"><li>維修過程中可能因機器老化、摔傷、泡水、主機板異常或先前維修紀錄導致其他問題</li><li>本店將盡力處理，但不保證可完全避免風險</li><li>若維修前已告知風險，客戶同意後進行維修，後續不接受以已告知風險為由要求退費或賠償</li></ul>
-                <h4 class="text-neoncyan font-bold mb-2">保固範圍：</h4><ul class="list-disc ml-5 mb-4"><li>維修項目於保固期間內，如非人為問題可協助處理</li><li>保固僅限原維修項目，不包含其他未維修部位</li></ul>
-                <h4 class="text-neoncyan font-bold mb-2">不在保固範圍：</h4><ul class="list-disc ml-5 mb-4"><li>摔落、泡水、外力損壞</li><li>自行拆機 or 他人維修</li><li>使用不當造成故障</li><li>外觀刮傷、耗材老化、正常耗損</li><li>非原維修項目之故障</li></ul>
-                <h4 class="text-neoncyan font-bold mb-2">重要聲明：</h4><ul class="list-disc ml-5 mb-4"><li>維修屬技術服務，一經確認施作恕不接受退費</li><li>若設備本身存在多重故障，單項維修完成不代表整機所有問題皆已排除</li></ul>
-                <h4 class="text-neoncyan font-bold mb-2">【資料與設備風險聲明】</h4>
-                <ul class="list-disc ml-5 mb-4 text-gray-400">
-                    <li>維修過程中可能涉及資料移除、系統重置或零件更換，建議客戶事先備份資料</li>
-                    <li>若因設備狀況（如無法開機、主機板損壞）導致資料無法保留，本店不負資料遺失責任</li>
-                    <li>客戶送修即表示同意上述風險</li>
-                </ul>
-                <h4 class="text-neoncyan font-bold mb-2">【取件逾期說明】</h4>
-                <ul class="list-disc ml-5 mb-4 text-gray-400">
-                    <li>維修完成後本店將通知取件</li>
-                    <li>若逾期未取且未主動聯繫，本店有權不負保管責任或酌收保管費</li>
-                </ul>` 
-            },
-            terms: { 
-                title: "服務條款", 
-                content: `<p class="mb-4">當您使用本網站，即表示同意以下內容：</p>
-                <h4 class="text-neoncyan font-bold mb-2">訂單權利：</h4>
-                <ul class="list-disc ml-5 mb-4">
-                    <li>本店保留是否接受訂單與出貨之權利</li>
-                    <li>若遇商品缺貨、停產、價格錯誤、成本異動、供應商異常或系統錯誤，本店有權取消訂單、延後出貨或與客戶協商更換商品</li>
-                    <li>訂單成立通知不代表商品一定可出貨，實際出貨仍需依庫存、供應狀況與付款確認為準</li>
-                </ul>
-                <h4 class="text-neoncyan font-bold mb-2">【付款後缺貨說明】</h4>
-                <ul class="list-disc ml-5 mb-4 text-gray-400">
-                    <li>即使訂單已完成付款，仍可能因庫存誤差、供應商異常或系統延遲導致缺貨情況</li>
-                    <li>本店不保證所有已付款訂單皆可出貨</li>
-                </ul>
-                <h4 class="text-neoncyan font-bold mb-2">【退款處理】</h4>
-                <ul class="list-disc ml-5 mb-4 text-gray-400">
-                    <li>若因缺貨導致無法出貨，客戶可選擇取消訂單並申請退款</li>
-                    <li>退款將於確認後依原付款方式辦理，實際入帳時間依銀行或支付平台作業時間為準</li>
-                </ul>
-                <h4 class="text-neoncyan font-bold mb-2">【分批出貨說明】</h4>
-                <ul class="list-disc ml-5 mb-4 text-gray-400">
-                    <li>若訂單中部分商品缺貨，本店有權與客戶協商後進行分批出貨</li>
-                    <li>若分批出貨導致優惠條件改變，本店保留調整訂單金額之權利</li>
-                </ul>
-                <h4 class="text-neoncyan font-bold mb-2">【異常訂單處理】</h4>
-                <ul class="list-disc ml-5 mb-4 text-gray-400">
-                    <li>若訂單出現異常情況（包含但不限於大量下單、異常金額、系統錯誤、價格異常等），本店有權暫停、取消或調整該訂單</li>
-                    <li>若因系統錯誤或價格異常導致訂單成立，本店有權取消訂單並進行退款處理</li>
-                </ul>
-                <h4 class="text-neoncyan font-bold mb-2 mt-4">資料責任：</h4><ul class="list-disc ml-5 mb-4"><li>會員或訂購人需提供正確資料</li><li>若因資料錯誤、電話無法聯繫導致損失，由訂購人自行負責</li></ul>
-                <h4 class="text-neoncyan font-bold mb-2">拒絕服務：</h4><p class="mb-2 text-gray-300">本店有權拒絕惡意棄單、多次未取貨或影響本店營運之行為。</p>
-                <h4 class="text-neoncyan font-bold mb-2">隱私權：</h4><ul class="list-disc ml-5 mb-4"><li>個人資料僅用於訂單處理、付款確認、配送與客服聯繫</li><li>本店不會任意提供給無關第三方</li></ul>
-                <h4 class="text-neoncyan font-bold mb-2">責任限制：</h4><ul class="list-disc ml-5 mb-4"><li>本網站對於系統錯誤、付款延遲、物流延誤、缺貨、供應商異常、天災或不可抗力因素不負賠償責任</li><li>若因上述情況導致訂單無法完成，本店將以退款、換貨或協商方式處理</li></ul>
-                <h4 class="text-neoncyan font-bold mb-2">爭議處理：</h4><ul class="list-disc ml-5 mb-4"><li>若有交易爭議，雙方應先以客服協商方式處理</li><li>本網站交易依中華民國法律規範</li><li>如需法律途徑，雙方同意以台灣高雄地方法院為第一審管轄法院</li></ul>
-                <h4 class="text-neoncyan font-bold mb-2">條款變更：</h4><ul class="list-disc ml-5 mb-4"><li>本店保留修改服務內容與條款之權利</li><li>條款更新後將公告於網站，不另行個別通知</li></ul>` 
-            }
-        };
-
-        let cart = [];
-        let orders = [];
-        let isLoggedIn = false; 
-
-        function toggleMenu() { document.querySelector('.menu-drawer').classList.toggle('open'); document.querySelector('.overlay').classList.toggle('open'); }
-        function toggleCart() { document.querySelector('.cart-drawer').classList.toggle('open'); document.querySelector('.overlay').classList.toggle('open'); }
-        function closeAllDrawers() { document.querySelector('.menu-drawer').classList.remove('open'); document.querySelector('.cart-drawer').classList.remove('open'); document.querySelector('.overlay').classList.remove('open'); }
-        function showToast(msg) { const t = document.getElementById('toast'); t.innerText = msg; t.classList.replace('opacity-0', 'opacity-100'); setTimeout(() => t.classList.replace('opacity-100', 'opacity-0'), 2000); }
-
-        function showSection(id) {
-            ['home-view', 'product-view', 'member-view', 'checkout-view', 'order-success-view'].forEach(v => document.getElementById(v).classList.add('hidden'));
-            document.getElementById(id + '-view').classList.remove('hidden'); closeAllDrawers(); window.scrollTo(0,0);
-        }
-
-        function applyFilter(cat) {
-            const list = document.getElementById('product-list'); list.innerHTML = '';
-            const filtered = cat === 'all' ? products : products.filter(p => p.cat === cat);
-            document.getElementById('current-view-title').innerText = cat === 'repair' ? '專業硬體維修' : (cat === 'case' ? '精選手機殼' : '全部商品與服務');
-            filtered.forEach(p => {
-                list.innerHTML += `<div class="bg-darkbg border border-slate-800 p-4 tech-clip flex flex-col text-center hover:border-neoncyan transition group">
-                    <div class="h-24 flex items-center justify-center text-4xl text-slate-600 mb-3 group-hover:text-neoncyan transition"><i class="fa-solid ${p.img}"></i></div>
-                    <h4 class="text-xs font-bold text-white mb-2 line-clamp-1">${p.name}</h4>
-                    <div class="text-goldlight font-tech text-sm mb-4">${p.price === 0 ? p.tag : 'NT$ '+p.price}</div>
-                    <button onclick="addToCart(${p.id})" class="w-full py-3 bg-slate-800 text-neoncyan text-[10px] font-bold rounded hover:bg-neoncyan hover:text-black transition uppercase tracking-widest">加入 ADD</button>
-                </div>`;
-            });
-            showSection('product');
-        }
-
-        function addToCart(id) { cart.push(products.find(p => p.id === id)); renderCart(); showToast('已加入購物車'); }
-        function removeFromCart(index) { cart.splice(index, 1); renderCart(); }
-
-        function renderCart() {
-            const countBadge = document.getElementById('cart-count'), cartContainer = document.getElementById('cart-items'), totalEl = document.getElementById('cart-total');
-            countBadge.innerText = cart.length;
-            if (cart.length > 0) countBadge.classList.remove('scale-0'); else countBadge.classList.add('scale-0');
-            if (cart.length === 0) { cartContainer.innerHTML = '<div class="flex h-full items-center justify-center text-gray-500 font-bold tracking-widest uppercase">EMPTY</div>'; totalEl.innerText = 'NT$ 0'; return; }
-            let total = 0;
-            cartContainer.innerHTML = cart.map((item, index) => { total += item.price; return `<div class="bg-darkbg p-4 border border-slate-700 flex justify-between items-center rounded tech-clip"><div class="text-left"><div class="text-white text-sm font-bold">${item.name}</div><div class="text-goldlight font-tech text-sm">NT$ ${item.price}</div></div><button onclick="removeFromCart(${index})" class="text-slate-500 hover:text-neonred p-2 transition text-lg"><i class="fa-solid fa-trash-can"></i></button></div>`; }).join('');
-            totalEl.innerText = 'NT$ ' + total;
-        }
-
-        function checkout() {
-            if(cart.length === 0) return showToast('購物車為空');
-            if(!isLoggedIn) { showToast('請先登入'); document.getElementById('auth-modal').classList.replace('hidden', 'flex'); return; }
-            closeAllDrawers(); showSection('checkout');
-            const container = document.getElementById('checkout-cart-items'), totalEl = document.getElementById('checkout-total');
-            let total = 0;
-            container.innerHTML = cart.map(i => { total += i.price; return `<div class="flex justify-between items-center text-sm"><span class="text-white">${i.name}</span><span class="text-goldlight font-tech">NT$ ${i.price}</span></div>`; }).join('');
-            totalEl.innerText = 'NT$ ' + total;
-            initCities();
-        }
-
-        function initCities() {
-            const citySelect = document.getElementById('cvs-city');
-            citySelect.innerHTML = '<option value="">選擇縣市</option>';
-            Object.keys(twData).forEach(city => {
-                const opt = document.createElement('option');
-                opt.value = city; opt.textContent = city;
-                citySelect.appendChild(opt);
-            });
-        }
-
-        function updateDistricts() {
-            const city = document.getElementById('cvs-city').value;
-            const distSelect = document.getElementById('cvs-district');
-            distSelect.innerHTML = '<option value="">選擇地區</option>';
-            if(city && twData[city]) {
-                twData[city].forEach(dist => {
-                    const opt = document.createElement('option');
-                    opt.value = dist; opt.textContent = dist;
-                    distSelect.appendChild(opt);
-                });
-            }
-        }
-
-        function handleShippingChange() {
-            const method = document.getElementById('ship-method').value, pay = document.getElementById('pay-method');
-            document.getElementById('ship-cvs-fields').classList.add('hidden'); document.getElementById('ship-home-fields').classList.add('hidden'); document.getElementById('ship-store-fields').classList.add('hidden');
-            pay.innerHTML = '<option value="">請選擇付款方式</option>';
-            if(method === 'cvs' || method === 'home') {
-                if(method === 'cvs') document.getElementById('ship-cvs-fields').classList.remove('hidden'); else document.getElementById('ship-home-fields').classList.remove('hidden');
-                pay.innerHTML += '<option value="bank">銀行轉帳</option><option value="linepay">LINE Pay</option>';
-            } else if(method === 'store') { document.getElementById('ship-store-fields').classList.remove('hidden'); pay.innerHTML += '<option value="bank">銀行轉帳</option><option value="linepay">LINE Pay</option><option value="storepay">到店付款</option>'; }
-        }
-
-        function submitOrder() { 
-            const agreeCheckbox = document.getElementById('agree-terms');
-            if(!agreeCheckbox.checked) return showToast('請先閱讀並同意購物與服務條款');
-            const ship = document.getElementById('ship-method').value, pay = document.getElementById('pay-method').value;
-            if(!ship || !pay) return showToast('請完整選擇配送與付款方式');
-            if(ship === 'cvs') {
-                const fields = ['cvs-type', 'cvs-city', 'cvs-district', 'cvs-store', 'cvs-name', 'cvs-phone'];
-                if(!fields.every(id => document.getElementById(id).value.trim() !== "")) return showToast('請完整填寫超商取貨資料');
-            } else if(ship === 'home') {
-                if(!document.getElementById('home-name').value || !document.getElementById('home-phone').value || !document.getElementById('home-addr').value) return showToast('請完整填寫宅配資料');
-            }
-            const id = 'ORD' + Date.now().toString().slice(-6); 
-            orders.push({
-    id: id,
-    items: [...cart],
-    total: cart.reduce((sum, i) => sum + i.price, 0),
-    status: '未付款',
-    time: new Date().toLocaleString()
-});
-            document.getElementById('success-order-id').innerText = id; 
-            cart = []; renderCart(); agreeCheckbox.checked = false;
-            showSection('order-success'); 
-            document.getElementById('payment-instruction-box').classList.remove('hidden'); 
-            document.getElementById('payment-details-text').innerHTML = "銀行：中信 (822)<br>帳號：123456789<br>完成後請透過官方 LINE 回報末五碼。"; 
-        }
-
-        function openTerms(type) {
-            const data = termsData[type];
-            if(data) {
-                const modal = document.getElementById('terms-modal'), contentEl = document.getElementById('modal-content');
-                document.getElementById('modal-title').innerText = data.title;
-                contentEl.innerHTML = data.content;
-                modal.classList.replace('hidden', 'flex');
-                document.body.style.overflow = 'hidden'; 
-                setTimeout(() => { if (contentEl) contentEl.scrollTop = 0; }, 0);
-            }
-        }
-        function closeTerms() { document.getElementById('terms-modal').classList.replace('flex', 'hidden'); document.body.style.overflow = 'auto'; }
-        function handleUserClick() { if(isLoggedIn) { showSection('member'); } else { document.getElementById('auth-modal').classList.replace('hidden', 'flex'); } }
-        function closeAuth() { document.getElementById('auth-modal').classList.replace('flex', 'hidden'); }
-        function switchAuth(view) {
-            document.getElementById('auth-view-login').classList.add('hidden'); 
-            document.getElementById('auth-view-register').classList.add('hidden');
-            document.getElementById(`auth-view-${view}`).classList.remove('hidden');
-            document.getElementById('auth-title').innerText = view === 'login' ? 'SYSTEM LOGIN' : 'NEW REGISTRATION';
-        }
-        function simLogin(msg) { isLoggedIn = true; document.getElementById('user-status-dot').classList.replace('bg-slate-600', 'bg-neoncyan'); closeAuth(); showToast(msg || '登入成功'); }
-        function logout() { isLoggedIn = false; document.getElementById('user-status-dot').classList.replace('bg-neoncyan', 'bg-slate-600'); showSection('home'); }
-        function toggleSubmenu(id) { document.getElementById(id).classList.toggle('open'); }
-        function toggleFab() { const m = document.getElementById('fab-menu'), i = document.getElementById('fab-icon'); m.classList.toggle('open'); if(m.classList.contains('open')) { i.classList.replace('fa-headset', 'fa-xmark'); i.parentElement.classList.remove('animate-pulse'); } else { i.classList.replace('fa-xmark', 'fa-headset'); i.parentElement.classList.add('animate-pulse'); } }
-        window.onload = function() { renderCart(); };
-    </script>
+  <script>
+    const products=[{id:1,name:'惡魔防摔殼 終極版',price:890,cat:'case',img:'fa-mobile-screen'},{id:2,name:'太空艙滿版保護貼',price:450,cat:'case',img:'fa-shield-halved'},{id:3,name:'螢幕總成維修',price:0,tag:'現場報價',cat:'repair',img:'fa-screwdriver-wrench'},{id:4,name:'電池檢測與更換',price:0,tag:'現場報價',cat:'repair',img:'fa-battery-half'}];
+    const twData={'台北市':['中正區','大同區','中山區','松山區','大安區','萬華區','信義區','士林區','北投區','內湖區','南港區','文山區'],'新北市':['板橋區','三重區','中和區','永和區','新莊區','新店區','樹林區','鶯歌區','三峽區','淡水區','汐止區','瑞芳區','土城區','蘆洲區','五股區','泰山區','林口區','深坑區','石碇區','坪林區','三芝區','石門區','八里區','平溪區','雙溪區','貢寮區','金山區','萬里區','烏來區'],'台中市':['中區','東區','南區','西區','北區','北屯區','西屯區','南屯區','太平區','大里區','霧峰區','烏日區','豐原區','後里區','石岡區','東勢區','和平區','新社區','潭子區','大雅區','神岡區','大肚區','沙鹿區','龍井區','梧棲區','清水區','大甲區','外埔區','大安區'],'高雄市':['新興區','前金區','苓雅區','鹽埕區','鼓山區','旗津區','前鎮區','三民區','楠梓區','小港區','左營區','仁武區','大社區','岡山區','路竹區','阿蓮區','田寮區','燕巢區','橋頭區','梓官區','彌陀區','永安區','湖內區','鳳山區','大寮區','林園區','鳥松區','大樹區','旗山區','美濃區','六龜區','內門區','杉林區','甲仙區','桃源區','那瑪夏區','茂林區','茄萣區'],'台南市':['中西區','東區','南區','北區','安平區','安南區','永康區','歸仁區','新化區','左鎮區','玉井區','楠西區','南化區','仁德區','關廟區','龍崎區','官田區','麻豆區','佳里區','西港區','七股區','將軍區','學甲區','北門區','新營區','後壁區','白河區','東山區','六甲區','下營區','柳營區','鹽水區','善化區','大內區','山上區','新市區','安定區'],'桃園市':['中壢區','平鎮區','龍潭區','楊梅區','新屋區','觀音區','桃園區','龜山區','八德區','大溪區','復興區','大園區','蘆竹區'],'基隆市':['仁愛區','信義區','中正區','中山區','安樂區','暖暖區','七堵區'],'新竹市':['東區','北區','香山區'],'新竹縣':['竹北市','竹東鎮','新埔鎮','關西鎮','湖口鄉','新豐鄉','芎林鄉','橫山鄉','北埔鄉','寶山鄉','峨眉鄉','尖石鄉','五峰鄉'],'苗栗縣':['苗栗市','通霄鎮','苑裡鎮','竹南鎮','頭份市','後龍鎮','卓蘭鎮','大湖鄉','公館鄉','銅鑼鄉','南庄鄉','頭屋鄉','三義鄉','西湖鄉','造橋鄉','三灣鄉','獅潭鄉','泰安鄉'],'彰化縣':['彰化市','鹿港鎮','和美鎮','線西鄉','伸港鄉','福興鄉','秀水鄉','花壇鄉','芬園鄉','員林市','溪湖鎮','田中鎮','大村鄉','埔鹽鄉','埔心鄉','永靖鄉','社頭鄉','二水鄉','北斗鎮','二林鎮','田尾鄉','埤頭鄉','芳苑鄉','大城鄉','竹塘鄉','溪州鄉'],'屏東縣':['屏東市','東港鎮','潮州鎮','恆春鎮','萬丹鄉','長治鄉','麟洛鄉','九如鄉','里港鄉','高樹鄉','鹽埔鄉','內埔鄉','竹田鄉','新園鄉','枋寮鄉','琉球鄉'],'宜蘭縣':['宜蘭市','羅東鎮','蘇澳鎮','頭城鎮','礁溪鄉','壯圍鄉','員山鄉','冬山鄉','五結鄉','三星鄉','大同鄉','南澳鄉'],'花蓮縣':['花蓮市','新城鄉','秀林鄉','吉安鄉','壽豐鄉','鳳林鎮','光復鄉','豐濱鄉','瑞穗鄉','萬榮鄉','玉里鎮','卓溪鄉','富里鄉'],'台東縣':['台東市','綠島鄉','蘭嶼鄉','延平鄉','卑南鄉','鹿野鄉','關山鎮','海端鄉','池上鄉','東河鄉','成功鎮','長濱鄉','太麻里鄉','金峰鄉','大武鄉','達仁鄉'],'南投縣':['南投市','埔里鎮','草屯鎮','竹山鎮','集集鎮','名間鄉','鹿谷鄉','中寮鄉','魚池鄉','國姓鄉','信義鄉','仁愛鄉','水里鄉'],'雲林縣':['斗六市','斗南鎮','虎尾鎮','西螺鎮','土庫鎮','北港鎮','古坑鄉','大埤鄉','莿桐鄉','林內鄉','二崙鄉','崙背鄉','麥寮鄉','東勢鄉','褒忠鄉','台西鄉','元長鄉','四湖鄉','口湖鄉','水林鄉'],'嘉義市':['東區','西區'],'嘉義縣':['太保市','朴子市','布袋鎮','大林鎮','民雄鄉','溪口鄉','新港鄉','六腳鄉','東石鄉','義竹鄉','鹿草鄉','水上鄉','中埔鄉','竹崎鄉','梅山鄉','番路鄉','大埔鄉','阿里山鄉'],'澎湖縣':['馬公市','湖西鄉','白沙鄉','西嶼鄉','望安鄉','七美鄉'],'金門縣':['金城鎮','金湖鎮','金沙鎮','金寧鄉','烈嶼鄉','烏坵鄉'],'連江縣':['南竿鄉','北竿鄉','莒光鄉','東引鄉']};
+    const simpleText='<ul class="list-disc ml-5 mb-4"><li>請依頁面說明完成訂單與付款。</li><li>若遇缺貨、物流延誤、資料填寫錯誤，本店將以客服協助方式處理。</li><li>本店保留訂單接受、取消、調整與條款更新之權利。</li></ul>';
+    const termsData={payment:{title:'付款資訊',content:simpleText},shipping:{title:'配送取件',content:simpleText},tracking:{title:'進度查詢',content:simpleText},returns:{title:'退換貨政策',content:simpleText},warranty:{title:'維修保固',content:simpleText},terms:{title:'服務條款',content:simpleText}};
+    let cart=[];
+    let orders=JSON.parse(localStorage.getItem('apple911_orders')||'[]');
+    let isLoggedIn=localStorage.getItem('apple911_logged_in')==='1';
+    function toggleMenu(){document.querySelector('.menu-drawer').classList.toggle('open');document.querySelector('.overlay').classList.toggle('open');}
+    function toggleCart(){document.querySelector('.cart-drawer').classList.toggle('open');document.querySelector('.overlay').classList.toggle('open');}
+    function closeAllDrawers(){document.querySelector('.menu-drawer').classList.remove('open');document.querySelector('.cart-drawer').classList.remove('open');document.querySelector('.overlay').classList.remove('open');}
+    function showToast(msg){const t=document.getElementById('toast');t.innerText=msg;t.classList.replace('opacity-0','opacity-100');setTimeout(()=>t.classList.replace('opacity-100','opacity-0'),2000);}
+    function showSection(id){['home-view','product-view','member-view','checkout-view','order-success-view'].forEach(v=>document.getElementById(v).classList.add('hidden'));document.getElementById(id+'-view').classList.remove('hidden');closeAllDrawers();window.scrollTo(0,0);if(id==='member')switchMemberTab('profile');}
+    function applyFilter(cat){const list=document.getElementById('product-list');list.innerHTML='';const filtered=cat==='all'?products:products.filter(p=>p.cat===cat);document.getElementById('current-view-title').innerText=cat==='repair'?'專業硬體維修':(cat==='case'?'精選手機殼':'全部商品與服務');filtered.forEach(p=>{list.innerHTML+=`<div class="bg-darkbg border border-slate-800 p-4 tech-clip flex flex-col text-center hover:border-neoncyan transition group"><div class="h-24 flex items-center justify-center text-4xl text-slate-600 mb-3 group-hover:text-neoncyan transition"><i class="fa-solid ${p.img}"></i></div><h4 class="text-xs font-bold text-white mb-2 line-clamp-1">${p.name}</h4><div class="text-goldlight font-tech text-sm mb-4">${p.price===0?p.tag:'NT$ '+p.price}</div><button onclick="addToCart(${p.id})" class="w-full py-3 bg-slate-800 text-neoncyan text-[10px] font-bold rounded hover:bg-neoncyan hover:text-black transition uppercase tracking-widest">加入 ADD</button></div>`});showSection('product');}
+    function addToCart(id){cart.push(products.find(p=>p.id===id));renderCart();showToast('已加入購物車');}
+    function removeFromCart(index){cart.splice(index,1);renderCart();}
+    function renderCart(){const countBadge=document.getElementById('cart-count'),cartContainer=document.getElementById('cart-items'),totalEl=document.getElementById('cart-total');countBadge.innerText=cart.length;if(cart.length>0)countBadge.classList.remove('scale-0');else countBadge.classList.add('scale-0');if(cart.length===0){cartContainer.innerHTML='<div class="flex h-full items-center justify-center text-gray-500 font-bold tracking-widest uppercase">EMPTY</div>';totalEl.innerText='NT$ 0';return;}let total=0;cartContainer.innerHTML=cart.map((item,index)=>{total+=item.price;return`<div class="bg-darkbg p-4 border border-slate-700 flex justify-between items-center rounded tech-clip"><div class="text-left"><div class="text-white text-sm font-bold">${item.name}</div><div class="text-goldlight font-tech text-sm">NT$ ${item.price}</div></div><button onclick="removeFromCart(${index})" class="text-slate-500 hover:text-neonred p-2 transition text-lg"><i class="fa-solid fa-trash-can"></i></button></div>`}).join('');totalEl.innerText='NT$ '+total;}
+    function checkout(){if(cart.length===0)return showToast('購物車為空');if(!isLoggedIn){showToast('請先登入');document.getElementById('auth-modal').classList.replace('hidden','flex');return;}closeAllDrawers();showSection('checkout');const container=document.getElementById('checkout-cart-items'),totalEl=document.getElementById('checkout-total');let total=0;container.innerHTML=cart.map(i=>{total+=i.price;return`<div class="flex justify-between items-center text-sm"><span class="text-white">${i.name}</span><span class="text-goldlight font-tech">NT$ ${i.price}</span></div>`}).join('');totalEl.innerText='NT$ '+total;initCities();prefillCheckout();}
+    function initCities(){const citySelect=document.getElementById('cvs-city');citySelect.innerHTML='<option value="">選擇縣市</option>';Object.keys(twData).forEach(city=>{const opt=document.createElement('option');opt.value=city;opt.textContent=city;citySelect.appendChild(opt);});}
+    function updateDistricts(){const city=document.getElementById('cvs-city').value;const distSelect=document.getElementById('cvs-district');distSelect.innerHTML='<option value="">選擇地區</option>';if(city&&twData[city])twData[city].forEach(dist=>{const opt=document.createElement('option');opt.value=dist;opt.textContent=dist;distSelect.appendChild(opt);});}
+    function handleShippingChange(){const method=document.getElementById('ship-method').value,pay=document.getElementById('pay-method');document.getElementById('ship-cvs-fields').classList.add('hidden');document.getElementById('ship-home-fields').classList.add('hidden');document.getElementById('ship-store-fields').classList.add('hidden');pay.innerHTML='<option value="">請選擇付款方式</option>';if(method==='cvs'||method==='home'){if(method==='cvs')document.getElementById('ship-cvs-fields').classList.remove('hidden');else document.getElementById('ship-home-fields').classList.remove('hidden');pay.innerHTML+='<option value="bank">銀行轉帳</option><option value="linepay">LINE Pay</option>';}else if(method==='store'){document.getElementById('ship-store-fields').classList.remove('hidden');pay.innerHTML+='<option value="bank">銀行轉帳</option><option value="linepay">LINE Pay</option><option value="storepay">到店付款</option>';}}
+    function submitOrder(){const agreeCheckbox=document.getElementById('agree-terms');if(!agreeCheckbox.checked)return showToast('請先閱讀並同意購物與服務條款');const ship=document.getElementById('ship-method').value,pay=document.getElementById('pay-method').value;if(!ship||!pay)return showToast('請完整選擇配送與付款方式');if(ship==='cvs'){const fields=['cvs-type','cvs-city','cvs-district','cvs-store','cvs-name','cvs-phone'];if(!fields.every(id=>document.getElementById(id).value.trim()!==''))return showToast('請完整填寫超商取貨資料');}else if(ship==='home'){if(!document.getElementById('home-name').value||!document.getElementById('home-phone').value||!document.getElementById('home-addr').value)return showToast('請完整填寫宅配資料');}const id='ORD'+Date.now().toString().slice(-6);const total=cart.reduce((sum,i)=>sum+i.price,0);orders.unshift({id,items:[...cart],total,status:'未付款',time:new Date().toLocaleString(),ship,pay});localStorage.setItem('apple911_orders',JSON.stringify(orders));document.getElementById('success-order-id').innerText=id;cart=[];renderCart();agreeCheckbox.checked=false;showSection('order-success');document.getElementById('payment-instruction-box').classList.remove('hidden');document.getElementById('payment-details-text').innerHTML='銀行：中信 (822)<br>帳號：123456789<br>完成後請透過官方 LINE 回報末五碼。';}
+    function renderOrders(){const container=document.getElementById('orders-container');if(!container)return;if(orders.length===0){container.innerHTML='<div class="text-center py-10 text-gray-500 text-sm">尚無紀錄</div>';return;}container.innerHTML=orders.map(order=>`<div class="bg-darkbg border border-slate-700 p-4 tech-clip space-y-2"><div class="flex justify-between text-sm text-white font-bold"><span>${order.id}</span><span class="text-neoncyan">${order.status}</span></div><div class="text-xs text-gray-400">${order.time}</div><div class="text-xs text-gray-300">${order.items.map(i=>i.name).join(' / ')}</div><div class="flex justify-between items-center pt-2 border-t border-slate-800"><span class="text-xs text-gray-500">${order.ship==='cvs'?'超商取貨':order.ship==='home'?'宅配到府':'到店取貨'}</span><span class="text-goldlight font-tech font-bold">NT$ ${order.total}</span></div><button onclick="reportPayment('${order.id}')" class="w-full py-2 bg-slate-800 text-neoncyan font-bold tech-clip text-xs hover:bg-neoncyan hover:text-black transition">回報付款</button></div>`).join('');}
+    function switchMemberTab(tab){document.getElementById('member-tab-orders').classList.add('hidden');document.getElementById('member-tab-profile').classList.add('hidden');document.getElementById('tab-btn-orders').classList.remove('member-tab-active');document.getElementById('tab-btn-profile').classList.remove('member-tab-active');document.getElementById('member-tab-'+tab).classList.remove('hidden');document.getElementById('tab-btn-'+tab).classList.add('member-tab-active');if(tab==='orders')renderOrders();}
+    function openTerms(type){const data=termsData[type];if(data){const modal=document.getElementById('terms-modal'),contentEl=document.getElementById('modal-content');document.getElementById('modal-title').innerText=data.title;contentEl.innerHTML=data.content;modal.classList.replace('hidden','flex');document.body.style.overflow='hidden';setTimeout(()=>{contentEl.scrollTop=0;},0);}}
+    function closeTerms(){document.getElementById('terms-modal').classList.replace('flex','hidden');document.body.style.overflow='auto';}
+    function handleUserClick(){if(isLoggedIn)showSection('member');else document.getElementById('auth-modal').classList.replace('hidden','flex');}
+    function closeAuth(){document.getElementById('auth-modal').classList.replace('flex','hidden');}
+    function switchAuth(view){document.getElementById('auth-view-login').classList.add('hidden');document.getElementById('auth-view-register').classList.add('hidden');document.getElementById(`auth-view-${view}`).classList.remove('hidden');document.getElementById('auth-title').innerText=view==='login'?'SYSTEM LOGIN':'NEW REGISTRATION';}
+    function simLogin(msg){isLoggedIn=true;localStorage.setItem('apple911_logged_in','1');document.getElementById('user-status-dot').classList.replace('bg-slate-600','bg-neoncyan');closeAuth();showToast(msg||'登入成功');}
+    function logout(){isLoggedIn=false;localStorage.removeItem('apple911_logged_in');document.getElementById('user-status-dot').classList.replace('bg-neoncyan','bg-slate-600');showSection('home');}
+    function toggleSubmenu(id){document.getElementById(id).classList.toggle('open');}
+    function toggleFab(){const m=document.getElementById('fab-menu'),i=document.getElementById('fab-icon');m.classList.toggle('open');if(m.classList.contains('open')){i.classList.replace('fa-headset','fa-xmark');i.parentElement.classList.remove('animate-pulse');}else{i.classList.replace('fa-xmark','fa-headset');i.parentElement.classList.add('animate-pulse');}}
+    function saveProfile(){const profile={name:document.getElementById('profile-name').value,phone:document.getElementById('profile-phone').value,email:document.getElementById('profile-email').value,line:document.getElementById('profile-line').value,address:document.getElementById('profile-address').value};localStorage.setItem('apple911_profile',JSON.stringify(profile));document.getElementById('member-name').innerText=profile.name||'Apple 客戶';showToast('已儲存設定');}
+    function loadProfile(){const p=JSON.parse(localStorage.getItem('apple911_profile')||'{}');['name','phone','email','line','address'].forEach(k=>{const el=document.getElementById('profile-'+k);if(el)el.value=p[k]||'';});if(p.name)document.getElementById('member-name').innerText=p.name;}
+    function prefillCheckout(){const p=JSON.parse(localStorage.getItem('apple911_profile')||'{}');['cvs-name','home-name'].forEach(id=>{const el=document.getElementById(id);if(el&&!el.value)el.value=p.name||'';});['cvs-phone','home-phone'].forEach(id=>{const el=document.getElementById(id);if(el&&!el.value)el.value=p.phone||'';});const addr=document.getElementById('home-addr');if(addr&&!addr.value)addr.value=p.address||'';}
+    function reportPayment(orderId){const msg=encodeURIComponent(`您好，我要回報付款，訂單編號：${orderId}，帳號末五碼：`);window.open(`https://line.me/R/ti/p/@apple911?text=${msg}`,'_blank');}
+    window.onload=function(){renderCart();loadProfile();if(isLoggedIn)document.getElementById('user-status-dot').classList.replace('bg-slate-600','bg-neoncyan');};
+  </script>
 </body>
 </html>
