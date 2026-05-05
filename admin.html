@@ -107,6 +107,22 @@
         </button>
       </div>
 
+      <!-- 商品管理 -->
+      <div class="bg-panelbg border border-slate-700 tech-clip p-5 space-y-4">
+        <h2 class="text-sm font-bold text-white tracking-widest border-l-4 border-neoncyan pl-2">商品管理 <span class="text-gray-500 font-sans font-normal text-xs ml-1">PRODUCT MANAGER</span></h2>
+        <div class="flex flex-col md:flex-row gap-3">
+          <input id="prod-name" type="text" placeholder="商品名稱"
+            class="flex-1 bg-darkbg border border-slate-600 text-white p-3 tech-clip text-sm focus:border-neoncyan transition">
+          <input id="prod-price" type="number" placeholder="價格（0 = 現場報價）" min="0"
+            class="md:w-48 bg-darkbg border border-slate-600 text-white p-3 tech-clip text-sm focus:border-neoncyan transition">
+          <button onclick="addProduct()"
+            class="px-6 py-3 bg-neoncyan text-black font-bold tech-btn text-sm hover:bg-white transition whitespace-nowrap">
+            <i class="fa-solid fa-plus mr-1"></i>新增商品
+          </button>
+        </div>
+        <div id="prod-list" class="space-y-2"></div>
+      </div>
+
       <!-- 訂單計數 -->
       <div class="flex justify-between items-center px-1">
         <p class="text-xs text-gray-500" id="order-count-label">共 0 筆訂單</p>
@@ -321,6 +337,65 @@
     document.getElementById('admin-password').addEventListener('keydown', e => {
       if (e.key === 'Enter') doLogin();
     });
+
+    // ── 商品管理 ────────────────────────────────────────────────────────
+    const DEFAULT_PRODUCTS = [
+      {id:1,name:'惡魔防摔殼 終極版',price:890,cat:'case',img:'fa-mobile-screen'},
+      {id:2,name:'太空艙滿版保護貼',price:450,cat:'case',img:'fa-shield-halved'},
+      {id:3,name:'螢幕總成維修',price:0,tag:'現場報價',cat:'repair',img:'fa-screwdriver-wrench'},
+      {id:4,name:'電池檢測與更換',price:0,tag:'現場報價',cat:'repair',img:'fa-battery-half'}
+    ];
+
+    function loadProducts() {
+      const stored = JSON.parse(localStorage.getItem('a911_products') || 'null');
+      return stored && stored.length > 0 ? stored : DEFAULT_PRODUCTS;
+    }
+
+    function renderProducts() {
+      const prods = loadProducts();
+      const container = document.getElementById('prod-list');
+      if (!container) return;
+      if (prods.length === 0) {
+        container.innerHTML = '<p class="text-xs text-gray-600">尚無商品</p>';
+        return;
+      }
+      container.innerHTML = prods.map(p => `
+        <div class="flex justify-between items-center bg-darkbg border border-slate-800 p-3 tech-clip text-xs">
+          <span class="text-gray-300">${p.name}</span>
+          <div class="flex items-center gap-3">
+            <span class="text-goldlight font-tech">${p.price === 0 ? '現場報價' : 'NT$ ' + p.price}</span>
+            <button onclick="deleteProduct(${p.id})" class="text-slate-600 hover:text-neonred transition">
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
+          </div>
+        </div>`).join('');
+    }
+
+    function addProduct() {
+      const name = document.getElementById('prod-name').value.trim();
+      const price = parseInt(document.getElementById('prod-price').value);
+      if (!name) return showToast('請輸入商品名稱');
+      if (isNaN(price) || price < 0) return showToast('請輸入正確價格');
+      const prods = loadProducts();
+      const newId = prods.length > 0 ? Math.max(...prods.map(p => p.id)) + 1 : 1;
+      prods.push({ id: newId, name, price, cat: 'case', img: 'fa-box' });
+      localStorage.setItem('a911_products', JSON.stringify(prods));
+      document.getElementById('prod-name').value = '';
+      document.getElementById('prod-price').value = '';
+      renderProducts();
+      showToast('商品已新增：' + name);
+    }
+
+    function deleteProduct(id) {
+      const prods = loadProducts().filter(p => p.id !== id);
+      localStorage.setItem('a911_products', JSON.stringify(prods));
+      renderProducts();
+      showToast('商品已刪除');
+    }
+
+    // renderProducts 掛入登入後初始化
+    const _origLoadOrders = loadOrders;
+    loadOrders = function() { _origLoadOrders(); renderProducts(); };
   </script>
 </body>
 </html>
