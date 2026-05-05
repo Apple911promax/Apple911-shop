@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Apple 911 | 後台管理</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&family=Orbitron:wght@500;700;900&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Noto Sans TC', 'sans-serif'], tech: ['Rajdhani', 'sans-serif'], esport: ['Orbitron', 'sans-serif'] },
+          colors: { darkbg: '#050505', panelbg: '#0a0f18', neoncyan: '#00f3ff', neonred: '#ff003c', goldlight: '#e2c78e', golddark: '#b38539' }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { background-color:#050505; background-image:radial-gradient(rgba(0,243,255,.05) 1px,transparent 1px); background-size:30px 30px; color:#e2e8f0; min-height:100vh; }
+    .tech-clip { clip-path:polygon(15px 0,100% 0,100% calc(100% - 15px),calc(100% - 15px) 100%,0 100%,0 15px); }
+    .tech-btn  { clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px); transition:all .2s; }
+    .tech-btn:active { transform:scale(.95); }
+    .text-gold-gradient { background:linear-gradient(135deg,#e2c78e 0%,#b38539 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent; }
+    ::-webkit-scrollbar { width:4px; } ::-webkit-scrollbar-thumb { background:#00f3ff; border-radius:4px; }
+    .status-badge { display:inline-block; padding:2px 8px; border-radius:4px; font-size:.7rem; font-weight:700; }
+    .badge-未付款 { background:rgba(255,0,60,.15); color:#ff003c; border:1px solid #ff003c55; }
+    .badge-已付款 { background:rgba(0,243,255,.12); color:#00f3ff; border:1px solid #00f3ff55; }
+    .badge-處理中 { background:rgba(250,204,21,.12); color:#facc15; border:1px solid #facc1555; }
+    .badge-已出貨 { background:rgba(59,130,246,.12); color:#60a5fa; border:1px solid #60a5fa55; }
+    .badge-已完成 { background:rgba(34,197,94,.12); color:#4ade80; border:1px solid #4ade8055; }
+    .badge-已取消 { background:rgba(100,116,139,.15); color:#94a3b8; border:1px solid #94a3b855; }
+    input, select, textarea { outline:none; }
+  </style>
+</head>
+<body class="font-sans antialiased">
+
+  <!-- ── 登入畫面 ── -->
+  <div id="login-screen" class="min-h-screen flex items-center justify-center p-4">
+    <div class="bg-panelbg border border-cyan-500 tech-clip w-full max-w-sm shadow-[0_0_30px_rgba(0,243,255,0.15)]">
+      <div class="p-8">
+        <h1 class="font-esport text-2xl font-black tracking-widest text-white text-center mb-1">
+          APPLE<span class="text-gold-gradient">911</span>
+        </h1>
+        <p class="text-center text-neoncyan text-xs tracking-widest mb-8">ADMIN SYSTEM</p>
+        <div class="space-y-4">
+          <div>
+            <label class="text-xs text-neoncyan block mb-1">管理員密碼</label>
+            <input id="admin-password" type="password" placeholder="請輸入密碼"
+              class="w-full bg-darkbg border border-slate-600 text-white p-3 tech-clip text-sm focus:border-neoncyan transition"
+              onkeydown="if(event.key==='Enter')doLogin()">
+          </div>
+          <p id="login-error" class="text-neonred text-xs hidden">密碼錯誤，請重試</p>
+          <button onclick="doLogin()" class="w-full py-3 bg-neoncyan text-black font-bold tech-btn text-sm tracking-widest hover:bg-white transition">
+            LOGIN
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 後台主體 ── -->
+  <div id="admin-main" class="hidden min-h-screen flex flex-col">
+
+    <!-- 頂部導覽 -->
+    <nav class="sticky top-0 z-40 bg-panelbg/95 backdrop-blur-md border-b-2 border-neoncyan/50 shadow-[0_0_15px_rgba(0,243,255,0.15)]">
+      <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+        <div class="font-esport text-xl font-black tracking-widest text-white flex items-center gap-2">
+          APPLE<span class="text-gold-gradient">911</span>
+          <span class="text-xs text-neoncyan font-sans font-normal tracking-widest ml-2">ADMIN</span>
+        </div>
+        <div class="flex items-center gap-4">
+          <button onclick="loadOrders()" class="text-xs text-gray-400 hover:text-neoncyan transition font-bold">
+            <i class="fa-solid fa-rotate-right mr-1"></i>重新整理
+          </button>
+          <button onclick="doLogout()" class="text-xs text-neonred hover:text-white transition font-bold">
+            <i class="fa-solid fa-right-from-bracket mr-1"></i>登出
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto w-full px-4 py-6 flex-grow space-y-6">
+
+      <!-- 統計列 -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3" id="stats-row"></div>
+
+      <!-- 搜尋與篩選 -->
+      <div class="bg-panelbg border border-slate-700 tech-clip p-4 flex flex-col md:flex-row gap-3">
+        <input id="search-input" type="text" placeholder="搜尋訂單編號 / 商品名稱..."
+          class="flex-1 bg-darkbg border border-slate-600 text-white p-3 tech-clip text-sm focus:border-neoncyan transition"
+          oninput="renderTable()">
+        <select id="filter-status"
+          class="bg-darkbg border border-slate-600 text-white p-3 tech-clip text-sm focus:border-neoncyan transition md:w-44"
+          onchange="renderTable()">
+          <option value="">全部狀態</option>
+          <option>未付款</option>
+          <option>已付款</option>
+          <option>處理中</option>
+          <option>已出貨</option>
+          <option>已完成</option>
+          <option>已取消</option>
+        </select>
+        <button onclick="exportJSON()" class="px-5 py-3 bg-slate-800 text-neoncyan font-bold tech-btn text-xs hover:bg-neoncyan hover:text-black transition whitespace-nowrap">
+          <i class="fa-solid fa-download mr-1"></i>匯出 JSON
+        </button>
+      </div>
+
+      <!-- 訂單計數 -->
+      <div class="flex justify-between items-center px-1">
+        <p class="text-xs text-gray-500" id="order-count-label">共 0 筆訂單</p>
+      </div>
+
+      <!-- 訂單列表 -->
+      <div id="orders-table" class="space-y-3"></div>
+
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 bg-neoncyan text-black px-6 py-3 font-bold tech-btn z-[100] opacity-0 transition-opacity whitespace-nowrap shadow-2xl text-sm"></div>
+
+  </div>
+
+  <script>
+    const ADMIN_PASS = '0909';
+    const STATUS_LIST = ['未付款','已付款','處理中','已出貨','已完成','已取消'];
+    let orders = [];
+    let isLoggedIn = false;
+
+    // ── 登入 / 登出 ──────────────────────────────────────────────────────────
+    function doLogin() {
+      const pw = document.getElementById('admin-password').value;
+      if (pw !== ADMIN_PASS) {
+        document.getElementById('login-error').classList.remove('hidden');
+        return;
+      }
+      isLoggedIn = true;
+      document.getElementById('login-screen').classList.add('hidden');
+      document.getElementById('admin-main').classList.remove('hidden');
+      loadOrders();
+    }
+
+    function doLogout() {
+      isLoggedIn = false;
+      document.getElementById('admin-main').classList.add('hidden');
+      document.getElementById('login-screen').classList.remove('hidden');
+      document.getElementById('admin-password').value = '';
+      document.getElementById('login-error').classList.add('hidden');
+    }
+
+    // ── 資料 ─────────────────────────────────────────────────────────────────
+    function loadOrders() {
+      orders = JSON.parse(localStorage.getItem('apple911_orders') || '[]');
+      renderStats();
+      renderTable();
+    }
+
+    function saveOrders() {
+      localStorage.setItem('apple911_orders', JSON.stringify(orders));
+    }
+
+    // ── 統計 ─────────────────────────────────────────────────────────────────
+    function renderStats() {
+      const stats = [
+        { label:'總訂單', value: orders.length, color:'text-white', icon:'fa-list-ul' },
+        { label:'未付款', value: orders.filter(o=>o.status==='未付款').length, color:'text-neonred', icon:'fa-clock' },
+        { label:'已付款', value: orders.filter(o=>o.status==='已付款').length, color:'text-neoncyan', icon:'fa-circle-check' },
+        { label:'已出貨', value: orders.filter(o=>o.status==='已出貨').length, color:'text-blue-400', icon:'fa-truck' },
+      ];
+      document.getElementById('stats-row').innerHTML = stats.map(s => `
+        <div class="bg-panelbg border border-slate-700 tech-clip p-4 flex items-center gap-3 hover:border-cyan-500 transition">
+          <i class="fa-solid ${s.icon} text-2xl text-slate-600"></i>
+          <div>
+            <div class="text-2xl font-bold font-tech ${s.color}">${s.value}</div>
+            <div class="text-xs text-gray-500">${s.label}</div>
+          </div>
+        </div>`).join('');
+    }
+
+    // ── 篩選 ─────────────────────────────────────────────────────────────────
+    function getFiltered() {
+      const kw = document.getElementById('search-input').value.trim().toLowerCase();
+      const st = document.getElementById('filter-status').value;
+      return orders.filter(o => {
+        const matchKw = !kw || o.id.toLowerCase().includes(kw) || (o.items||[]).some(i=>i.name.toLowerCase().includes(kw));
+        const matchSt = !st || o.status === st;
+        return matchKw && matchSt;
+      });
+    }
+
+    // ── 渲染訂單列表 ──────────────────────────────────────────────────────────
+    function renderTable() {
+      const filtered = getFiltered();
+      document.getElementById('order-count-label').textContent = `共 ${filtered.length} 筆訂單`;
+      if (filtered.length === 0) {
+        document.getElementById('orders-table').innerHTML =
+          '<div class="text-center py-12 text-gray-600 font-bold tracking-widest">NO ORDERS FOUND</div>';
+        return;
+      }
+
+      document.getElementById('orders-table').innerHTML = filtered.map(order => {
+        const shipLabel = order.ship === 'cvs' ? '超商取貨' : order.ship === 'home' ? '宅配到府' : '到店取貨';
+        const payLabel  = order.pay  === 'bank' ? '銀行轉帳' : order.pay === 'linepay' ? 'LINE Pay' : order.pay === 'storepay' ? '到店付款' : order.pay || '-';
+        const itemsText = (order.items||[]).map(i=>i.name).join(' / ') || '-';
+        const optionsHtml = STATUS_LIST.map(s =>
+          `<option value="${s}" ${order.status===s?'selected':''}>${s}</option>`).join('');
+
+        return `
+        <div class="bg-panelbg border border-slate-700 tech-clip hover:border-cyan-500 transition" id="card-${order.id}">
+          <!-- 訂單標頭 -->
+          <div class="p-4 flex flex-wrap justify-between items-start gap-2 border-b border-slate-800">
+            <div class="flex items-center gap-3 flex-wrap">
+              <span class="font-tech font-bold text-neoncyan tracking-widest text-sm" style="text-shadow:0 0 6px rgba(0,243,255,0.4)">${order.id}</span>
+              <span class="status-badge badge-${order.status}">${order.status}</span>
+            </div>
+            <span class="text-xs text-gray-500">${order.time || '-'}</span>
+          </div>
+          <!-- 訂單內容 -->
+          <div class="p-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+            <div class="space-y-1">
+              <p class="text-gray-500 uppercase tracking-widest font-bold mb-2">商品</p>
+              <p class="text-gray-300">${itemsText}</p>
+            </div>
+            <div class="space-y-1">
+              <p class="text-gray-500 uppercase tracking-widest font-bold mb-2">配送 / 付款</p>
+              <p class="text-gray-400">${shipLabel}</p>
+              <p class="text-gray-400">${payLabel}</p>
+            </div>
+            <div class="space-y-1 text-right md:text-right">
+              <p class="text-gray-500 uppercase tracking-widest font-bold mb-2">金額</p>
+              <p class="text-goldlight font-tech font-bold text-base">NT$ ${order.total}</p>
+            </div>
+          </div>
+          <!-- 操作列 -->
+          <div class="px-4 pb-4 flex flex-wrap gap-2 items-center border-t border-slate-800 pt-3">
+            <select id="status-select-${order.id}"
+              class="bg-darkbg border border-slate-600 text-white p-2 tech-clip text-xs focus:border-neoncyan transition flex-1 min-w-[120px]">
+              ${optionsHtml}
+            </select>
+            <button onclick="applyStatus('${order.id}')"
+              class="px-4 py-2 bg-slate-800 text-neoncyan font-bold tech-btn text-xs hover:bg-neoncyan hover:text-black transition whitespace-nowrap">
+              套用狀態
+            </button>
+            ${order.status === '未付款' ? `
+            <button onclick="markPaid('${order.id}')"
+              class="px-4 py-2 bg-slate-800 text-green-400 font-bold tech-btn text-xs hover:bg-green-400 hover:text-black transition whitespace-nowrap">
+              <i class="fa-solid fa-check mr-1"></i>標記已付款
+            </button>` : ''}
+            <button onclick="copyOrder('${order.id}')"
+              class="px-4 py-2 bg-slate-800 text-gray-400 font-bold tech-btn text-xs hover:bg-slate-600 hover:text-white transition whitespace-nowrap">
+              <i class="fa-regular fa-copy mr-1"></i>複製資料
+            </button>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    // ── 操作函式 ─────────────────────────────────────────────────────────────
+    function applyStatus(orderId) {
+      const sel = document.getElementById('status-select-' + orderId);
+      if (!sel) return;
+      const newStatus = sel.value;
+      const order = orders.find(o => o.id === orderId);
+      if (!order) return;
+      order.status = newStatus;
+      saveOrders();
+      renderStats();
+      renderTable();
+      showToast('狀態已更新：' + newStatus);
+    }
+
+    function markPaid(orderId) {
+      const order = orders.find(o => o.id === orderId);
+      if (!order) return;
+      order.status = '已付款';
+      saveOrders();
+      renderStats();
+      renderTable();
+      showToast('已標記為已付款');
+    }
+
+    function copyOrder(orderId) {
+      const order = orders.find(o => o.id === orderId);
+      if (!order) return;
+      const text = JSON.stringify(order, null, 2);
+      navigator.clipboard.writeText(text).then(() => showToast('已複製訂單資料'))
+        .catch(() => {
+          // fallback
+          const el = document.createElement('textarea');
+          el.value = text;
+          document.body.appendChild(el);
+          el.select();
+          document.execCommand('copy');
+          document.body.removeChild(el);
+          showToast('已複製訂單資料');
+        });
+    }
+
+    function exportJSON() {
+      const filtered = getFiltered();
+      const blob = new Blob([JSON.stringify(filtered, null, 2)], { type: 'application/json' });
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement('a');
+      a.href     = url;
+      a.download = 'apple911_orders_' + new Date().toISOString().slice(0,10) + '.json';
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('已匯出 ' + filtered.length + ' 筆訂單');
+    }
+
+    // ── Toast ────────────────────────────────────────────────────────────────
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.style.opacity = '1';
+      setTimeout(() => t.style.opacity = '0', 2200);
+    }
+
+    // ── Enter 登入 ───────────────────────────────────────────────────────────
+    document.getElementById('admin-password').addEventListener('keydown', e => {
+      if (e.key === 'Enter') doLogin();
+    });
+  </script>
+</body>
+</html>
