@@ -358,7 +358,8 @@
     // 登入 / 登出
     // ════════════════════════════════════════════════════════════
     function doLogin() {
-      if (document.getElementById('admin-password').value !== ADMIN_PASS) {
+      // 暫時關閉密碼驗證，正式啟用時取消此行並恢復下方判斷
+      if (false && document.getElementById('admin-password').value !== ADMIN_PASS) {
         document.getElementById('login-error').classList.remove('hidden');
         return;
       }
