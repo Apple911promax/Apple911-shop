@@ -104,3 +104,17 @@
 - dev 為 AI 修改測試站
 - AI 應優先修改 dev branch
 - 測試後再 merge 到 main
+
+---
+
+## Git / Deploy Rules
+
+- 每次完成修改後，直接建立 PR 並 merge 到 main
+- 不要停留在 claude/* 分支
+- main 是正式部署分支
+- Vercel 會讀取 main 自動部署
+- 修改完成後不需要再詢問我是否 merge
+- merge 前必須確認登入、商品管理、訂單、購物車、結帳流程沒有被破壞
+- 不得重構專案
+- 不得修改 UI
+- 只針對我指定的問題做最小修改
