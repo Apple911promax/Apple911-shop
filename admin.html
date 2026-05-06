@@ -741,8 +741,10 @@
     // ════════════════════════════════════════════════════════════
     let prodPath = [];
 
-    function prodNavTo(id, name) {
-      prodPath.push({ id, name });
+    function prodNavTo(id) {
+      const { items } = _getCatItems();
+      const item = items.find(i => i.id === id);
+      if (item) prodPath.push({ id, name: item.name });
       renderProdDrill();
     }
     function prodNavBack() { prodPath.pop(); renderProdDrill(); }
@@ -780,8 +782,8 @@
       const levelName = levelNames[level];
 
       const rowsHtml = items.map(item => `
-        <div class="flex items-center gap-2 px-4 py-3 border-b border-slate-800 last:border-0 hover:bg-white/[0.03] transition">
-          <div id="pdil-${item.id}" class="flex-1 min-w-0 cursor-pointer" onclick="prodNavTo(${item.id}, ${JSON.stringify(item.name)})">
+        <div class="flex items-center gap-2 px-4 py-3 border-b border-slate-800 last:border-0 hover:bg-white/[0.05] transition cursor-pointer" onclick="prodNavTo(${item.id})">
+          <div id="pdil-${item.id}" class="flex-1 min-w-0">
             <span class="text-sm font-bold text-white">${item.name}</span>
           </div>
           <div class="flex items-center shrink-0">
@@ -791,9 +793,7 @@
             <button onclick="event.stopPropagation();deleteProdItem(${item.id})" class="text-gray-600 hover:text-neonred transition p-2">
               <i class="fa-solid fa-trash-can text-xs"></i>
             </button>
-            <button onclick="prodNavTo(${item.id}, ${JSON.stringify(item.name)})" class="text-neoncyan p-2">
-              <i class="fa-solid fa-chevron-right"></i>
-            </button>
+            <i class="fa-solid fa-chevron-right text-neoncyan p-2"></i>
           </div>
         </div>`).join('');
 
