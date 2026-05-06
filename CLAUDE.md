@@ -107,6 +107,21 @@
 
 ---
 
+## Context / Clear Rules
+
+- 當對話過長或 context 混亂時，主動提醒我使用 /clear
+- 完成一個功能後，建議我 /clear 再繼續下一個功能
+- /clear 後仍必須完整遵守 CLAUDE.md 所有規則
+- 不可因為 /clear 就遺忘專案規則
+- 不可因為 context 不足就重構專案
+- 不可因為 context 遺失就修改 UI
+- /clear 後先重新分析現有程式碼再修改
+- context 不足時先 debug 問題來源，不可亂猜
+- 避免長時間累積無關對話造成錯誤修改
+- 優先保持 context 精簡與穩定
+
+---
+
 ## Git / Deploy Rules
 
 - 每次完成修改後，直接建立 PR 並 merge 到 main
