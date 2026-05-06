@@ -808,10 +808,10 @@
           ${items.length > 0 ? `<div>${rowsHtml}</div>` : `<p class="text-xs text-gray-600 text-center py-8 tracking-widest">尚無${levelName}，請新增</p>`}
           <div class="flex gap-2 px-4 py-3 border-t border-slate-800">
             <input id="pdr-new-input" type="text" placeholder="新增${levelName}名稱"
-              class="flex-1 bg-darkbg border border-slate-600 text-white p-2 tech-clip text-xs focus:border-neoncyan transition"
+              class="flex-1 min-w-0 bg-darkbg border border-slate-600 text-white p-2 tech-clip text-xs focus:border-neoncyan transition"
               onkeydown="if(event.key==='Enter')saveProdNewItem()">
             <button onclick="saveProdNewItem()"
-              class="px-4 py-2 bg-neoncyan text-black font-bold tech-btn text-xs hover:bg-white transition whitespace-nowrap">
+              class="shrink-0 px-3 py-2 bg-neoncyan text-black font-bold tech-btn text-xs hover:bg-white transition whitespace-nowrap">
               <i class="fa-solid fa-plus mr-1"></i>新增
             </button>
           </div>
@@ -912,7 +912,7 @@
       label.innerHTML = `
         <div class="flex items-center gap-2">
           <input id="pdi-edit-${id}" type="text" value="${item.name.replace(/"/g,'&quot;')}"
-            class="flex-1 bg-darkbg border border-neoncyan text-white p-2 tech-clip text-xs focus:border-neoncyan transition"
+            class="flex-1 min-w-0 bg-darkbg border border-neoncyan text-white p-2 tech-clip text-xs focus:border-neoncyan transition"
             onkeydown="if(event.key==='Enter')saveEditProdItem(${id});if(event.key==='Escape')renderProdDrill()">
           <button onclick="saveEditProdItem(${id})" class="text-xs px-3 py-1 bg-neoncyan text-black font-bold tech-btn hover:bg-white transition">儲存</button>
           <button onclick="renderProdDrill()" class="text-xs px-2 py-1 bg-slate-700 text-gray-400 font-bold tech-btn hover:text-white transition">取消</button>
