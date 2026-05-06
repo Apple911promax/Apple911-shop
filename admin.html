@@ -240,12 +240,24 @@
                   class="w-full bg-darkbg border border-slate-600 text-white p-3 tech-clip text-sm focus:border-neoncyan transition">
               </div>
               <div>
-                <label class="text-xs text-gray-400 block mb-1">商品分類 <span class="text-neonred">*</span></label>
-                <select id="prod-category"
+                <label class="text-xs text-gray-400 block mb-1">品項 <span class="text-neonred">*</span></label>
+                <select id="prod-item" onchange="populateProdBrands()"
                   class="w-full bg-darkbg border border-slate-600 text-white p-3 tech-clip text-sm focus:border-neoncyan transition">
-                  <option value="">請選擇分類</option>
-                  <option value="case">精選手機殼</option>
-                  <option value="repair">專業維修</option>
+                  <option value="">請選擇品項</option>
+                </select>
+              </div>
+              <div>
+                <label class="text-xs text-gray-400 block mb-1">品牌 <span class="text-neonred">*</span></label>
+                <select id="prod-brand" onchange="populateProdSeries()"
+                  class="w-full bg-darkbg border border-slate-600 text-white p-3 tech-clip text-sm focus:border-neoncyan transition">
+                  <option value="">請先選擇品項</option>
+                </select>
+              </div>
+              <div>
+                <label class="text-xs text-gray-400 block mb-1">系列</label>
+                <select id="prod-series"
+                  class="w-full bg-darkbg border border-slate-600 text-white p-3 tech-clip text-sm focus:border-neoncyan transition">
+                  <option value="">請先選擇品牌</option>
                 </select>
               </div>
               <div>
@@ -262,9 +274,12 @@
                   class="w-full bg-darkbg border border-slate-600 text-white p-3 tech-clip text-sm focus:border-neoncyan transition">
               </div>
               <div class="md:col-span-2">
-                <label class="text-xs text-gray-400 block mb-1">圖片網址</label>
-                <input id="prod-image" type="text" placeholder="https://...（選填）"
-                  class="w-full bg-darkbg border border-slate-600 text-white p-3 tech-clip text-sm focus:border-neoncyan transition">
+                <label class="text-xs text-gray-400 block mb-1">商品圖片</label>
+                <input id="prod-image-file" type="file" accept="image/*" onchange="handleProdImage(this)"
+                  class="w-full bg-darkbg border border-slate-600 text-white p-3 tech-clip text-sm focus:border-neoncyan transition file:mr-3 file:py-1 file:px-3 file:border-0 file:bg-slate-700 file:text-neoncyan file:text-xs file:font-bold file:cursor-pointer">
+                <div id="prod-image-preview" class="hidden mt-2">
+                  <img id="prod-img-thumb" class="h-20 object-contain rounded border border-slate-700">
+                </div>
               </div>
             </div>
             <div class="flex justify-end">
@@ -604,10 +619,10 @@
       container.innerHTML = prods.map(p => `
         <div class="bg-panelbg border ${p.active===false?'border-slate-800 opacity-50':'border-slate-700'} tech-clip p-4 flex flex-wrap justify-between items-center gap-3">
           <div class="flex items-center gap-3 flex-1 min-w-0">
-            <i class="fa-solid ${p.img||'fa-box'} text-xl text-slate-500 shrink-0"></i>
+            ${p.image ? `<img src="${p.image}" class="w-10 h-10 object-cover rounded border border-slate-700 shrink-0">` : `<i class="fa-solid ${p.img||'fa-box'} text-xl text-slate-500 shrink-0"></i>`}
             <div class="min-w-0">
               <p class="text-sm font-bold text-white truncate">${p.name}</p>
-              <p class="text-xs text-gray-500">${catLabel[p.category||p.cat]||'-'}${p.description?' · '+p.description:''}</p>
+              <p class="text-xs text-gray-500">${p.categoryName||catLabel[p.category||p.cat]||'-'}${p.description?' · '+p.description:''}</p>
             </div>
           </div>
           <div class="flex items-center gap-3 shrink-0 flex-wrap">
@@ -629,33 +644,56 @@
       const name     = document.getElementById('prod-name').value.trim();
       const priceVal = document.getElementById('prod-price').value;
       const price    = parseInt(priceVal);
-      const category = document.getElementById('prod-category').value;
+      const itemId   = parseInt(document.getElementById('prod-item').value) || 0;
+      const brandId  = parseInt(document.getElementById('prod-brand').value) || 0;
+      const seriesId = parseInt(document.getElementById('prod-series').value) || 0;
       const active   = document.getElementById('prod-active').value === 'true';
       const desc     = document.getElementById('prod-description').value.trim();
-      const image    = document.getElementById('prod-image').value.trim();
+      const fileInput = document.getElementById('prod-image-file');
 
-      if (!name)                       return showToast('請輸入商品名稱');
-      if (isNaN(price) || price < 0)   return showToast('請輸入正確價格');
-      if (!category)                   return showToast('請選擇商品分類');
+      if (!name)                     return showToast('請輸入商品名稱');
+      if (isNaN(price) || price < 0) return showToast('請輸入正確價格');
+      if (!itemId)                   return showToast('請選擇品項');
+      if (!brandId)                  return showToast('請選擇品牌');
 
-      const prods = loadProducts();
-      const newId = prods.length > 0 ? Math.max(...prods.map(p=>p.id)) + 1 : 1;
-      prods.push({
-        id: newId, name, price,
-        category, cat: category,       // 前台相容
-        description: desc,
-        image, img: 'fa-box',          // 前台相容預設圖示
-        active,
-        ...(price === 0 ? { tag:'現場報價' } : {})
-      });
-      saveProducts(prods);
-      ['prod-name','prod-price','prod-description','prod-image'].forEach(id => {
-        document.getElementById(id).value = '';
-      });
-      document.getElementById('prod-category').value = '';
-      document.getElementById('prod-active').value   = 'true';
-      renderProducts();
-      showToast('商品已新增：' + name);
+      const cats   = loadCategories();
+      const item   = cats.find(c => c.id === itemId);
+      const brand  = item ? (item.brands||[]).find(b => b.id === brandId) : null;
+      const series = brand ? (brand.series||[]).find(s => s.id === seriesId) : null;
+      const categoryName = [item?.name, brand?.name, series?.name].filter(Boolean).join(' / ');
+
+      const doSave = (imageData) => {
+        const prods = loadProducts();
+        const newId = prods.length > 0 ? Math.max(...prods.map(p=>p.id)) + 1 : 1;
+        prods.push({
+          id: newId, name, price,
+          category: item?.name||'', cat: item?.name||'',
+          itemId, brandId, seriesId, categoryName,
+          description: desc,
+          image: imageData, img: 'fa-box',
+          active,
+          ...(price === 0 ? { tag:'現場報價' } : {})
+        });
+        saveProducts(prods);
+        ['prod-name','prod-price','prod-description'].forEach(id => document.getElementById(id).value = '');
+        document.getElementById('prod-item').value   = '';
+        document.getElementById('prod-brand').innerHTML  = '<option value="">請先選擇品項</option>';
+        document.getElementById('prod-series').innerHTML = '<option value="">請先選擇品牌</option>';
+        document.getElementById('prod-active').value = 'true';
+        if (fileInput) fileInput.value = '';
+        document.getElementById('prod-image-preview')?.classList.add('hidden');
+        renderProducts();
+        showToast('商品已新增：' + name);
+      };
+
+      const file = fileInput?.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = e => doSave(e.target.result);
+        reader.readAsDataURL(file);
+      } else {
+        doSave('');
+      }
     }
 
     function toggleProductActive(id) {
@@ -679,7 +717,65 @@
     // 新增表單開關
     // ════════════════════════════════════════════════════════════
     function toggleAddForm() {
-      document.getElementById('prod-add-form').classList.toggle('hidden');
+      const form = document.getElementById('prod-add-form');
+      const opening = form.classList.contains('hidden');
+      form.classList.toggle('hidden');
+      if (opening) populateProdItems();
+    }
+
+    function populateProdItems() {
+      const cats = loadCategories();
+      const sel  = document.getElementById('prod-item');
+      if (!sel) return;
+      sel.innerHTML = '<option value="">請選擇品項</option>' +
+        cats.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+      document.getElementById('prod-brand').innerHTML  = '<option value="">請先選擇品項</option>';
+      document.getElementById('prod-series').innerHTML = '<option value="">請先選擇品牌</option>';
+    }
+
+    function populateProdBrands() {
+      const cats    = loadCategories();
+      const itemId  = parseInt(document.getElementById('prod-item')?.value) || 0;
+      const brandSel  = document.getElementById('prod-brand');
+      const seriesSel = document.getElementById('prod-series');
+      if (!brandSel) return;
+      if (!itemId) {
+        brandSel.innerHTML  = '<option value="">請先選擇品項</option>';
+        seriesSel.innerHTML = '<option value="">請先選擇品牌</option>';
+        return;
+      }
+      const item   = cats.find(c => c.id === itemId);
+      const brands = item ? (item.brands || []) : [];
+      brandSel.innerHTML = '<option value="">請選擇品牌</option>' +
+        brands.map(b => `<option value="${b.id}">${b.name}</option>`).join('');
+      seriesSel.innerHTML = '<option value="">請先選擇品牌</option>';
+    }
+
+    function populateProdSeries() {
+      const cats     = loadCategories();
+      const itemId   = parseInt(document.getElementById('prod-item')?.value) || 0;
+      const brandId  = parseInt(document.getElementById('prod-brand')?.value) || 0;
+      const seriesSel = document.getElementById('prod-series');
+      if (!seriesSel) return;
+      if (!itemId || !brandId) { seriesSel.innerHTML = '<option value="">請先選擇品牌</option>'; return; }
+      const item   = cats.find(c => c.id === itemId);
+      const brand  = item ? (item.brands||[]).find(b => b.id === brandId) : null;
+      const series = brand ? (brand.series || []) : [];
+      seriesSel.innerHTML = '<option value="">請選擇系列（選填）</option>' +
+        series.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+    }
+
+    function handleProdImage(input) {
+      const file = input.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        const preview = document.getElementById('prod-image-preview');
+        const thumb   = document.getElementById('prod-img-thumb');
+        if (thumb)   thumb.src = e.target.result;
+        if (preview) preview.classList.remove('hidden');
+      };
+      reader.readAsDataURL(file);
     }
 
     // ════════════════════════════════════════════════════════════
@@ -687,9 +783,9 @@
     // ════════════════════════════════════════════════════════════
     const DEFAULT_CATEGORIES = [
       { id:1, name:'手機殼', brands:[{ id:101, name:'Apple', series:[
-        { id:1001, name:'iPhone 16系列', models:[{id:10001,name:'iPhone 16'},{id:10002,name:'iPhone 16 Plus'},{id:10003,name:'iPhone 16 Pro'},{id:10004,name:'iPhone 16 Pro Max'}] },
-        { id:1002, name:'iPhone 15系列', models:[] },
-        { id:1003, name:'iPhone 14系列', models:[] }
+        { id:1001, name:'iPhone 16系列' },
+        { id:1002, name:'iPhone 15系列' },
+        { id:1003, name:'iPhone 14系列' }
       ]}] },
       { id:2, name:'維修服務', brands:[] },
       { id:3, name:'保護貼', brands:[] }
@@ -729,23 +825,17 @@
         const p = cats.find(c => c.id === catPath[0].id);
         return { cats, items: p ? (p.brands || []) : [], level: 1 };
       }
-      if (catPath.length === 2) {
-        const p0 = cats.find(c => c.id === catPath[0].id);
-        const p1 = p0 ? (p0.brands || []).find(b => b.id === catPath[1].id) : null;
-        return { cats, items: p1 ? (p1.series || []) : [], level: 2 };
-      }
       const p0 = cats.find(c => c.id === catPath[0].id);
       const p1 = p0 ? (p0.brands || []).find(b => b.id === catPath[1].id) : null;
-      const p2 = p1 ? (p1.series || []).find(s => s.id === catPath[2].id) : null;
-      return { cats, items: p2 ? (p2.models || []) : [], level: 3 };
+      return { cats, items: p1 ? (p1.series || []) : [], level: 2 };
     }
 
     function renderCatMgmt() {
       const view = document.getElementById('cat-mgmt-view');
       const { items, level } = getCatContext();
-      const levelNames = ['品項', '品牌', '系列', '型號'];
+      const levelNames = ['品項', '品牌', '系列'];
       const levelName  = levelNames[level];
-      const nextLabels = ['品牌管理', '系列管理', '型號管理', ''];
+      const nextLabels = ['品牌管理', '系列管理', ''];
       const nextLabel  = nextLabels[level];
       const crumbHtml  = ['品項管理', ...catPath.map(p => p.name)]
         .map((t, i) => i === 0
@@ -759,7 +849,7 @@
             <span class="text-sm font-bold text-white">${item.name}</span>
           </div>
           <div class="flex items-center gap-2 shrink-0 flex-wrap justify-end">
-            ${level < 3 ? `<button onclick="catNavTo(${item.id})"
+            ${level < 2 ? `<button onclick="catNavTo(${item.id})"
               class="text-xs px-3 py-1 bg-slate-800 text-neoncyan font-bold tech-btn hover:bg-neoncyan hover:text-black transition whitespace-nowrap">
               ${nextLabel}
             </button>` : ''}
@@ -813,15 +903,10 @@
       } else if (level === 1) {
         const p = cats.find(c => c.id === catPath[0].id);
         if (p) p.brands.push({ id: newId, name, series: [] });
-      } else if (level === 2) {
-        const p0 = cats.find(c => c.id === catPath[0].id);
-        const p1 = p0 ? p0.brands.find(b => b.id === catPath[1].id) : null;
-        if (p1) p1.series.push({ id: newId, name, models: [] });
       } else {
         const p0 = cats.find(c => c.id === catPath[0].id);
         const p1 = p0 ? p0.brands.find(b => b.id === catPath[1].id) : null;
-        const p2 = p1 ? p1.series.find(s => s.id === catPath[2].id) : null;
-        if (p2) p2.models.push({ id: newId, name });
+        if (p1) p1.series.push({ id: newId, name });
       }
       saveCategories(cats);
       input.value = '';
@@ -838,15 +923,10 @@
       } else if (level === 1) {
         const p = cats.find(c => c.id === catPath[0].id);
         if (p) p.brands = p.brands.filter(b => b.id !== id);
-      } else if (level === 2) {
-        const p0 = cats.find(c => c.id === catPath[0].id);
-        const p1 = p0 ? p0.brands.find(b => b.id === catPath[1].id) : null;
-        if (p1) p1.series = p1.series.filter(s => s.id !== id);
       } else {
         const p0 = cats.find(c => c.id === catPath[0].id);
         const p1 = p0 ? p0.brands.find(b => b.id === catPath[1].id) : null;
-        const p2 = p1 ? p1.series.find(s => s.id === catPath[2].id) : null;
-        if (p2) p2.models = p2.models.filter(m => m.id !== id);
+        if (p1) p1.series = p1.series.filter(s => s.id !== id);
       }
       saveCategories(cats);
       renderCatMgmt();
@@ -878,8 +958,7 @@
       let item;
       if (level === 0) item = cats.find(c => c.id === id);
       else if (level === 1) { const p = cats.find(c => c.id === catPath[0].id); item = p?.brands.find(b => b.id === id); }
-      else if (level === 2) { const p0 = cats.find(c => c.id === catPath[0].id); const p1 = p0?.brands.find(b => b.id === catPath[1].id); item = p1?.series.find(s => s.id === id); }
-      else { const p0 = cats.find(c => c.id === catPath[0].id); const p1 = p0?.brands.find(b => b.id === catPath[1].id); const p2 = p1?.series.find(s => s.id === catPath[2].id); item = p2?.models.find(m => m.id === id); }
+      else { const p0 = cats.find(c => c.id === catPath[0].id); const p1 = p0?.brands.find(b => b.id === catPath[1].id); item = p1?.series.find(s => s.id === id); }
       if (item) item.name = name;
       saveCategories(cats);
       renderCatMgmt();
