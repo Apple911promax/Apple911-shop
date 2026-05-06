@@ -686,7 +686,11 @@
     // 分類管理（品項 → 品牌 → 系列）
     // ════════════════════════════════════════════════════════════
     const DEFAULT_CATEGORIES = [
-      { id:1, name:'手機殼', brands:[{ id:101, name:'Apple', series:[{id:1001,name:'iPhone 16系列'},{id:1002,name:'iPhone 15系列'},{id:1003,name:'iPhone 14系列'}] }] },
+      { id:1, name:'手機殼', brands:[{ id:101, name:'Apple', series:[
+        { id:1001, name:'iPhone 16系列', models:[{id:10001,name:'iPhone 16'},{id:10002,name:'iPhone 16 Plus'},{id:10003,name:'iPhone 16 Pro'},{id:10004,name:'iPhone 16 Pro Max'}] },
+        { id:1002, name:'iPhone 15系列', models:[] },
+        { id:1003, name:'iPhone 14系列', models:[] }
+      ]}] },
       { id:2, name:'維修服務', brands:[] },
       { id:3, name:'保護貼', brands:[] }
     ];
@@ -725,17 +729,24 @@
         const p = cats.find(c => c.id === catPath[0].id);
         return { cats, items: p ? (p.brands || []) : [], level: 1 };
       }
+      if (catPath.length === 2) {
+        const p0 = cats.find(c => c.id === catPath[0].id);
+        const p1 = p0 ? (p0.brands || []).find(b => b.id === catPath[1].id) : null;
+        return { cats, items: p1 ? (p1.series || []) : [], level: 2 };
+      }
       const p0 = cats.find(c => c.id === catPath[0].id);
       const p1 = p0 ? (p0.brands || []).find(b => b.id === catPath[1].id) : null;
-      return { cats, items: p1 ? (p1.series || []) : [], level: 2 };
+      const p2 = p1 ? (p1.series || []).find(s => s.id === catPath[2].id) : null;
+      return { cats, items: p2 ? (p2.models || []) : [], level: 3 };
     }
 
     function renderCatMgmt() {
       const view = document.getElementById('cat-mgmt-view');
       const { items, level } = getCatContext();
-      const levelNames = ['品項', '品牌', '系列'];
+      const levelNames = ['品項', '品牌', '系列', '型號'];
       const levelName  = levelNames[level];
-      const nextLabel  = level === 0 ? '品牌管理' : level === 1 ? '系列管理' : '';
+      const nextLabels = ['品牌管理', '系列管理', '型號管理', ''];
+      const nextLabel  = nextLabels[level];
       const crumbHtml  = ['品項管理', ...catPath.map(p => p.name)]
         .map((t, i) => i === 0
           ? `<span class="text-gray-400 font-bold">${t}</span>`
@@ -748,7 +759,7 @@
             <span class="text-sm font-bold text-white">${item.name}</span>
           </div>
           <div class="flex items-center gap-2 shrink-0 flex-wrap justify-end">
-            ${level < 2 ? `<button onclick="catNavTo(${item.id})"
+            ${level < 3 ? `<button onclick="catNavTo(${item.id})"
               class="text-xs px-3 py-1 bg-slate-800 text-neoncyan font-bold tech-btn hover:bg-neoncyan hover:text-black transition whitespace-nowrap">
               ${nextLabel}
             </button>` : ''}
@@ -802,10 +813,15 @@
       } else if (level === 1) {
         const p = cats.find(c => c.id === catPath[0].id);
         if (p) p.brands.push({ id: newId, name, series: [] });
+      } else if (level === 2) {
+        const p0 = cats.find(c => c.id === catPath[0].id);
+        const p1 = p0 ? p0.brands.find(b => b.id === catPath[1].id) : null;
+        if (p1) p1.series.push({ id: newId, name, models: [] });
       } else {
         const p0 = cats.find(c => c.id === catPath[0].id);
         const p1 = p0 ? p0.brands.find(b => b.id === catPath[1].id) : null;
-        if (p1) p1.series.push({ id: newId, name });
+        const p2 = p1 ? p1.series.find(s => s.id === catPath[2].id) : null;
+        if (p2) p2.models.push({ id: newId, name });
       }
       saveCategories(cats);
       input.value = '';
@@ -822,10 +838,15 @@
       } else if (level === 1) {
         const p = cats.find(c => c.id === catPath[0].id);
         if (p) p.brands = p.brands.filter(b => b.id !== id);
-      } else {
+      } else if (level === 2) {
         const p0 = cats.find(c => c.id === catPath[0].id);
         const p1 = p0 ? p0.brands.find(b => b.id === catPath[1].id) : null;
         if (p1) p1.series = p1.series.filter(s => s.id !== id);
+      } else {
+        const p0 = cats.find(c => c.id === catPath[0].id);
+        const p1 = p0 ? p0.brands.find(b => b.id === catPath[1].id) : null;
+        const p2 = p1 ? p1.series.find(s => s.id === catPath[2].id) : null;
+        if (p2) p2.models = p2.models.filter(m => m.id !== id);
       }
       saveCategories(cats);
       renderCatMgmt();
@@ -857,7 +878,8 @@
       let item;
       if (level === 0) item = cats.find(c => c.id === id);
       else if (level === 1) { const p = cats.find(c => c.id === catPath[0].id); item = p?.brands.find(b => b.id === id); }
-      else { const p0 = cats.find(c => c.id === catPath[0].id); const p1 = p0?.brands.find(b => b.id === catPath[1].id); item = p1?.series.find(s => s.id === id); }
+      else if (level === 2) { const p0 = cats.find(c => c.id === catPath[0].id); const p1 = p0?.brands.find(b => b.id === catPath[1].id); item = p1?.series.find(s => s.id === id); }
+      else { const p0 = cats.find(c => c.id === catPath[0].id); const p1 = p0?.brands.find(b => b.id === catPath[1].id); const p2 = p1?.series.find(s => s.id === catPath[2].id); item = p2?.models.find(m => m.id === id); }
       if (item) item.name = name;
       saveCategories(cats);
       renderCatMgmt();
