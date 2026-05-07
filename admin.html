@@ -1375,7 +1375,7 @@
             <div><p class="text-gray-600 uppercase tracking-widest font-bold mb-1 text-[10px]">生日</p><p class="text-gray-300">${m.birthday||'-'}</p></div>
             <div><p class="text-gray-600 uppercase tracking-widest font-bold mb-1 text-[10px]">地址</p><p class="text-gray-300">${m.address||'-'}</p></div>
             <div><p class="text-gray-600 uppercase tracking-widest font-bold mb-1 text-[10px]">總消費</p><p class="text-goldlight font-tech font-bold">NT$ ${totalSpend.toLocaleString()}</p></div>
-            <div><p class="text-gray-600 uppercase tracking-widest font-bold mb-1 text-[10px]">註冊時間</p><p class="text-gray-300">${m.createdAt ? new Date(m.createdAt).toLocaleDateString('zh-TW') : '-'}</p></div>
+            <div><p class="text-gray-600 uppercase tracking-widest font-bold mb-1 text-[10px]">註冊時間</p><p class="text-gray-300">${(m.registeredAt || m.createdAt) ? new Date(m.registeredAt || m.createdAt).toLocaleDateString('zh-TW') : '-'}</p></div>
           </div>
         </div>
         <div class="bg-panelbg border border-slate-700 tech-clip overflow-hidden">
