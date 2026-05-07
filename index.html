@@ -123,7 +123,7 @@
 
   <div class="fixed bottom-6 right-6 z-[70] flex flex-col items-end"><div id="fab-menu" class="fab-menu flex flex-col gap-3 mb-3 mr-1 items-center"><a href="#" class="w-10 h-10 bg-white rounded-full flex items-center justify-center text-blue-500 shadow-lg transition"><i class="fa-solid fa-location-dot text-xl"></i></a><a href="#" class="w-10 h-10 bg-[#1877F2] rounded-full flex items-center justify-center text-white shadow-lg transition"><i class="fa-brands fa-facebook-f text-xl"></i></a><a href="#" class="w-10 h-10 bg-[#06C755] rounded-full flex items-center justify-center text-white shadow-lg transition"><i class="fa-brands fa-line text-2xl"></i></a><a href="#" class="w-10 h-10 rounded-full flex items-center justify-center text-white shadow-lg transition" style="background:radial-gradient(circle at 30% 107%,#fdf497 0%,#fdf497 5%,#fd5949 45%,#d6249f 60%,#285AEB 90%);"><i class="fa-brands fa-instagram text-xl"></i></a></div><button onclick="toggleFab()" class="w-14 h-14 bg-neoncyan text-black rounded-full flex items-center justify-center shadow-lg tech-btn animate-pulse transition"><i id="fab-icon" class="fa-solid fa-headset text-2xl fab-main-icon"></i></button></div>
   <div id="terms-modal" class="fixed inset-0 bg-black/90 z-[100] hidden items-center justify-center p-4 backdrop-blur-sm" onclick="closeTerms(event)"><div class="bg-panelbg border-t-4 border-neoncyan w-full max-w-lg tech-clip flex flex-col max-h-[85vh] overflow-hidden shadow-[0_0_30px_rgba(0,243,255,0.2)]" onclick="event.stopPropagation()"><div class="p-5 flex justify-between items-center border-b border-white/10 shrink-0"><h3 id="modal-title" class="font-bold text-neoncyan tracking-widest text-lg"></h3><button onclick="closeTerms()" class="text-gray-400 hover:text-white transition"><i class="fa-solid fa-xmark text-xl"></i></button></div><div id="modal-content" class="p-6 overflow-y-auto space-y-4 text-sm text-gray-300 leading-relaxed custom-scrollbar font-sans"></div><div class="p-4 bg-darkbg border-t border-white/5 shrink-0"><button onclick="closeTerms()" class="w-full py-4 bg-slate-800 text-neoncyan font-bold tech-clip hover:bg-white hover:text-black transition tracking-widest uppercase">我已了解關閉</button></div></div></div>
-  <div id="auth-modal" class="fixed inset-0 bg-black/95 z-[80] hidden items-center justify-center p-4 backdrop-blur-sm"><div class="bg-panelbg border-t-2 border-neoncyan w-full max-w-sm tech-clip overflow-hidden shadow-[0_0_30px_rgba(0,243,255,0.2)]"><div class="p-4 flex justify-between items-center border-b border-white/5"><h3 class="font-bold text-neoncyan tracking-widest font-esport text-lg flex items-center gap-2"><i class="fa-solid fa-fingerprint"></i> <span id="auth-title">SYSTEM LOGIN</span></h3><button onclick="closeAuth()" class="text-gray-400 hover:text-white transition"><i class="fa-solid fa-xmark text-xl"></i></button></div><div id="auth-view-login" class="p-6"><div class="space-y-4"><input id="login-account" type="text" placeholder="手機 或 信箱 PHONE / EMAIL" class="w-full bg-darkbg border border-slate-700 text-white p-3 tech-clip text-sm outline-none focus:border-neoncyan transition"><input id="login-password" type="password" placeholder="登入密碼 PASSWORD" class="w-full bg-darkbg border border-slate-700 text-white p-3 tech-clip text-sm outline-none focus:border-neoncyan transition"></div><button onclick="simLogin('登入成功')" class="w-full py-4 bg-neoncyan text-black font-bold tech-clip mt-6 text-sm tracking-widest shadow-[0_0_15px_rgba(0,243,255,0.2)] hover:bg-white transition">登入系統 CONNECT</button><div class="relative flex items-center my-6"><div class="flex-grow border-t border-slate-800"></div><span class="px-3 text-[10px] text-gray-500 tracking-widest uppercase">快速連線 SSO</span><div class="flex-grow border-t border-slate-800"></div></div><div class="space-y-3"><button onclick="simLogin('Google 授權成功')" class="w-full py-3 bg-darkbg border border-gray-600 text-gray-300 font-bold tech-clip flex justify-center items-center gap-2 hover:bg-white/5 transition"><i class="fa-brands fa-google text-lg"></i> GOOGLE</button><button onclick="simLogin('LINE 授權成功')" class="w-full py-3 bg-darkbg border border-[#06C755] text-[#06C755] font-bold tech-clip flex justify-center items-center gap-2 hover:bg-[#06C755]/10 transition"><i class="fa-brands fa-line text-lg"></i> LINE</button></div><div class="text-center mt-6 text-xs text-gray-500">尚未加入？ <button onclick="switchAuth('register')" class="text-neoncyan font-bold hover:underline">建立帳號 REGISTER</button></div></div><div id="auth-view-register" class="p-6 hidden"><div class="space-y-4"><input type="text" placeholder="真實姓名 (取件核對用)" class="w-full bg-darkbg border border-slate-700 text-white p-3 tech-clip text-sm outline-none focus:border-neoncyan transition"><input type="tel" placeholder="手機號碼 (登入帳號)" class="w-full bg-darkbg border border-slate-700 text-white p-3 tech-clip text-sm outline-none focus:border-neoncyan transition"><input type="password" placeholder="設定密碼 (至少6位數)" class="w-full bg-darkbg border border-slate-700 text-white p-3 tech-clip text-sm outline-none focus:border-neoncyan transition"></div><button onclick="simLogin('註冊成功')" class="w-full py-4 bg-neoncyan text-black font-bold tech-clip mt-6 text-sm tracking-widest shadow-[0_0_15px_rgba(0,243,255,0.2)] hover:bg-white transition">加入會員 REGISTER</button><div class="text-center mt-6 text-xs text-gray-500">已有帳號？ <button onclick="switchAuth('login')" class="text-neoncyan font-bold hover:underline">返回登入 LOGIN</button></div></div></div></div>
+  <div id="auth-modal" class="fixed inset-0 bg-black/95 z-[80] hidden items-center justify-center p-4 backdrop-blur-sm"><div class="bg-panelbg border-t-2 border-neoncyan w-full max-w-sm tech-clip flex flex-col shadow-[0_0_30px_rgba(0,243,255,0.2)] max-h-[90vh]"><div class="p-4 flex justify-between items-center border-b border-white/5 shrink-0"><h3 class="font-bold text-neoncyan tracking-widest font-esport text-lg flex items-center gap-2"><i class="fa-solid fa-fingerprint"></i> <span id="auth-title">SYSTEM LOGIN</span></h3><button onclick="closeAuth()" class="text-gray-400 hover:text-white transition"><i class="fa-solid fa-xmark text-xl"></i></button></div><div id="auth-view-login" class="p-6 overflow-y-auto"><div class="space-y-4"><input id="login-account" type="text" placeholder="手機 或 信箱 PHONE / EMAIL" class="w-full bg-darkbg border border-slate-700 text-white p-3 tech-clip text-sm outline-none focus:border-neoncyan transition"><input id="login-password" type="password" placeholder="登入密碼 PASSWORD" class="w-full bg-darkbg border border-slate-700 text-white p-3 tech-clip text-sm outline-none focus:border-neoncyan transition"></div><p id="login-error" class="text-neonred text-xs mt-2 hidden"></p><button onclick="doLogin()" class="w-full py-4 bg-neoncyan text-black font-bold tech-clip mt-6 text-sm tracking-widest shadow-[0_0_15px_rgba(0,243,255,0.2)] hover:bg-white transition">登入系統 CONNECT</button><div class="relative flex items-center my-6"><div class="flex-grow border-t border-slate-800"></div><span class="px-3 text-[10px] text-gray-500 tracking-widest uppercase">快速連線 SSO</span><div class="flex-grow border-t border-slate-800"></div></div><div class="space-y-3"><button onclick="doGoogleLogin()" class="w-full py-3 bg-darkbg border border-gray-600 text-gray-300 font-bold tech-clip flex justify-center items-center gap-2 hover:bg-white/5 transition"><i class="fa-brands fa-google text-lg"></i> GOOGLE</button><button onclick="showToast('LINE 登入即將開放')" class="w-full py-3 bg-darkbg border border-[#06C755] text-[#06C755] font-bold tech-clip flex justify-center items-center gap-2 hover:bg-[#06C755]/10 transition"><i class="fa-brands fa-line text-lg"></i> LINE</button></div><div class="text-center mt-6 text-xs text-gray-500">尚未加入？ <button onclick="switchAuth('register')" class="text-neoncyan font-bold hover:underline">建立帳號 REGISTER</button></div></div><div id="auth-view-register" class="hidden overflow-y-auto p-6 space-y-3"><input id="reg-name" type="text" placeholder="真實姓名（取貨核對用，請勿亂填）*" class="w-full bg-darkbg border border-slate-700 text-white p-3 tech-clip text-sm outline-none focus:border-neoncyan transition"><input id="reg-phone" type="tel" placeholder="手機號碼（登入帳號之一）*" class="w-full bg-darkbg border border-slate-700 text-white p-3 tech-clip text-sm outline-none focus:border-neoncyan transition"><input id="reg-email" type="email" placeholder="電子信箱（登入帳號之一）*" class="w-full bg-darkbg border border-slate-700 text-white p-3 tech-clip text-sm outline-none focus:border-neoncyan transition"><input id="reg-address" type="text" placeholder="常用地址（結帳預填用）*" class="w-full bg-darkbg border border-slate-700 text-white p-3 tech-clip text-sm outline-none focus:border-neoncyan transition"><div class="bg-darkbg border border-goldlight/60 p-3 tech-clip"><p class="text-goldlight text-xs font-bold mb-2"><i class="fa-solid fa-cake-candles mr-1"></i>生日（填寫後永久無法修改，當月壽星享專屬優惠）*</p><div class="flex gap-2"><select id="reg-birth-year" class="flex-1 bg-panelbg border border-goldlight/40 text-white p-2 rounded text-sm outline-none focus:border-goldlight transition"><option value="">年</option></select><select id="reg-birth-month" class="flex-1 bg-panelbg border border-goldlight/40 text-white p-2 rounded text-sm outline-none focus:border-goldlight transition" onchange="updateRegBirthDays()"><option value="">月</option></select><select id="reg-birth-day" class="flex-1 bg-panelbg border border-goldlight/40 text-white p-2 rounded text-sm outline-none focus:border-goldlight transition"><option value="">日</option></select></div></div><input id="reg-password" type="password" placeholder="密碼（大寫+小寫+數字，至少8碼）*" class="w-full bg-darkbg border border-slate-700 text-white p-3 tech-clip text-sm outline-none focus:border-neoncyan transition"><input id="reg-password2" type="password" placeholder="確認密碼 *" class="w-full bg-darkbg border border-slate-700 text-white p-3 tech-clip text-sm outline-none focus:border-neoncyan transition"><p id="reg-error" class="text-neonred text-xs hidden"></p><button onclick="doRegister()" class="w-full py-4 bg-neoncyan text-black font-bold tech-clip text-sm tracking-widest shadow-[0_0_15px_rgba(0,243,255,0.2)] hover:bg-white transition">加入會員 REGISTER</button><div class="text-center mt-2 pb-2 text-xs text-gray-500">已有帳號？ <button onclick="switchAuth('login')" class="text-neoncyan font-bold hover:underline">返回登入 LOGIN</button></div></div></div></div>
   <div class="overlay fixed inset-0 bg-black/60 z-[50]" onclick="closeAllDrawers()"></div>
   <div class="cart-drawer drawer-transition bg-panelbg border-l border-neoncyan fixed inset-y-0 right-0 w-full md:w-[400px] z-[60] flex flex-col shadow-2xl"><div class="p-5 border-b border-slate-800 flex justify-between items-center shrink-0"><h2 class="font-bold text-white tracking-widest">CART</h2><button onclick="closeAllDrawers()" class="text-neoncyan transition hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button></div><div class="flex-grow p-4 space-y-3 overflow-y-auto" id="cart-items"></div><div class="p-5 bg-darkbg border-t border-slate-800 shrink-0"><div class="flex justify-between text-white font-bold mb-4"><span>總計金額</span><span id="cart-total" class="text-goldlight font-tech text-lg">NT$ 0</span></div><button onclick="checkout()" class="w-full py-4 mb-3 bg-blue-600 text-white font-bold tech-clip hover:bg-blue-500 transition">結帳 CHECKOUT</button><button onclick="closeAllDrawers()" class="w-full py-4 bg-transparent border border-slate-700 text-gray-400 font-bold tech-clip transition">繼續購物 CONTINUE</button></div></div>
   <div id="toast" class="fixed bottom-10 left-1/2 transform -translate-x-1/2 bg-neoncyan text-black px-6 py-3 font-bold tech-clip z-[100] opacity-0 transition-opacity whitespace-nowrap shadow-2xl"></div>
@@ -171,9 +171,15 @@
     function closeTerms(){document.getElementById('terms-modal').classList.replace('flex','hidden');document.body.style.overflow='auto';}
     function handleUserClick(){if(isLoggedIn)showSection('member');else document.getElementById('auth-modal').classList.replace('hidden','flex');}
     function closeAuth(){document.getElementById('auth-modal').classList.replace('flex','hidden');}
-    function switchAuth(view){document.getElementById('auth-view-login').classList.add('hidden');document.getElementById('auth-view-register').classList.add('hidden');document.getElementById(`auth-view-${view}`).classList.remove('hidden');document.getElementById('auth-title').innerText=view==='login'?'SYSTEM LOGIN':'NEW REGISTRATION';}
+    function switchAuth(view){document.getElementById('auth-view-login').classList.add('hidden');document.getElementById('auth-view-register').classList.add('hidden');document.getElementById(`auth-view-${view}`).classList.remove('hidden');document.getElementById('auth-title').innerText=view==='login'?'SYSTEM LOGIN':'NEW REGISTRATION';if(view==='register')initRegBirthSelects();}
     function simLogin(msg){isLoggedIn=true;localStorage.setItem('apple911_logged_in','1');document.getElementById('user-status-dot').classList.replace('bg-slate-600','bg-neoncyan');closeAuth();showToast(msg||'登入成功');}
-    function logout(){isLoggedIn=false;localStorage.removeItem('apple911_logged_in');document.getElementById('user-status-dot').classList.replace('bg-neoncyan','bg-slate-600');showSection('home');}
+    window._setIsLoggedIn=function(v){isLoggedIn=v;};
+    function logout(){if(window._fbLogout){window._fbLogout();return;}isLoggedIn=false;localStorage.removeItem('apple911_logged_in');document.getElementById('user-status-dot').classList.replace('bg-neoncyan','bg-slate-600');showSection('home');}
+    function doLogin(){const acc=document.getElementById('login-account').value.trim();const pw=document.getElementById('login-password').value;const err=document.getElementById('login-error');err.classList.add('hidden');if(!acc||!pw){err.textContent='請填寫帳號與密碼';err.classList.remove('hidden');return;}if(window._fbLogin)window._fbLogin(acc,pw);}
+    function doGoogleLogin(){if(window._fbGoogleLogin)window._fbGoogleLogin();}
+    function doRegister(){const name=document.getElementById('reg-name').value.trim();const phone=document.getElementById('reg-phone').value.trim();const email=document.getElementById('reg-email').value.trim();const address=document.getElementById('reg-address').value.trim();const by=document.getElementById('reg-birth-year').value;const bm=document.getElementById('reg-birth-month').value;const bd=document.getElementById('reg-birth-day').value;const pw=document.getElementById('reg-password').value;const pw2=document.getElementById('reg-password2').value;const err=document.getElementById('reg-error');err.classList.add('hidden');if(!name||!phone||!email||!address||!by||!bm||!bd||!pw||!pw2){err.textContent='請填寫所有必填欄位';err.classList.remove('hidden');return;}if(!/^09\d{8}$/.test(phone)){err.textContent='手機號碼格式不正確（需以09開頭，共10碼）';err.classList.remove('hidden');return;}if(pw.length<8||!/[A-Z]/.test(pw)||!/[a-z]/.test(pw)||!/[0-9]/.test(pw)){err.textContent='密碼需包含大寫、小寫字母及數字，至少8碼';err.classList.remove('hidden');return;}if(pw!==pw2){err.textContent='兩次密碼不一致';err.classList.remove('hidden');return;}if(window._fbRegister)window._fbRegister({name,phone,email,address,birthday:`${by}-${String(bm).padStart(2,'0')}-${String(bd).padStart(2,'0')}`,password:pw});}
+    function initRegBirthSelects(){const yEl=document.getElementById('reg-birth-year');const mEl=document.getElementById('reg-birth-month');if(!yEl||yEl.options.length>1)return;const cur=new Date().getFullYear();for(let y=cur;y>=1920;y--){const o=document.createElement('option');o.value=y;o.textContent=y;yEl.appendChild(o);}for(let m=1;m<=12;m++){const o=document.createElement('option');o.value=m;o.textContent=m;mEl.appendChild(o);}}
+    function updateRegBirthDays(){const y=parseInt(document.getElementById('reg-birth-year').value)||0;const m=parseInt(document.getElementById('reg-birth-month').value)||0;const dEl=document.getElementById('reg-birth-day');if(!dEl)return;const prev=dEl.value;const days=y&&m?new Date(y,m,0).getDate():31;dEl.innerHTML='<option value="">日</option>';for(let i=1;i<=days;i++){const o=document.createElement('option');o.value=i;o.textContent=i;dEl.appendChild(o);}if(prev&&parseInt(prev)<=days)dEl.value=prev;}
     function toggleSubmenu(id){document.getElementById(id).classList.toggle('open');}
     function toggleFab(){const m=document.getElementById('fab-menu'),i=document.getElementById('fab-icon');m.classList.toggle('open');if(m.classList.contains('open')){i.classList.replace('fa-headset','fa-xmark');i.parentElement.classList.remove('animate-pulse');}else{i.classList.replace('fa-xmark','fa-headset');i.parentElement.classList.add('animate-pulse');}}
     function updateBirthDays(){const y=parseInt(document.getElementById('profile-birth-year').value)||0;const m=parseInt(document.getElementById('profile-birth-month').value)||0;const dEl=document.getElementById('profile-birth-day');if(!dEl)return;const prev=dEl.value;const days=y&&m?new Date(y,m,0).getDate():31;dEl.innerHTML='<option value="">日</option>';for(let i=1;i<=days;i++){const o=document.createElement('option');o.value=i;o.textContent=i;dEl.appendChild(o);}if(prev&&parseInt(prev)<=days)dEl.value=prev;}function initBirthSelects(){const currentYear=new Date().getFullYear();const yEl=document.getElementById('profile-birth-year');const mEl=document.getElementById('profile-birth-month');if(!yEl||!mEl)return;for(let y=currentYear;y>=1920;y--){const o=document.createElement('option');o.value=y;o.textContent=y;yEl.appendChild(o);}for(let m=1;m<=12;m++){const o=document.createElement('option');o.value=m;o.textContent=m;mEl.appendChild(o);}yEl.addEventListener('change',updateBirthDays);mEl.addEventListener('change',updateBirthDays);}function saveProfile(){const existing=JSON.parse(localStorage.getItem('a911_user_profile')||'{}');const _by=document.getElementById('profile-birth-year').value;const _bm=document.getElementById('profile-birth-month').value;const _bd=document.getElementById('profile-birth-day').value;const birthday=existing.birthday||(_by&&_bm&&_bd?`${_by}-${String(_bm).padStart(2,'0')}-${String(_bd).padStart(2,'0')}`:'');const profile={name:document.getElementById('profile-name').value,phone:document.getElementById('profile-phone').value,email:document.getElementById('profile-email').value,lineId:document.getElementById('profile-line').value,address:document.getElementById('profile-address').value,birthday:birthday};localStorage.setItem('a911_user_profile',JSON.stringify(profile));localStorage.setItem('apple911_profile',JSON.stringify({name:profile.name,phone:profile.phone,email:profile.email,line:profile.lineId,address:profile.address}));document.getElementById('member-name').innerText=profile.name||'Apple 客戶';showToast('已儲存設定');}
@@ -187,6 +193,7 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
 import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
 const _fbCfg = {
   apiKey: "AIzaSyDpasiFnj0UQpNKndmya4__C1J8bJxGN4g",
   authDomain: "apple911-shop.firebaseapp.com",
@@ -197,11 +204,12 @@ const _fbCfg = {
 };
 const _fbApp      = initializeApp(_fbCfg);
 const _fbDb       = getFirestore(_fbApp);
+const _fbAuth     = getAuth(_fbApp);
 const _fbProdsRef = doc(_fbDb, 'store', 'products');
 const _fbOrdRef   = doc(_fbDb, 'store', 'orders');
 const _fbCatRef   = doc(_fbDb, 'store', 'categories');
+const _fbMemRef   = doc(_fbDb, 'store', 'members');
 
-// 前台下單時將新訂單同步到 Firestore
 window._fbAddOrder = async function(newOrder) {
   try {
     const snap = await getDoc(_fbOrdRef);
@@ -211,6 +219,100 @@ window._fbAddOrder = async function(newOrder) {
     console.log('[Firebase] 訂單上傳成功:', newOrder.id);
   } catch(e) { console.error('[Firebase] 訂單上傳失敗:', e.message); }
 };
+
+window._fbLogin = async function(account, password) {
+  try {
+    let email = account;
+    if (/^09\d{8}$/.test(account)) {
+      const snap = await getDoc(_fbMemRef);
+      const list = snap.exists() ? (snap.data().list || []) : [];
+      const m = list.find(x => x.phone === account);
+      if (!m) { const e=document.getElementById('login-error'); e.textContent='找不到此手機號碼對應的帳號'; e.classList.remove('hidden'); return; }
+      email = m.email;
+    }
+    await signInWithEmailAndPassword(_fbAuth, email, password);
+  } catch(e) {
+    const el = document.getElementById('login-error');
+    el.classList.remove('hidden');
+    if (e.code==='auth/wrong-password'||e.code==='auth/invalid-credential') el.textContent='帳號或密碼錯誤';
+    else if (e.code==='auth/user-not-found') el.textContent='此帳號不存在';
+    else if (e.code==='auth/too-many-requests') el.textContent='登入嘗試次數過多，請稍後再試';
+    else el.textContent='登入失敗：'+e.message;
+  }
+};
+
+window._fbGoogleLogin = async function() {
+  try {
+    const provider = new GoogleAuthProvider();
+    await signInWithPopup(_fbAuth, provider);
+  } catch(e) {
+    if (e.code !== 'auth/popup-closed-by-user') showToast('Google 登入失敗');
+  }
+};
+
+window._fbRegister = async function({ name, phone, email, address, birthday, password }) {
+  try {
+    const snap = await getDoc(_fbMemRef);
+    const list = snap.exists() ? (snap.data().list || []) : [];
+    if (list.find(m => m.phone === phone)) { const e=document.getElementById('reg-error'); e.textContent='此手機號碼已被註冊'; e.classList.remove('hidden'); return; }
+    const cred = await createUserWithEmailAndPassword(_fbAuth, email, password);
+    const uid = cred.user.uid;
+    list.push({ uid, name, phone, email, address, birthday, registeredAt: Date.now() });
+    await setDoc(_fbMemRef, { list, updatedAt: Date.now() });
+    showToast('註冊成功！歡迎加入 Apple 911');
+  } catch(e) {
+    const el = document.getElementById('reg-error');
+    el.classList.remove('hidden');
+    if (e.code==='auth/email-already-in-use') el.textContent='此信箱已被註冊';
+    else if (e.code==='auth/invalid-email') el.textContent='信箱格式不正確';
+    else el.textContent='註冊失敗：'+e.message;
+  }
+};
+
+window._fbLogout = async function() {
+  try {
+    await signOut(_fbAuth);
+    localStorage.removeItem('apple911_logged_in');
+    localStorage.removeItem('a911_user_profile');
+    if (window._setIsLoggedIn) window._setIsLoggedIn(false);
+    document.getElementById('user-status-dot').classList.replace('bg-neoncyan','bg-slate-600');
+    if (typeof showSection === 'function') showSection('home');
+  } catch(e) { console.error('[Firebase] 登出失敗:', e.message); }
+};
+
+let _firstAuthCheck = true;
+onAuthStateChanged(_fbAuth, async (user) => {
+  if (user) {
+    try {
+      const snap = await getDoc(_fbMemRef);
+      const list = snap.exists() ? (snap.data().list || []) : [];
+      let profile = list.find(m => m.uid === user.uid);
+      if (!profile) {
+        profile = { uid: user.uid, name: user.displayName || '', email: user.email, phone: '', address: '', birthday: '', registeredAt: Date.now() };
+        list.push(profile);
+        await setDoc(_fbMemRef, { list, updatedAt: Date.now() });
+      }
+      localStorage.setItem('a911_user_profile', JSON.stringify(profile));
+      localStorage.setItem('apple911_profile', JSON.stringify({ name: profile.name, phone: profile.phone||'', email: profile.email, address: profile.address||'' }));
+      localStorage.setItem('apple911_logged_in', '1');
+      document.getElementById('member-name').innerText = profile.name || 'Apple 客戶';
+      if (typeof loadProfile === 'function') loadProfile();
+      if (_firstAuthCheck) {
+        // 頁面重載時已登入：更新 dot 但不顯示 toast
+        if (window._setIsLoggedIn) window._setIsLoggedIn(true);
+        document.getElementById('user-status-dot').classList.replace('bg-slate-600','bg-neoncyan');
+      } else {
+        // 實際登入行為：透過 simLogin 更新狀態並顯示 toast
+        if (typeof simLogin === 'function') simLogin('登入成功');
+      }
+    } catch(e) { console.error('[Firebase] Auth 同步失敗:', e.message); }
+  } else {
+    if (window._setIsLoggedIn) window._setIsLoggedIn(false);
+    localStorage.removeItem('apple911_logged_in');
+    document.getElementById('user-status-dot').classList.replace('bg-neoncyan','bg-slate-600');
+  }
+  _firstAuthCheck = false;
+});
 
 (async function() {
   try {
