@@ -1273,31 +1273,40 @@
         const totalSpend = memberOrders
           .filter(o => o.status !== '已取消')
           .reduce((s, o) => s + (o.total || 0), 0);
+        const modelText = m.device || m.model || '';
         return `
-        <div class="border-b border-slate-800 last:border-0 hover:bg-white/[0.02] transition cursor-pointer px-4 py-3 flex items-center gap-3"
+        <div class="bg-panelbg border border-slate-700 tech-clip p-4 hover:border-neoncyan transition cursor-pointer"
           onclick="showMemberDetail('${m.id || m.phone}')">
-          <div class="w-8 h-8 rounded-full bg-neoncyan/10 border border-neoncyan/30 flex items-center justify-center shrink-0">
-            <i class="fa-solid fa-user text-neoncyan text-xs"></i>
+          <div class="flex items-start gap-4">
+            <div class="w-14 h-14 rounded-xl bg-neoncyan/10 border border-neoncyan/25 flex items-center justify-center shrink-0">
+              <i class="fa-solid fa-user text-neoncyan text-xl"></i>
+            </div>
+            <div class="flex-1 min-w-0 space-y-2">
+              <div class="flex flex-wrap items-center gap-2">
+                <p class="text-white text-lg font-bold truncate">${m.name || '-'}</p>
+                ${m.gender ? `<span class="text-[10px] uppercase tracking-widest text-gray-400">${m.gender}</span>` : ''}
+              </div>
+              <div class="flex flex-wrap gap-3 items-center text-xs">
+                <span class="text-neoncyan font-tech">${m.phone || '-'}</span>
+                ${m.email ? `<span class="text-gray-400">${m.email}</span>` : ''}
+              </div>
+              <div class="grid grid-cols-2 gap-3 text-[10px] text-gray-500">
+                ${m.birthday ? `<span>生日：<span class="text-gray-300">${m.birthday}</span></span>` : ''}
+                ${modelText ? `<span>型號：<span class="text-gray-300">${modelText}</span></span>` : ''}
+                ${m.line ? `<span>LINE：<span class="text-gray-300">${m.line}</span></span>` : ''}
+                ${m.address ? `<span>地址：<span class="text-gray-300 break-all">${m.address}</span></span>` : ''}
+              </div>
+            </div>
+            <div class="shrink-0 text-right">
+              <p class="text-goldlight font-tech font-bold text-sm">NT$ ${totalSpend.toLocaleString()}</p>
+              <p class="text-gray-600 text-[10px] mt-0.5">${memberOrders.length} 筆</p>
+            </div>
           </div>
-          <div class="flex-1 min-w-0">
-            <p class="font-bold text-white text-sm truncate">${m.name || '-'}</p>
-            <p class="text-neoncyan text-xs font-tech tracking-wider mt-0.5">${m.phone || '-'}</p>
-            <p class="text-gray-600 text-[10px] mt-0.5">${m.email || '-'}</p>
-          </div>
-          <div class="shrink-0 text-right">
-            <p class="text-goldlight font-tech font-bold text-sm">NT$ ${totalSpend.toLocaleString()}</p>
-            <p class="text-gray-600 text-[10px] mt-0.5">${memberOrders.length} 筆訂單</p>
-          </div>
-          <i class="fa-solid fa-chevron-right text-slate-600 text-xs"></i>
         </div>`;
       }).join('');
 
       listView.innerHTML = `
-        <div class="bg-panelbg border border-slate-700 tech-clip overflow-hidden">
-          <div class="grid gap-2 px-4 py-2 border-b border-slate-700 text-[10px] text-gray-600 tracking-widest font-bold uppercase"
-            style="grid-template-columns:2rem 1fr auto auto">
-            <span></span><span>會員資料</span><span>總消費</span><span class="w-3"></span>
-          </div>
+        <div class="space-y-3">
           ${rowsHtml}
         </div>
         <p class="text-xs text-gray-600 px-1">共 ${members.length} 位會員</p>`;
