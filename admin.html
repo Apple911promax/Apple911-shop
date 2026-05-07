@@ -419,6 +419,7 @@
 
     function saveOrders() {
       localStorage.setItem('apple911_orders', JSON.stringify(orders));
+      if (window._fbSaveOrders) window._fbSaveOrders(orders);
     }
 
     // ════════════════════════════════════════════════════════════
@@ -1040,7 +1041,10 @@
       const s = JSON.parse(localStorage.getItem('a911_categories') || 'null');
       return (s && s.length > 0) ? s : JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
     }
-    function saveCategories(cats) { localStorage.setItem('a911_categories', JSON.stringify(cats)); }
+    function saveCategories(cats) {
+      localStorage.setItem('a911_categories', JSON.stringify(cats));
+      if (window._fbSaveCategories) window._fbSaveCategories(cats);
+    }
 
     function showCatMgmt() {
       catPath = [];
@@ -1257,37 +1261,58 @@ const _fbCfg = {
   messagingSenderId: "335224055176",
   appId: "1:335224055176:web:62f37cdf81f6233c16063d"
 };
-const _fbApp = initializeApp(_fbCfg);
-const _fbDb  = getFirestore(_fbApp);
-const _fbRef = doc(_fbDb, 'store', 'products');
+const _fbApp      = initializeApp(_fbCfg);
+const _fbDb       = getFirestore(_fbApp);
+const _fbProdsRef = doc(_fbDb, 'store', 'products');
+const _fbOrdRef   = doc(_fbDb, 'store', 'orders');
+const _fbCatRef   = doc(_fbDb, 'store', 'categories');
 
-// 供 saveProducts() 呼叫，將商品同步寫入 Firestore
 window._fbSaveProducts = async function(prods) {
   try {
-    await setDoc(_fbRef, { list: prods, updatedAt: Date.now() });
-    console.log('[Firebase] 後台儲存成功，共', prods.length, '筆');
-  } catch(e) {
-    console.error('[Firebase] 後台儲存失敗:', e.message);
-  }
+    await setDoc(_fbProdsRef, { list: prods, updatedAt: Date.now() });
+    console.log('[Firebase] 商品儲存成功，共', prods.length, '筆');
+  } catch(e) { console.error('[Firebase] 商品儲存失敗:', e.message); }
 };
 
-// 頁面載入時從 Firestore 同步到 localStorage，再更新 UI
+window._fbSaveOrders = async function(list) {
+  try {
+    await setDoc(_fbOrdRef, { list, updatedAt: Date.now() });
+    console.log('[Firebase] 訂單儲存成功，共', list.length, '筆');
+  } catch(e) { console.error('[Firebase] 訂單儲存失敗:', e.message); }
+};
+
+window._fbSaveCategories = async function(cats) {
+  try {
+    await setDoc(_fbCatRef, { list: cats, updatedAt: Date.now() });
+    console.log('[Firebase] 分類儲存成功');
+  } catch(e) { console.error('[Firebase] 分類儲存失敗:', e.message); }
+};
+
 (async function() {
   try {
-    const snap = await getDoc(_fbRef);
-    if (snap.exists()) {
-      const prods = snap.data().list || [];
+    const ps = await getDoc(_fbProdsRef);
+    if (ps.exists()) {
+      const prods = ps.data().list || [];
       if (prods.length > 0) {
         localStorage.setItem('a911_products', JSON.stringify(prods));
-        if (typeof renderStats    === 'function') renderStats();
+        if (typeof renderStats     === 'function') renderStats();
         if (typeof renderProdDrill === 'function') renderProdDrill();
-        if (typeof _dbgAdminRun   === 'function') _dbgAdminRun();
-        console.log('[Firebase] 後台初始同步成功，共', prods.length, '筆');
+        if (typeof _dbgAdminRun    === 'function') _dbgAdminRun();
       }
     }
-  } catch(e) {
-    console.error('[Firebase] 後台初始同步失敗:', e.message);
-  }
+    const os = await getDoc(_fbOrdRef);
+    if (os.exists()) {
+      const list = os.data().list || [];
+      localStorage.setItem('apple911_orders', JSON.stringify(list));
+      if (typeof loadOrders === 'function') loadOrders();
+    }
+    const cs = await getDoc(_fbCatRef);
+    if (cs.exists()) {
+      const cats = cs.data().list || [];
+      if (cats.length > 0) localStorage.setItem('a911_categories', JSON.stringify(cats));
+    }
+    console.log('[Firebase] 後台初始同步完成');
+  } catch(e) { console.error('[Firebase] 後台初始同步失敗:', e.message); }
 })();
 </script>
 <!-- Firebase 整合 END -->
