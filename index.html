@@ -128,5 +128,95 @@
     function reportPayment(orderId){const msg=encodeURIComponent(`您好，我要回報付款，訂單編號：${orderId}，帳號末五碼：`);window.open(`https://line.me/R/ti/p/@apple911?text=${msg}`,'_blank');}
     window.onload=function(){renderCart();renderFrontCategories();initBirthSelects();loadProfile();if(isLoggedIn)document.getElementById('user-status-dot').classList.replace('bg-slate-600','bg-neoncyan');document.getElementById('agree-terms').addEventListener('change',function(){document.getElementById('submit-order-btn').disabled=!this.checked;});document.getElementById('submit-order-btn').addEventListener('mousedown',function(){if(!document.getElementById('agree-terms').checked)showToast('請先閱讀並同意購物與服務條款');});};
   </script>
+
+<!-- ============================================================ -->
+<!-- DEBUG BLOCK START                                            -->
+<!-- 手機同步檢查工具 — 可整段刪除，不影響任何正式功能              -->
+<!-- ============================================================ -->
+<button
+  onclick="toggleFrontDebug()"
+  style="position:fixed;bottom:20px;right:20px;z-index:9999;background:#00f3ff;color:#000;font-weight:bold;font-size:12px;padding:8px 14px;border:none;border-radius:6px;cursor:pointer;box-shadow:0 0 10px rgba(0,243,255,0.5);">
+  DEBUG
+</button>
+
+<div id="dbg-front-panel"
+  style="display:none;position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,0.96);overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px;">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+    <span style="color:#00f3ff;font-weight:bold;font-size:14px;">DEBUG — 前台商品同步檢查</span>
+    <button onclick="toggleFrontDebug()" style="background:#333;color:#fff;border:none;padding:6px 14px;border-radius:4px;font-size:12px;cursor:pointer;">關閉</button>
+  </div>
+  <pre id="dbg-front-content" style="color:#e2e8f0;font-size:12px;line-height:1.7;white-space:pre-wrap;word-break:break-all;margin:0;"></pre>
+</div>
+
+<script>
+// ============================================================
+// DEBUG BLOCK START — 可整段刪除，不影響任何正式功能
+// ============================================================
+function toggleFrontDebug() {
+  var panel = document.getElementById('dbg-front-panel');
+  if (panel.style.display === 'none') {
+    panel.style.display = 'block';
+    _renderFrontDebug();
+  } else {
+    panel.style.display = 'none';
+  }
+}
+function _renderFrontDebug() {
+  var DEMO_IDS  = [1, 2, 3, 4];
+  var DEMO_CATS = ['case', 'repair'];
+  var raw = localStorage.getItem('a911_products');
+  var out = [];
+
+  out.push('== a911_products ==');
+  if (!raw) {
+    out.push('⛔ 不存在 (null)');
+    out.push('');
+    out.push('代表此頁面讀不到後台資料。');
+    out.push('可能原因：admin 與 index 在不同網址/origin，');
+    out.push('localStorage 互相隔離。');
+  } else {
+    var prods = JSON.parse(raw);
+    var demoMix = prods.some(function(p) {
+      return DEMO_IDS.indexOf(p.id) !== -1 || DEMO_CATS.indexOf(p.cat) !== -1;
+    });
+    out.push('✅ 存在');
+    out.push('商品總筆數：' + prods.length);
+    if (demoMix) {
+      out.push('');
+      out.push('⚠️ 警告：偵測到 demo 商品混入');
+      out.push('(id 1~4 或 cat=case/repair)');
+    }
+    out.push('');
+    out.push('── 前 5 筆 ──────────────────');
+    prods.slice(0, 5).forEach(function(p, i) {
+      out.push('[' + (i+1) + '] ' + p.name);
+      out.push('    price  : ' + p.price);
+      out.push('    active : ' + p.active);
+      out.push('    cat    : ' + p.cat);
+      out.push('    itemId : ' + p.itemId + '  brandId: ' + p.brandId + '  seriesId: ' + p.seriesId);
+      out.push('    catName: ' + (p.categoryName || '-'));
+      out.push('');
+    });
+  }
+
+  var listEl = document.getElementById('product-list');
+  var rendered = listEl ? listEl.querySelectorAll('.tech-clip').length : -1;
+  out.push('');
+  out.push('== 前台目前渲染 ==');
+  out.push('product-list 內商品卡數：' + rendered);
+  out.push('');
+  out.push('== 其他 localStorage keys ==');
+  out.push('a911_categories : ' + (localStorage.getItem('a911_categories') ? '存在' : '不存在'));
+  out.push('apple911_orders : ' + (localStorage.getItem('apple911_orders') ? '存在' : '不存在'));
+
+  document.getElementById('dbg-front-content').textContent = out.join('\n');
+}
+// ============================================================
+// DEBUG BLOCK END
+// ============================================================
+</script>
+<!-- ============================================================ -->
+<!-- DEBUG BLOCK END                                              -->
+<!-- ============================================================ -->
 </body>
 </html>
