@@ -58,7 +58,61 @@
   <header class="relative py-8 text-center border-b border-neoncyan/30 flex-shrink-0"><h1 class="text-3xl font-black mb-2 text-white uppercase font-esport">APPLE<span class="text-gold-gradient">911</span></h1><p class="text-neoncyan font-bold tracking-widest text-sm">配件怪獸 X 專業維修</p><p class="en-sub text-neoncyan mt-1">ASSETS MONSTER & PROFESSIONAL REPAIR</p></header>
 
   <main class="flex-grow flex flex-col max-w-7xl mx-auto w-full pb-20">
-    <div id="home-view" class="px-4 py-8"><h2 class="text-sm font-bold flex items-center text-white tracking-widest border-l-4 border-neoncyan pl-2 mb-4">服務選單 <span class="en-sub ml-2">SELECT SERVICE</span></h2><div class="grid grid-cols-2 gap-4" id="home-cat-grid"></div></div>
+    <div id="home-view" class="px-4 py-8"><h2 class="text-sm font-bold flex items-center text-white tracking-widest border-l-4 border-neoncyan pl-2 mb-4">服務選單 <span class="en-sub ml-2">SELECT SERVICE</span></h2>
+    <!-- ============================================================ -->
+    <!-- DEBUG BLOCK START — 可整段刪除，不影響任何正式功能              -->
+    <!-- ============================================================ -->
+    <div id="dbg-front-wrap" style="margin-bottom:16px;">
+      <div style="color:#00f3ff;font-family:monospace;font-weight:bold;font-size:13px;margin-bottom:8px;">【同步檢查 DEBUG】</div>
+      <pre id="dbg-front-pre" style="background:#050a10;border:1px solid #1e3a4a;border-radius:4px;padding:12px;margin:0 0 8px;color:#cbd5e1;font-size:11px;line-height:1.65;white-space:pre-wrap;word-break:break-all;font-family:monospace;"></pre>
+      <button onclick="_dbgFrontRun()" style="background:#0f172a;color:#00f3ff;border:1px solid #00f3ff;padding:6px 16px;font-size:11px;border-radius:3px;cursor:pointer;font-weight:bold;font-family:monospace;">重新整理</button>
+    </div>
+    <script>
+    // ============================================================
+    // DEBUG BLOCK START — 可整段刪除，不影響任何正式功能
+    // ============================================================
+    var DEBUG_MODE = true;
+    function _dbgFrontRun() {
+      var wrap = document.getElementById('dbg-front-wrap');
+      if (!wrap) return;
+      wrap.style.display = DEBUG_MODE ? 'block' : 'none';
+      if (!DEBUG_MODE) return;
+      var DEMO_IDS = [1,2,3,4], DEMO_CATS = ['case','repair'];
+      var raw = localStorage.getItem('a911_products'), out = [];
+      if (!raw) {
+        out.push('⛔ a911_products 不存在 (null)');
+        out.push('代表此頁面讀不到後台資料。');
+        out.push('可能是 admin / index 在不同網址，localStorage 互相隔離。');
+      } else {
+        var prods = JSON.parse(raw);
+        var demoMix = prods.some(function(p){ return DEMO_IDS.indexOf(p.id)!==-1||DEMO_CATS.indexOf(p.cat)!==-1; });
+        out.push('✅ a911_products 存在');
+        out.push('商品總筆數：' + prods.length);
+        if (demoMix) out.push('⚠️ 偵測到 demo 商品混入 (id 1~4 或 cat=case/repair)');
+        out.push('');
+        out.push('── 前 5 筆 ────────────────');
+        prods.slice(0,5).forEach(function(p,i){
+          out.push('[' + (i+1) + '] ' + p.name);
+          out.push('  price:' + p.price + '  active:' + p.active + '  cat:' + (p.cat||'-'));
+          out.push('  itemId:' + p.itemId + '  brandId:' + p.brandId + '  seriesId:' + p.seriesId);
+          out.push('  path:' + (p.categoryName||'-'));
+        });
+      }
+      var listEl = document.getElementById('product-list');
+      out.push('');
+      out.push('前台渲染商品卡數：' + (listEl ? listEl.children.length : 0) + ' (進入商品頁後重新整理)');
+      out.push('a911_categories: ' + (localStorage.getItem('a911_categories')?'存在':'不存在'));
+      document.getElementById('dbg-front-pre').textContent = out.join('\n');
+    }
+    document.addEventListener('DOMContentLoaded', _dbgFrontRun);
+    // ============================================================
+    // DEBUG BLOCK END
+    // ============================================================
+    </script>
+    <!-- ============================================================ -->
+    <!-- DEBUG BLOCK END                                              -->
+    <!-- ============================================================ -->
+    <div class="grid grid-cols-2 gap-4" id="home-cat-grid"></div></div>
     <div id="product-view" class="px-4 py-8 hidden"><div class="flex justify-between items-end mb-6 border-b border-slate-800 pb-2"><h2 class="text-lg font-bold text-white tracking-widest" id="current-view-title">全部商品與服務</h2><button onclick="navFrontBack()" class="text-xs text-gray-500 font-bold hover:text-white transition"><i class="fa-solid fa-arrow-left"></i> 返回</button></div><div class="grid grid-cols-2 lg:grid-cols-4 gap-4" id="product-list"></div></div>
     <div id="checkout-view" class="px-4 py-8 hidden"><div class="flex justify-between items-end mb-6 border-b border-slate-800 pb-2"><h2 class="text-lg font-bold text-white tracking-widest">訂單結帳 <span class="en-sub inline ml-1">CHECKOUT</span></h2><button onclick="showSection('home')" class="text-xs text-gray-500 font-bold hover:text-white transition"><i class="fa-solid fa-arrow-left"></i> 繼續購物</button></div><div class="grid grid-cols-1 md:grid-cols-2 gap-6"><div class="bg-darkbg border border-slate-700 p-5 rounded space-y-4 shadow-lg h-fit"><h4 class="text-white font-bold border-l-4 border-neoncyan pl-2 text-sm">購物清單明細</h4><div id="checkout-cart-items" class="space-y-3"></div><div class="border-t border-slate-700 pt-4 flex justify-between text-white font-bold"><span>總計金額</span><span id="checkout-total" class="text-goldlight font-tech text-lg">NT$ 0</span></div></div><div class="space-y-6"><div class="bg-darkbg border border-slate-700 p-5 rounded space-y-4 shadow-lg"><h4 class="text-white font-bold border-l-4 border-neoncyan pl-2 text-sm">配送與付款方式</h4><div><label class="text-xs text-gray-400 block mb-1">配送方式 <span class="text-neonred">*</span></label><select id="ship-method" onchange="handleShippingChange()" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none focus:border-neoncyan transition"><option value="">請選擇配送方式</option><option value="cvs">超商取貨 (需先付款)</option><option value="home">宅配到府 (需先付款)</option><option value="store">到店取貨 (可現場付款)</option></select></div><div><label class="text-xs text-gray-400 block mb-1">付款方式 <span class="text-neonred">*</span></label><select id="pay-method" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none focus:border-neoncyan transition"><option value="">請先選擇配送方式</option></select></div></div><div class="bg-darkbg border border-slate-700 p-5 rounded space-y-4 shadow-lg"><h4 class="text-white font-bold border-l-4 border-neoncyan pl-2 text-sm">顧客資料</h4><p class="text-xs text-gray-400">請填寫正確資料，以利配送與聯繫</p><div id="ship-cvs-fields" class="hidden space-y-4"><div><label class="text-xs text-gray-400 block mb-1">超商類型 <span class="text-neonred">*</span></label><select id="cvs-type" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none"><option value="">請選擇超商</option><option value="7-11">7-11</option><option value="FamilyMart">全家</option></select></div><div class="grid grid-cols-2 gap-4"><div><label class="text-xs text-gray-400 block mb-1">縣市 <span class="text-neonred">*</span></label><select id="cvs-city" onchange="updateDistricts()" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none"></select></div><div><label class="text-xs text-gray-400 block mb-1">地區 <span class="text-neonred">*</span></label><select id="cvs-district" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none"><option value="">請選擇地區</option></select></div></div><div class="grid grid-cols-2 gap-4"><div><label class="text-xs text-gray-400 block mb-1">取貨門市名稱 <span class="text-neonred">*</span></label><input type="text" id="cvs-store" placeholder="某某門市" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none"></div><div><label class="text-xs text-gray-400 block mb-1">門市店號 (選填)</label><input type="text" id="cvs-id" placeholder="6位數字" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none"></div></div><div><label class="text-xs text-gray-400 block mb-1">取貨人姓名 <span class="text-neonred">*</span></label><input type="text" id="cvs-name" placeholder="收件人姓名（請填真實姓名）" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none"></div><div><label class="text-xs text-gray-400 block mb-1">取貨人手機 <span class="text-neonred">*</span></label><input type="tel" id="cvs-phone" placeholder="請填寫正確手機（配送聯絡用）" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none"></div></div><div id="ship-home-fields" class="hidden space-y-4"><div><label class="text-xs text-gray-400 block mb-1">收件人姓名 <span class="text-neonred">*</span></label><input type="text" id="home-name" placeholder="收件人姓名（請填真實姓名）" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none"></div><div><label class="text-xs text-gray-400 block mb-1">收件人手機 <span class="text-neonred">*</span></label><input type="tel" id="home-phone" placeholder="請填寫正確手機（配送聯絡用）" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none"></div><div><label class="text-xs text-gray-400 block mb-1">宅配地址 <span class="text-neonred">*</span></label><textarea id="home-addr" rows="2" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none"></textarea></div></div><div id="ship-store-fields" class="hidden space-y-2"><p class="text-neoncyan text-sm font-bold"><i class="fa-solid fa-circle-info mr-2"></i>請於營業時間內到 Apple 911 門市取貨</p></div></div><div class="flex items-start gap-2 mb-2 px-1"><input type="checkbox" id="agree-terms" class="mt-1 w-4 h-4 accent-neoncyan cursor-pointer"><label for="agree-terms" class="text-xs text-gray-400 leading-relaxed cursor-pointer">我已閱讀並同意以下內容：<br><span class="text-neoncyan underline hover:text-white transition" onclick="openTerms('payment')">付款資訊</span>、<span class="text-neoncyan underline hover:text-white transition" onclick="openTerms('shipping')">配送取件</span>、<span class="text-neoncyan underline hover:text-white transition" onclick="openTerms('returns')">退換貨政策</span>、<span class="text-neoncyan underline hover:text-white transition" onclick="openTerms('warranty')">維修保固</span>、<span class="text-neoncyan underline hover:text-white transition" onclick="openTerms('terms')">服務條款</span></label></div><button id="submit-order-btn" onclick="submitOrder()" disabled class="w-full py-4 bg-neoncyan text-black font-bold tech-clip text-sm hover:bg-white transition shadow-lg tracking-widest uppercase">確認送出訂單 SUBMIT ORDER</button></div></div></div>
     <div id="order-success-view" class="px-4 py-8 hidden max-w-2xl mx-auto w-full"><div class="bg-darkbg border border-neoncyan p-8 rounded text-center shadow-lg mb-6 tech-clip"><i class="fa-regular fa-circle-check text-6xl text-neoncyan mb-4"></i><h2 class="text-2xl font-bold text-white mb-2 tracking-widest">訂單已成立</h2><p class="text-gray-400 text-sm">您的訂單編號：<span id="success-order-id" class="text-white font-tech font-bold"></span></p></div><div id="payment-instruction-box" class="bg-panelbg border border-slate-700 p-6 rounded space-y-4 shadow-lg hidden"><h4 class="text-neonred font-bold text-sm">請於 24 小時內完成付款，否則訂單將自動取消</h4><div class="bg-darkbg p-4 rounded border border-slate-800 text-gray-300 text-sm leading-relaxed" id="payment-details-text"></div><div class="border-t border-slate-700 pt-4 mt-4"><button onclick="handleUserClick(); switchMemberTab('orders');" class="w-full py-3 bg-slate-800 text-neoncyan font-bold tech-clip text-sm hover:bg-neoncyan hover:text-black transition uppercase tracking-widest">前往訂單紀錄查看與回報</button></div></div></div>
@@ -129,94 +183,5 @@
     window.onload=function(){renderCart();renderFrontCategories();initBirthSelects();loadProfile();if(isLoggedIn)document.getElementById('user-status-dot').classList.replace('bg-slate-600','bg-neoncyan');document.getElementById('agree-terms').addEventListener('change',function(){document.getElementById('submit-order-btn').disabled=!this.checked;});document.getElementById('submit-order-btn').addEventListener('mousedown',function(){if(!document.getElementById('agree-terms').checked)showToast('請先閱讀並同意購物與服務條款');});};
   </script>
 
-<!-- ============================================================ -->
-<!-- DEBUG BLOCK START                                            -->
-<!-- 手機同步檢查工具 — 可整段刪除，不影響任何正式功能              -->
-<!-- ============================================================ -->
-<button
-  onclick="toggleFrontDebug()"
-  style="position:fixed;bottom:20px;right:20px;z-index:9999;background:#00f3ff;color:#000;font-weight:bold;font-size:12px;padding:8px 14px;border:none;border-radius:6px;cursor:pointer;box-shadow:0 0 10px rgba(0,243,255,0.5);">
-  DEBUG
-</button>
-
-<div id="dbg-front-panel"
-  style="display:none;position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,0.96);overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px;">
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
-    <span style="color:#00f3ff;font-weight:bold;font-size:14px;">DEBUG — 前台商品同步檢查</span>
-    <button onclick="toggleFrontDebug()" style="background:#333;color:#fff;border:none;padding:6px 14px;border-radius:4px;font-size:12px;cursor:pointer;">關閉</button>
-  </div>
-  <pre id="dbg-front-content" style="color:#e2e8f0;font-size:12px;line-height:1.7;white-space:pre-wrap;word-break:break-all;margin:0;"></pre>
-</div>
-
-<script>
-// ============================================================
-// DEBUG BLOCK START — 可整段刪除，不影響任何正式功能
-// ============================================================
-function toggleFrontDebug() {
-  var panel = document.getElementById('dbg-front-panel');
-  if (panel.style.display === 'none') {
-    panel.style.display = 'block';
-    _renderFrontDebug();
-  } else {
-    panel.style.display = 'none';
-  }
-}
-function _renderFrontDebug() {
-  var DEMO_IDS  = [1, 2, 3, 4];
-  var DEMO_CATS = ['case', 'repair'];
-  var raw = localStorage.getItem('a911_products');
-  var out = [];
-
-  out.push('== a911_products ==');
-  if (!raw) {
-    out.push('⛔ 不存在 (null)');
-    out.push('');
-    out.push('代表此頁面讀不到後台資料。');
-    out.push('可能原因：admin 與 index 在不同網址/origin，');
-    out.push('localStorage 互相隔離。');
-  } else {
-    var prods = JSON.parse(raw);
-    var demoMix = prods.some(function(p) {
-      return DEMO_IDS.indexOf(p.id) !== -1 || DEMO_CATS.indexOf(p.cat) !== -1;
-    });
-    out.push('✅ 存在');
-    out.push('商品總筆數：' + prods.length);
-    if (demoMix) {
-      out.push('');
-      out.push('⚠️ 警告：偵測到 demo 商品混入');
-      out.push('(id 1~4 或 cat=case/repair)');
-    }
-    out.push('');
-    out.push('── 前 5 筆 ──────────────────');
-    prods.slice(0, 5).forEach(function(p, i) {
-      out.push('[' + (i+1) + '] ' + p.name);
-      out.push('    price  : ' + p.price);
-      out.push('    active : ' + p.active);
-      out.push('    cat    : ' + p.cat);
-      out.push('    itemId : ' + p.itemId + '  brandId: ' + p.brandId + '  seriesId: ' + p.seriesId);
-      out.push('    catName: ' + (p.categoryName || '-'));
-      out.push('');
-    });
-  }
-
-  var listEl = document.getElementById('product-list');
-  var rendered = listEl ? listEl.querySelectorAll('.tech-clip').length : -1;
-  out.push('');
-  out.push('== 前台目前渲染 ==');
-  out.push('product-list 內商品卡數：' + rendered);
-  out.push('');
-  out.push('== 其他 localStorage keys ==');
-  out.push('a911_categories : ' + (localStorage.getItem('a911_categories') ? '存在' : '不存在'));
-  out.push('apple911_orders : ' + (localStorage.getItem('apple911_orders') ? '存在' : '不存在'));
-
-  document.getElementById('dbg-front-content').textContent = out.join('\n');
-}
-// ============================================================
-// DEBUG BLOCK END
-// ============================================================
-</script>
-<!-- ============================================================ -->
-<!-- DEBUG BLOCK END                                              -->
-<!-- ============================================================ -->
 </body>
 </html>

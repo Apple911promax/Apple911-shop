@@ -177,6 +177,58 @@
             控制台 <span class="text-gray-500 font-sans font-normal text-xs ml-1">DASHBOARD</span>
           </h2>
           <div class="grid grid-cols-2 md:grid-cols-3 gap-3" id="stats-row"></div>
+
+          <!-- ============================================================ -->
+          <!-- DEBUG BLOCK START — 可整段刪除，不影響任何正式功能              -->
+          <!-- ============================================================ -->
+          <div id="dbg-admin-wrap">
+            <div style="color:#00f3ff;font-family:monospace;font-weight:bold;font-size:13px;margin-bottom:8px;">【同步檢查 DEBUG】</div>
+            <pre id="dbg-admin-pre" style="background:#050a10;border:1px solid #1e3a4a;border-radius:4px;padding:12px;margin:0 0 8px;color:#cbd5e1;font-size:11px;line-height:1.65;white-space:pre-wrap;word-break:break-all;font-family:monospace;"></pre>
+            <button onclick="_dbgAdminRun()" style="background:#0f172a;color:#00f3ff;border:1px solid #00f3ff;padding:6px 16px;font-size:11px;border-radius:3px;cursor:pointer;font-weight:bold;font-family:monospace;">重新整理</button>
+          </div>
+          <script>
+          // ============================================================
+          // DEBUG BLOCK START — 可整段刪除，不影響任何正式功能
+          // ============================================================
+          var DEBUG_MODE = true;
+          function _dbgAdminRun() {
+            var wrap = document.getElementById('dbg-admin-wrap');
+            if (!wrap) return;
+            wrap.style.display = DEBUG_MODE ? 'block' : 'none';
+            if (!DEBUG_MODE) return;
+            var DEMO_IDS = [1,2,3,4], DEMO_CATS = ['case','repair'];
+            var raw = localStorage.getItem('a911_products'), out = [];
+            if (!raw) {
+              out.push('⛔ a911_products 不存在 (null)');
+              out.push('代表此頁面讀不到後台資料。');
+              out.push('可能是 admin / index 在不同網址，localStorage 互相隔離。');
+            } else {
+              var prods = JSON.parse(raw);
+              var demoMix = prods.some(function(p){ return DEMO_IDS.indexOf(p.id)!==-1||DEMO_CATS.indexOf(p.cat)!==-1; });
+              out.push('✅ a911_products 存在');
+              out.push('商品總筆數：' + prods.length);
+              if (demoMix) out.push('⚠️ 偵測到 demo 商品混入 (id 1~4 或 cat=case/repair)');
+              out.push('');
+              out.push('── 前 5 筆 ────────────────');
+              prods.slice(0,5).forEach(function(p,i){
+                out.push('[' + (i+1) + '] ' + p.name);
+                out.push('  price:' + p.price + '  active:' + p.active + '  cat:' + (p.cat||'-'));
+                out.push('  itemId:' + p.itemId + '  brandId:' + p.brandId + '  seriesId:' + p.seriesId);
+                out.push('  path:' + (p.categoryName||'-'));
+              });
+            }
+            out.push(''); out.push('a911_categories: ' + (localStorage.getItem('a911_categories')?'存在':'不存在'));
+            document.getElementById('dbg-admin-pre').textContent = out.join('\n');
+          }
+          document.addEventListener('DOMContentLoaded', _dbgAdminRun);
+          // ============================================================
+          // DEBUG BLOCK END
+          // ============================================================
+          </script>
+          <!-- ============================================================ -->
+          <!-- DEBUG BLOCK END                                              -->
+          <!-- ============================================================ -->
+
         </div>
 
         <!-- ── 訂單管理 ── -->
@@ -1192,89 +1244,5 @@
     });
   </script>
 
-<!-- ============================================================ -->
-<!-- DEBUG BLOCK START                                            -->
-<!-- 手機同步檢查工具 — 可整段刪除，不影響任何正式功能              -->
-<!-- ============================================================ -->
-<button
-  onclick="toggleAdminDebug()"
-  style="position:fixed;bottom:20px;right:20px;z-index:9999;background:#00f3ff;color:#000;font-weight:bold;font-size:12px;padding:8px 14px;border:none;border-radius:6px;cursor:pointer;box-shadow:0 0 10px rgba(0,243,255,0.5);">
-  DEBUG
-</button>
-
-<div id="dbg-admin-panel"
-  style="display:none;position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,0.96);overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px;">
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
-    <span style="color:#00f3ff;font-weight:bold;font-size:14px;">DEBUG — localStorage 同步檢查</span>
-    <button onclick="toggleAdminDebug()" style="background:#333;color:#fff;border:none;padding:6px 14px;border-radius:4px;font-size:12px;cursor:pointer;">關閉</button>
-  </div>
-  <pre id="dbg-admin-content" style="color:#e2e8f0;font-size:12px;line-height:1.7;white-space:pre-wrap;word-break:break-all;margin:0;"></pre>
-</div>
-
-<script>
-// ============================================================
-// DEBUG BLOCK START — 可整段刪除，不影響任何正式功能
-// ============================================================
-function toggleAdminDebug() {
-  var panel = document.getElementById('dbg-admin-panel');
-  if (panel.style.display === 'none') {
-    panel.style.display = 'block';
-    _renderAdminDebug();
-  } else {
-    panel.style.display = 'none';
-  }
-}
-function _renderAdminDebug() {
-  var DEMO_IDS  = [1, 2, 3, 4];
-  var DEMO_CATS = ['case', 'repair'];
-  var raw = localStorage.getItem('a911_products');
-  var out = [];
-
-  out.push('== a911_products ==');
-  if (!raw) {
-    out.push('⛔ 不存在 (null)');
-    out.push('');
-    out.push('代表此頁面讀不到後台資料。');
-    out.push('可能原因：admin 與 index 在不同網址/origin，');
-    out.push('localStorage 互相隔離。');
-  } else {
-    var prods = JSON.parse(raw);
-    var demoMix = prods.some(function(p) {
-      return DEMO_IDS.indexOf(p.id) !== -1 || DEMO_CATS.indexOf(p.cat) !== -1;
-    });
-    out.push('✅ 存在');
-    out.push('商品總筆數：' + prods.length);
-    if (demoMix) {
-      out.push('');
-      out.push('⚠️ 警告：偵測到 demo 商品混入');
-      out.push('(id 1~4 或 cat=case/repair)');
-    }
-    out.push('');
-    out.push('── 前 5 筆 ──────────────────');
-    prods.slice(0, 5).forEach(function(p, i) {
-      out.push('[' + (i+1) + '] ' + p.name);
-      out.push('    price  : ' + p.price);
-      out.push('    active : ' + p.active);
-      out.push('    cat    : ' + p.cat);
-      out.push('    itemId : ' + p.itemId + '  brandId: ' + p.brandId + '  seriesId: ' + p.seriesId);
-      out.push('    catName: ' + (p.categoryName || '-'));
-      out.push('');
-    });
-  }
-
-  out.push('');
-  out.push('== 其他 localStorage keys ==');
-  out.push('a911_categories : ' + (localStorage.getItem('a911_categories') ? '存在' : '不存在'));
-  out.push('apple911_orders : ' + (localStorage.getItem('apple911_orders') ? '存在' : '不存在'));
-
-  document.getElementById('dbg-admin-content').textContent = out.join('\n');
-}
-// ============================================================
-// DEBUG BLOCK END
-// ============================================================
-</script>
-<!-- ============================================================ -->
-<!-- DEBUG BLOCK END                                              -->
-<!-- ============================================================ -->
 </body>
 </html>
