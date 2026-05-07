@@ -555,6 +555,7 @@
 
     function saveProducts(prods) {
       localStorage.setItem('a911_products', JSON.stringify(prods));
+      console.log('[後台DEBUG] saveProducts 儲存', prods.length, '筆:', prods.map(p=>({id:p.id,name:p.name,active:p.active,cat:p.cat,itemId:p.itemId,brandId:p.brandId,seriesId:p.seriesId,categoryName:p.categoryName})));
     }
 
     function renderProducts() {
