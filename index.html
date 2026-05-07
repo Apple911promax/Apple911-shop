@@ -183,5 +183,41 @@
     window.onload=function(){renderCart();renderFrontCategories();initBirthSelects();loadProfile();if(isLoggedIn)document.getElementById('user-status-dot').classList.replace('bg-slate-600','bg-neoncyan');document.getElementById('agree-terms').addEventListener('change',function(){document.getElementById('submit-order-btn').disabled=!this.checked;});document.getElementById('submit-order-btn').addEventListener('mousedown',function(){if(!document.getElementById('agree-terms').checked)showToast('請先閱讀並同意購物與服務條款');});};
   </script>
 
+<!-- Firebase 整合 START — 可整段刪除 -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+const _fbCfg = {
+  apiKey: "AIzaSyDpasiFnj0UQpNKndmya4__C1J8bJxGN4g",
+  authDomain: "apple911-shop.firebaseapp.com",
+  projectId: "apple911-shop",
+  storageBucket: "apple911-shop.firebasestorage.app",
+  messagingSenderId: "335224055176",
+  appId: "1:335224055176:web:62f37cdf81f6233c16063d"
+};
+const _fbApp = initializeApp(_fbCfg);
+const _fbDb  = getFirestore(_fbApp);
+const _fbRef = doc(_fbDb, 'store', 'products');
+
+// 頁面載入時從 Firestore 同步商品到 localStorage，再更新畫面
+(async function() {
+  try {
+    const snap = await getDoc(_fbRef);
+    if (snap.exists()) {
+      const prods = snap.data().list || [];
+      if (prods.length > 0) {
+        localStorage.setItem('a911_products', JSON.stringify(prods));
+        if (typeof renderFrontCategories === 'function') renderFrontCategories();
+        if (typeof _dbgFrontRun         === 'function') _dbgFrontRun();
+        console.log('[Firebase] 前台同步成功，共', prods.length, '筆');
+      }
+    }
+  } catch(e) {
+    console.error('[Firebase] 前台同步失敗:', e.message);
+  }
+})();
+</script>
+<!-- Firebase 整合 END -->
+
 </body>
 </html>
