@@ -123,7 +123,7 @@
 
   <div class="fixed bottom-6 right-6 z-[70] flex flex-col items-end"><div id="fab-menu" class="fab-menu flex flex-col gap-3 mb-3 mr-1 items-center"><a href="#" class="w-10 h-10 bg-white rounded-full flex items-center justify-center text-blue-500 shadow-lg transition"><i class="fa-solid fa-location-dot text-xl"></i></a><a href="#" class="w-10 h-10 bg-[#1877F2] rounded-full flex items-center justify-center text-white shadow-lg transition"><i class="fa-brands fa-facebook-f text-xl"></i></a><a href="#" class="w-10 h-10 bg-[#06C755] rounded-full flex items-center justify-center text-white shadow-lg transition"><i class="fa-brands fa-line text-2xl"></i></a><a href="#" class="w-10 h-10 rounded-full flex items-center justify-center text-white shadow-lg transition" style="background:radial-gradient(circle at 30% 107%,#fdf497 0%,#fdf497 5%,#fd5949 45%,#d6249f 60%,#285AEB 90%);"><i class="fa-brands fa-instagram text-xl"></i></a></div><button onclick="toggleFab()" class="w-14 h-14 bg-neoncyan text-black rounded-full flex items-center justify-center shadow-lg tech-btn animate-pulse transition"><i id="fab-icon" class="fa-solid fa-headset text-2xl fab-main-icon"></i></button></div>
   <div id="terms-modal" class="fixed inset-0 bg-black/90 z-[100] hidden items-center justify-center p-4 backdrop-blur-sm" onclick="closeTerms(event)"><div class="bg-panelbg border-t-4 border-neoncyan w-full max-w-lg tech-clip flex flex-col max-h-[85vh] overflow-hidden shadow-[0_0_30px_rgba(0,243,255,0.2)]" onclick="event.stopPropagation()"><div class="p-5 flex justify-between items-center border-b border-white/10 shrink-0"><h3 id="modal-title" class="font-bold text-neoncyan tracking-widest text-lg"></h3><button onclick="closeTerms()" class="text-gray-400 hover:text-white transition"><i class="fa-solid fa-xmark text-xl"></i></button></div><div id="modal-content" class="p-6 overflow-y-auto space-y-4 text-sm text-gray-300 leading-relaxed custom-scrollbar font-sans"></div><div class="p-4 bg-darkbg border-t border-white/5 shrink-0"><button onclick="closeTerms()" class="w-full py-4 bg-slate-800 text-neoncyan font-bold tech-clip hover:bg-white hover:text-black transition tracking-widest uppercase">我已了解關閉</button></div></div></div>
-  <div id="auth-modal" class="fixed inset-0 bg-black/95 z-[80] hidden items-center justify-center p-4 backdrop-blur-sm"><div class="bg-panelbg border-t-2 border-neoncyan w-full max-w-sm tech-clip overflow-hidden shadow-[0_0_30px_rgba(0,243,255,0.2)]"><div class="p-4 flex justify-between items-center border-b border-white/5"><h3 class="font-bold text-neoncyan tracking-widest font-esport text-lg flex items-center gap-2"><i class="fa-solid fa-fingerprint"></i> <span id="auth-title">SYSTEM LOGIN</span></h3><button onclick="closeAuth()" class="text-gray-400 hover:text-white transition"><i class="fa-solid fa-xmark text-xl"></i></button></div><div id="auth-view-login" class="p-6"><div class="space-y-4"><input id="login-account" type="text" placeholder="手機 或 信箱 PHONE / EMAIL" class="w-full bg-darkbg border border-slate-700 text-white p-3 tech-clip text-sm outline-none focus:border-neoncyan transition"><input id="login-password" type="password" placeholder="登入密碼 PASSWORD" class="w-full bg-darkbg border border-slate-700 text-white p-3 tech-clip text-sm outline-none focus:border-neoncyan transition"></div><button onclick="simLogin('登入成功')" class="w-full py-4 bg-neoncyan text-black font-bold tech-clip mt-6 text-sm tracking-widest shadow-[0_0_15px_rgba(0,243,255,0.2)] hover:bg-white transition">登入系統 CONNECT</button><div class="relative flex items-center my-6"><div class="flex-grow border-t border-slate-800"></div><span class="px-3 text-[10px] text-gray-500 tracking-widest uppercase">快速連線 SSO</span><div class="flex-grow border-t border-slate-800"></div></div><div class="space-y-3"><button onclick="simLogin('Google 授權成功')" class="w-full py-3 bg-darkbg border border-gray-600 text-gray-300 font-bold tech-clip flex justify-center items-center gap-2 hover:bg-white/5 transition"><i class="fa-brands fa-google text-lg"></i> GOOGLE</button><button onclick="simLogin('LINE 授權成功')" class="w-full py-3 bg-darkbg border border-[#06C755] text-[#06C755] font-bold tech-clip flex justify-center items-center gap-2 hover:bg-[#06C755]/10 transition"><i class="fa-brands fa-line text-lg"></i> LINE</button></div><div class="text-center mt-6 text-xs text-gray-500">尚未加入？ <button onclick="switchAuth('register')" class="text-neoncyan font-bold hover:underline">建立帳號 REGISTER</button></div></div><div id="auth-view-register" class="p-6 hidden"><div class="space-y-4"><input type="text" placeholder="真實姓名 (取件核對用)" class="w-full bg-darkbg border border-slate-700 text-white p-3 tech-clip text-sm outline-none focus:border-neoncyan transition"><input type="tel" placeholder="手機號碼 (登入帳號)" class="w-full bg-darkbg border border-slate-700 text-white p-3 tech-clip text-sm outline-none focus:border-neoncyan transition"><input type="password" placeholder="設定密碼 (至少6位數)" class="w-full bg-darkbg border border-slate-700 text-white p-3 tech-clip text-sm outline-none focus:border-neoncyan transition"></div><button onclick="simLogin('註冊成功')" class="w-full py-4 bg-neoncyan text-black font-bold tech-clip mt-6 text-sm tracking-widest shadow-[0_0_15px_rgba(0,243,255,0.2)] hover:bg-white transition">加入會員 REGISTER</button><div class="text-center mt-6 text-xs text-gray-500">已有帳號？ <button onclick="switchAuth('login')" class="text-neoncyan font-bold hover:underline">返回登入 LOGIN</button></div></div></div></div>
+  <div id="auth-modal" class="fixed inset-0 bg-black/95 z-[80] hidden items-center justify-center p-4 backdrop-blur-sm"><div class="bg-panelbg border-t-2 border-neoncyan w-full max-w-sm tech-clip overflow-hidden shadow-[0_0_30px_rgba(0,243,255,0.2)]"><div class="p-4 flex justify-between items-center border-b border-white/5"><h3 class="font-bold text-neoncyan tracking-widest font-esport text-lg flex items-center gap-2"><i class="fa-solid fa-fingerprint"></i> <span id="auth-title">SYSTEM LOGIN</span></h3><button onclick="closeAuth()" class="text-gray-400 hover:text-white transition"><i class="fa-solid fa-xmark text-xl"></i></button></div><div id="auth-view-login" class="p-6"><div class="space-y-4"><input id="login-account" type="text" placeholder="手機 或 信箱 PHONE / EMAIL" class="w-full bg-darkbg border border-slate-700 text-white p-3 tech-clip text-sm outline-none focus:border-neoncyan transition"><input id="login-password" type="password" placeholder="登入密碼 PASSWORD" class="w-full bg-darkbg border border-slate-700 text-white p-3 tech-clip text-sm outline-none focus:border-neoncyan transition"></div><button onclick="window._fbLogin?window._fbLogin():simLogin('登入成功')" class="w-full py-4 bg-neoncyan text-black font-bold tech-clip mt-6 text-sm tracking-widest shadow-[0_0_15px_rgba(0,243,255,0.2)] hover:bg-white transition">登入系統 CONNECT</button><div class="relative flex items-center my-6"><div class="flex-grow border-t border-slate-800"></div><span class="px-3 text-[10px] text-gray-500 tracking-widest uppercase">快速連線 SSO</span><div class="flex-grow border-t border-slate-800"></div></div><div class="space-y-3"><button onclick="window._fbGoogleLogin?window._fbGoogleLogin():simLogin('Google 授權成功')" class="w-full py-3 bg-darkbg border border-gray-600 text-gray-300 font-bold tech-clip flex justify-center items-center gap-2 hover:bg-white/5 transition"><i class="fa-brands fa-google text-lg"></i> GOOGLE</button><button onclick="simLogin('LINE 授權成功')" class="w-full py-3 bg-darkbg border border-[#06C755] text-[#06C755] font-bold tech-clip flex justify-center items-center gap-2 hover:bg-[#06C755]/10 transition"><i class="fa-brands fa-line text-lg"></i> LINE</button></div><div class="text-center mt-6 text-xs text-gray-500">尚未加入？ <button onclick="switchAuth('register')" class="text-neoncyan font-bold hover:underline">建立帳號 REGISTER</button></div></div><div id="auth-view-register" class="p-6 hidden"><div class="space-y-4"><input type="text" placeholder="真實姓名 (取件核對用)" class="w-full bg-darkbg border border-slate-700 text-white p-3 tech-clip text-sm outline-none focus:border-neoncyan transition"><input type="tel" placeholder="手機號碼 (登入帳號)" class="w-full bg-darkbg border border-slate-700 text-white p-3 tech-clip text-sm outline-none focus:border-neoncyan transition"><input type="password" placeholder="設定密碼 (至少6位數)" class="w-full bg-darkbg border border-slate-700 text-white p-3 tech-clip text-sm outline-none focus:border-neoncyan transition"></div><button onclick="window._fbRegister?window._fbRegister():simLogin('註冊成功')" class="w-full py-4 bg-neoncyan text-black font-bold tech-clip mt-6 text-sm tracking-widest shadow-[0_0_15px_rgba(0,243,255,0.2)] hover:bg-white transition">加入會員 REGISTER</button><div class="text-center mt-6 text-xs text-gray-500">已有帳號？ <button onclick="switchAuth('login')" class="text-neoncyan font-bold hover:underline">返回登入 LOGIN</button></div></div></div></div>
   <div class="overlay fixed inset-0 bg-black/60 z-[50]" onclick="closeAllDrawers()"></div>
   <div class="cart-drawer drawer-transition bg-panelbg border-l border-neoncyan fixed inset-y-0 right-0 w-full md:w-[400px] z-[60] flex flex-col shadow-2xl"><div class="p-5 border-b border-slate-800 flex justify-between items-center shrink-0"><h2 class="font-bold text-white tracking-widest">CART</h2><button onclick="closeAllDrawers()" class="text-neoncyan transition hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button></div><div class="flex-grow p-4 space-y-3 overflow-y-auto" id="cart-items"></div><div class="p-5 bg-darkbg border-t border-slate-800 shrink-0"><div class="flex justify-between text-white font-bold mb-4"><span>總計金額</span><span id="cart-total" class="text-goldlight font-tech text-lg">NT$ 0</span></div><button onclick="checkout()" class="w-full py-4 mb-3 bg-blue-600 text-white font-bold tech-clip hover:bg-blue-500 transition">結帳 CHECKOUT</button><button onclick="closeAllDrawers()" class="w-full py-4 bg-transparent border border-slate-700 text-gray-400 font-bold tech-clip transition">繼續購物 CONTINUE</button></div></div>
   <div id="toast" class="fixed bottom-10 left-1/2 transform -translate-x-1/2 bg-neoncyan text-black px-6 py-3 font-bold tech-clip z-[100] opacity-0 transition-opacity whitespace-nowrap shadow-2xl"></div>
@@ -187,6 +187,8 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
 import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
+
 const _fbCfg = {
   apiKey: "AIzaSyDpasiFnj0UQpNKndmya4__C1J8bJxGN4g",
   authDomain: "apple911-shop.firebaseapp.com",
@@ -197,11 +199,90 @@ const _fbCfg = {
 };
 const _fbApp      = initializeApp(_fbCfg);
 const _fbDb       = getFirestore(_fbApp);
+const _fbAuth     = getAuth(_fbApp);
 const _fbProdsRef = doc(_fbDb, 'store', 'products');
 const _fbOrdRef   = doc(_fbDb, 'store', 'orders');
 const _fbCatRef   = doc(_fbDb, 'store', 'categories');
 
-// 前台下單時將新訂單同步到 Firestore
+// ── Auth 狀態監聽：自動同步登入狀態 ──
+onAuthStateChanged(_fbAuth, (user) => {
+  if (user) {
+    if (typeof simLogin === 'function') simLogin();
+    console.log('[Firebase Auth] 已登入:', user.email);
+  } else {
+    if (typeof logout === 'function' && isLoggedIn) logout();
+    console.log('[Firebase Auth] 未登入');
+  }
+});
+
+// ── 前台 Email 登入 ──
+window._fbLogin = async function() {
+  const account  = document.getElementById('login-account')?.value.trim();
+  const password = document.getElementById('login-password')?.value;
+  if (!account || !password) { if(typeof showToast==='function') showToast('請輸入帳號與密碼'); return; }
+  try {
+    await signInWithEmailAndPassword(_fbAuth, account, password);
+    if (typeof closeAuth === 'function') closeAuth();
+    if (typeof showToast === 'function') showToast('登入成功');
+  } catch(e) {
+    const msg = e.code === 'auth/invalid-credential' ? '帳號或密碼錯誤' :
+                e.code === 'auth/user-not-found'      ? '帳號不存在'     :
+                e.code === 'auth/wrong-password'      ? '密碼錯誤'       :
+                e.code === 'auth/invalid-email'       ? '請輸入有效的信箱' : '登入失敗，請稍後再試';
+    if (typeof showToast === 'function') showToast(msg);
+    console.error('[Firebase Auth] 登入失敗:', e.code);
+  }
+};
+
+// ── 前台 Email 註冊 ──
+window._fbRegister = async function() {
+  const nameEl  = document.querySelector('#auth-view-register input[placeholder*="姓名"]');
+  const phoneEl = document.querySelector('#auth-view-register input[type="tel"]');
+  const passEl  = document.querySelector('#auth-view-register input[type="password"]');
+  const emailEl = document.querySelector('#auth-view-register input[type="email"]');
+  // 取 email（若有獨立欄位）或用手機欄位
+  const email    = emailEl?.value.trim() || phoneEl?.value.trim();
+  const password = passEl?.value;
+  const name     = nameEl?.value.trim();
+  if (!email || !password) { if(typeof showToast==='function') showToast('請填寫信箱與密碼'); return; }
+  if (password.length < 6) { if(typeof showToast==='function') showToast('密碼至少 6 位數'); return; }
+  try {
+    await createUserWithEmailAndPassword(_fbAuth, email, password);
+    if (name) localStorage.setItem('apple911_profile', JSON.stringify({ name, phone: phoneEl?.value.trim() || '', email }));
+    if (typeof closeAuth === 'function') closeAuth();
+    if (typeof showToast === 'function') showToast('註冊成功，歡迎加入！');
+  } catch(e) {
+    const msg = e.code === 'auth/email-already-in-use' ? '此信箱已被註冊' :
+                e.code === 'auth/invalid-email'         ? '請輸入有效的信箱' :
+                e.code === 'auth/weak-password'         ? '密碼強度不足' : '註冊失敗，請稍後再試';
+    if (typeof showToast === 'function') showToast(msg);
+    console.error('[Firebase Auth] 註冊失敗:', e.code);
+  }
+};
+
+// ── Google 登入 ──
+window._fbGoogleLogin = async function() {
+  try {
+    const provider = new GoogleAuthProvider();
+    await signInWithPopup(_fbAuth, provider);
+    if (typeof closeAuth === 'function') closeAuth();
+    if (typeof showToast === 'function') showToast('Google 授權成功');
+  } catch(e) {
+    if (e.code !== 'auth/popup-closed-by-user') {
+      if (typeof showToast === 'function') showToast('Google 登入失敗');
+      console.error('[Firebase Auth] Google 登入失敗:', e.code);
+    }
+  }
+};
+
+// ── 登出 ──
+const _origLogout = window.logout;
+window.logout = async function() {
+  try { await signOut(_fbAuth); } catch(e) {}
+  if (typeof _origLogout === 'function') _origLogout();
+};
+
+// ── 前台下單時將新訂單同步到 Firestore ──
 window._fbAddOrder = async function(newOrder) {
   try {
     const snap = await getDoc(_fbOrdRef);
@@ -212,6 +293,7 @@ window._fbAddOrder = async function(newOrder) {
   } catch(e) { console.error('[Firebase] 訂單上傳失敗:', e.message); }
 };
 
+// ── 初始同步商品 / 分類 ──
 (async function() {
   try {
     const ps = await getDoc(_fbProdsRef);

@@ -52,8 +52,14 @@
         <p class="text-center text-neoncyan text-xs tracking-widest mb-8">ADMIN SYSTEM</p>
         <div class="space-y-4">
           <div>
+            <label class="text-xs text-neoncyan block mb-1">管理員信箱</label>
+            <input id="admin-password" type="email" placeholder="請輸入管理員信箱"
+              class="w-full bg-darkbg border border-slate-600 text-white p-3 tech-clip text-sm focus:border-neoncyan transition"
+              onkeydown="if(event.key==='Enter')doLogin()">
+          </div>
+          <div>
             <label class="text-xs text-neoncyan block mb-1">管理員密碼</label>
-            <input id="admin-password" type="password" placeholder="請輸入密碼"
+            <input id="admin-pass-field" type="password" placeholder="請輸入密碼"
               class="w-full bg-darkbg border border-slate-600 text-white p-3 tech-clip text-sm focus:border-neoncyan transition"
               onkeydown="if(event.key==='Enter')doLogin()">
           </div>
@@ -352,11 +358,16 @@
     // 登入 / 登出
     // ════════════════════════════════════════════════════════════
     function doLogin() {
-      // 暫時關閉密碼驗證，正式啟用時取消此行並恢復下方判斷
-      if (false && document.getElementById('admin-password').value !== ADMIN_PASS) {
-        document.getElementById('login-error').classList.remove('hidden');
-        return;
+      // 密碼由 Firebase Auth 驗證，此函式由 _fbAdminLogin 呼叫
+      if (typeof window._fbAdminLogin === 'function') {
+        window._fbAdminLogin();
+      } else {
+        // Firebase 尚未載入時的 fallback（不應發生）
+        _doShowAdmin();
       }
+    }
+
+    function _doShowAdmin() {
       document.getElementById('login-screen').classList.add('hidden');
       const main = document.getElementById('admin-main');
       main.classList.remove('hidden');
@@ -366,6 +377,7 @@
     }
 
     function doLogout() {
+      if (typeof window._fbAdminSignOut === 'function') window._fbAdminSignOut();
       const main = document.getElementById('admin-main');
       main.classList.add('hidden');
       main.classList.remove('flex');
@@ -1247,12 +1259,17 @@
     document.getElementById('admin-password').addEventListener('keydown', e => {
       if (e.key === 'Enter') doLogin();
     });
+    document.getElementById('admin-pass-field').addEventListener('keydown', e => {
+      if (e.key === 'Enter') doLogin();
+    });
   </script>
 
 <!-- Firebase 整合 START — 可整段刪除 -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
 import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
+
 const _fbCfg = {
   apiKey: "AIzaSyDpasiFnj0UQpNKndmya4__C1J8bJxGN4g",
   authDomain: "apple911-shop.firebaseapp.com",
@@ -1263,9 +1280,51 @@ const _fbCfg = {
 };
 const _fbApp      = initializeApp(_fbCfg);
 const _fbDb       = getFirestore(_fbApp);
+const _fbAuth     = getAuth(_fbApp);
 const _fbProdsRef = doc(_fbDb, 'store', 'products');
 const _fbOrdRef   = doc(_fbDb, 'store', 'orders');
 const _fbCatRef   = doc(_fbDb, 'store', 'categories');
+
+// ── 後台管理員 Email 登入 ──
+window._fbAdminLogin = async function() {
+  const email    = document.getElementById('admin-password').value.trim(); // 欄位重用為 email
+  // 若欄位輸入含 @ 視為 email+密碼模式；否則顯示提示
+  // 實際上後台登入欄位需分成 email + password，見下方說明
+  const passEl   = document.getElementById('admin-pass-field');
+  const password = passEl ? passEl.value : email;
+  const emailVal = passEl ? email : null;
+
+  if (!emailVal || !password) {
+    document.getElementById('login-error').classList.remove('hidden');
+    document.getElementById('login-error').textContent = '請輸入帳號與密碼';
+    return;
+  }
+  try {
+    await signInWithEmailAndPassword(_fbAuth, emailVal, password);
+    // 登入成功由 onAuthStateChanged 處理
+  } catch(e) {
+    document.getElementById('login-error').classList.remove('hidden');
+    document.getElementById('login-error').textContent =
+      e.code === 'auth/invalid-credential' ? '帳號或密碼錯誤，請重試' :
+      e.code === 'auth/invalid-email'       ? '請輸入有效的信箱'       : '登入失敗，請稍後再試';
+    console.error('[Firebase Auth] 後台登入失敗:', e.code);
+  }
+};
+
+// ── 登出 ──
+window._fbAdminSignOut = async function() {
+  try { await signOut(_fbAuth); } catch(e) {}
+};
+
+// ── Auth 狀態監聽 ──
+onAuthStateChanged(_fbAuth, (user) => {
+  if (user) {
+    console.log('[Firebase Auth] 後台已登入:', user.email);
+    if (typeof _doShowAdmin === 'function') _doShowAdmin();
+  } else {
+    console.log('[Firebase Auth] 後台未登入');
+  }
+});
 
 window._fbSaveProducts = async function(prods) {
   try {
