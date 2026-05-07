@@ -270,8 +270,25 @@ window._fbLogin = async function() {
   const account  = document.getElementById('login-account')?.value.trim();
   const password = document.getElementById('login-password')?.value;
   if (!account || !password) { if(typeof showToast==='function') showToast('請輸入帳號與密碼'); return; }
+
+  let emailToUse = account;
+
+  // 若不含 @ 視為手機號碼，去 Firestore 找對應 email
+  if (!account.includes('@')) {
+    try {
+      const snap = await getDoc(doc(_fbDb, 'store', 'members'));
+      const list = snap.exists() ? (snap.data().list || []) : [];
+      const member = list.find(m => m.phone === account);
+      if (!member) { if(typeof showToast==='function') showToast('此手機號碼尚未註冊'); return; }
+      emailToUse = member.email;
+    } catch(e) {
+      if(typeof showToast==='function') showToast('查詢失敗，請稍後再試');
+      return;
+    }
+  }
+
   try {
-    await signInWithEmailAndPassword(_fbAuth, account, password);
+    await signInWithEmailAndPassword(_fbAuth, emailToUse, password);
     if (typeof closeAuth === 'function') closeAuth();
     if (typeof showToast === 'function') showToast('登入成功');
   } catch(e) {
