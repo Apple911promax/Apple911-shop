@@ -11,6 +11,7 @@
 - 購物車
 - 結帳流程
 - 訂單流程
+- 會員註冊 / 登入（開發中）
 
 ### 後台系統
 - 商品管理
@@ -19,12 +20,68 @@
 - 報表系統
 - 庫存功能
 - 利潤與成本計算
+- 會員管理（開發中）
 
-技術架構：
+### 技術架構
 - HTML
 - Tailwind CSS
 - JavaScript
-- localStorage
+- localStorage（本機快取）
+- Firebase Firestore（跨裝置資料同步）
+- Firebase Authentication（會員登入，開發中）
+
+---
+
+## Firebase 資料結構
+
+### Firestore 文件路徑
+| 路徑 | 內容 | 方向 |
+|------|------|------|
+| `store/products` | `{ list: [...], updatedAt }` | 後台寫 → 前台讀 |
+| `store/orders` | `{ list: [...], updatedAt }` | 前台寫 + 後台讀寫 |
+| `store/categories` | `{ list: [...], updatedAt }` | 後台寫 → 前台讀 |
+| `store/members` | `{ list: [...], updatedAt }` | 前台寫 → 後台讀寫（開發中）|
+
+### 資料同步規則
+- localStorage 作為本機快取，Firestore 為主要資料來源
+- 頁面載入時優先從 Firestore 同步，再更新 localStorage
+- 離線時 fallback 至 localStorage
+- 前台下單：localStorage 立即更新 + 非同步寫入 Firestore
+- 後台儲存商品 / 訂單 / 分類：localStorage 立即更新 + 非同步寫入 Firestore
+
+### Firebase module 規則
+- Firebase 整合程式碼集中在 `<!-- Firebase 整合 START -->` 至 `<!-- Firebase 整合 END -->` 區塊
+- 此區塊可整段刪除而不影響其他功能
+- 使用 `type="module"` script，透過 `window._fb*` 橋接至非模組程式碼
+
+---
+
+## 會員系統規格（開發中）
+
+### 前台註冊欄位
+| 欄位 | 必填 | 備註 |
+|------|------|------|
+| 手機號碼 | ✅ | 登入帳號之一 |
+| 信箱 | ✅ | 登入帳號之一 |
+| 姓名 | ✅ | 取貨核對用 |
+| 生日（年月日） | ✅ | 填後不可修改，當月有優惠 |
+| 密碼 | ✅ | 大寫 + 小寫 + 數字，至少 8 碼 |
+| 地址 | ✅ | 結帳預填用 |
+| 註冊時間 | 系統自動 | — |
+
+### 前台登入方式
+- 手機號碼 + 密碼
+- 信箱 + 密碼
+- Google 一鍵登入（Firebase Auth）
+- LINE 登入（預留 UI，待串接）
+
+### 後台會員管理功能
+- 會員列表：姓名、電話、信箱、生日、地址、總消費金額
+- 依訂單狀態篩選會員（待付款、待出貨等）
+- 點進單一會員：完整資料 + 進行中訂單 + 歷史訂單
+- 在會員頁直接修改該客人訂單狀態
+- 管理員可修改客人資料（生日除外）
+- 管理員可新增備註
 
 ---
 
@@ -78,8 +135,7 @@
 
 ### 系統核心
 - showSection()
-- 登入流程
-- localStorage 資料
+- localStorage 資料結構
 - 手機版 UI
 - 桌面版 UI
 
@@ -99,18 +155,23 @@
 
 ---
 
-## GitHub 工作流
-- main 為正式站
-- dev 為 AI 修改測試站
-- AI 應優先修改 dev branch
-- 測試後再 merge 到 main
+## Git / Deploy Rules
+
+- 每次完成修改後，直接建立 PR 並 merge 到 main
+- 不要停留在 claude/* 分支
+- main 是正式部署分支，Vercel 自動讀取 main 部署
+- 修改完成後不需要詢問是否 merge，直接執行
+- merge 前必須確認登入、商品管理、訂單、購物車、結帳流程沒有被破壞
+- 不得重構專案
+- 不得修改 UI
+- 只針對指定問題做最小修改
 
 ---
 
 ## Context / Clear Rules
 
-- 當對話過長或 context 混亂時，主動提醒我使用 /clear
-- 完成一個功能後，建議我 /clear 再繼續下一個功能
+- 當對話過長或 context 混亂時，主動提醒使用 /clear
+- 完成一個功能後，建議 /clear 再繼續下一個功能
 - /clear 後仍必須完整遵守 CLAUDE.md 所有規則
 - 不可因為 /clear 就遺忘專案規則
 - 不可因為 context 不足就重構專案
@@ -119,17 +180,3 @@
 - context 不足時先 debug 問題來源，不可亂猜
 - 避免長時間累積無關對話造成錯誤修改
 - 優先保持 context 精簡與穩定
-
----
-
-## Git / Deploy Rules
-
-- 每次完成修改後，直接建立 PR 並 merge 到 main
-- 不要停留在 claude/* 分支
-- main 是正式部署分支
-- Vercel 會讀取 main 自動部署
-- 修改完成後不需要再詢問我是否 merge
-- merge 前必須確認登入、商品管理、訂單、購物車、結帳流程沒有被破壞
-- 不得重構專案
-- 不得修改 UI
-- 只針對我指定的問題做最小修改
