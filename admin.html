@@ -494,18 +494,25 @@
 
         return `
         <div class="border-b border-slate-800 last:border-0 hover:bg-white/[0.02] transition cursor-pointer" onclick="toggleOrderRow('${order.id}')">
-          <div class="grid items-center gap-2 px-4 py-3" style="grid-template-columns:1fr 1fr auto">
-            <div class="min-w-0">
-              <p class="font-bold text-white text-sm truncate">${cName}</p>
-              <p class="text-neoncyan text-xs font-tech tracking-wider mt-0.5">${cPhone}</p>
-              <p class="text-gray-600 text-[10px] font-tech tracking-widest mt-0.5">${order.id}</p>
+          <div class="flex items-center justify-between px-4 py-4 gap-3">
+            <div class="flex-1 min-w-0 space-y-2">
+              <div>
+                <p class="text-gray-600 text-[10px] uppercase tracking-widest font-bold mb-0.5">客戶姓名</p>
+                <p class="text-white text-sm font-bold">${cName}</p>
+              </div>
+              <div>
+                <p class="text-gray-600 text-[10px] uppercase tracking-widest font-bold mb-0.5">聯絡手機</p>
+                <p class="text-neoncyan text-xs font-tech tracking-wider">${cPhone}</p>
+              </div>
+              <div>
+                <p class="text-gray-600 text-[10px] uppercase tracking-widest font-bold mb-0.5">服務項目</p>
+                <p class="text-gray-300 text-xs">${itemsText}</p>
+              </div>
+              <p class="text-gray-700 text-[10px] font-tech tracking-widest">ID: ${order.id}</p>
             </div>
-            <div class="min-w-0">
-              <p class="text-gray-300 text-xs truncate">${itemsText}</p>
-              <p class="text-gray-600 text-[10px] mt-0.5">${order.time||'-'}</p>
-            </div>
-            <div class="shrink-0">
+            <div class="shrink-0 flex flex-col items-end gap-2">
               <span class="status-badge badge-${order.status}">${order.status}</span>
+              <p class="text-gray-600 text-[10px]">${order.time||'-'}</p>
             </div>
           </div>
           <div id="order-row-${order.id}" class="hidden px-4 pb-4 space-y-3 border-t border-slate-800/60">
