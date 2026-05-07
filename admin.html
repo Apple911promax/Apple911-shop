@@ -619,7 +619,7 @@
       const categoryName = [item?.name, brand?.name, series?.name].filter(Boolean).join(' / ');
 
       const doSave = (imageData) => {
-        const prods = loadProducts();
+        const prods = JSON.parse(localStorage.getItem('a911_products') || '[]');
         const newId = prods.length > 0 ? Math.max(...prods.map(p=>p.id)) + 1 : 1;
         prods.push({
           id: newId, name, price,
@@ -946,7 +946,7 @@
       const series = brand ? (brand.series||[]).find(s => s.id === prodPath[2].id) : null;
       const categoryName = [item?.name, brand?.name, series?.name].filter(Boolean).join(' / ');
       const doSave = (imageData) => {
-        const prods = loadProducts();
+        const prods = JSON.parse(localStorage.getItem('a911_products') || '[]');
         const newId = prods.length > 0 ? Math.max(...prods.map(p=>p.id)) + 1 : 1;
         prods.push({ id: newId, name, price, category: item?.name||'', cat: item?.name||'',
           itemId: prodPath[0].id, brandId: prodPath[1].id, seriesId: prodPath[2].id,
