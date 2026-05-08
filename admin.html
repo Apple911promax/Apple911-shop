@@ -102,7 +102,7 @@
     <nav class="sticky top-0 z-40 bg-panelbg/95 backdrop-blur-md border-b-2 border-neoncyan/50 shadow-[0_0_15px_rgba(0,243,255,0.15)]">
       <div class="px-4 py-3 flex justify-between items-center">
         <div class="flex items-center gap-3">
-          <button onclick="toggleSidebar()" class="text-neoncyan p-1">
+          <button id="sidebar-toggle" type="button" onclick="toggleSidebar()" class="text-neoncyan p-1">
             <i class="fa-solid fa-bars text-xl"></i>
           </button>
           <div class="font-esport text-xl font-black tracking-widest text-white flex items-center gap-2">
@@ -417,17 +417,18 @@
     // 手機側選單
     // ════════════════════════════════════════════════════════════
     function toggleSidebar() {
-      const sb = document.getElementById('sidebar-mobile');
-      const ov = document.getElementById('sidebar-overlay');
       const sbDesktop = document.getElementById('sidebar-desktop');
+      const sbMobile = document.getElementById('sidebar-mobile');
+      const ov = document.getElementById('sidebar-overlay');
       if (window.matchMedia('(min-width: 768px)').matches && sbDesktop) {
         sbDesktop.classList.toggle('hidden');
         return;
       }
-      const isOpen = sb.classList.contains('flex');
-      sb.classList.toggle('hidden',  isOpen);
-      sb.classList.toggle('flex',   !isOpen);
-      ov.classList.toggle('hidden',  isOpen);
+      if (!sbMobile) return;
+      const isOpen = sbMobile.classList.contains('flex');
+      sbMobile.classList.toggle('hidden',  isOpen);
+      sbMobile.classList.toggle('flex',   !isOpen);
+      if (ov) ov.classList.toggle('hidden',  isOpen);
     }
 
     // ════════════════════════════════════════════════════════════
