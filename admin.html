@@ -371,6 +371,10 @@
       currentPage = page;
       if (page === 'members-orders') { switchMoTab('orders'); }
       if (page === 'products') renderProducts();
+      if (window.matchMedia('(max-width: 767px)').matches) {
+        const sbMobile = document.getElementById('sidebar-mobile');
+        if (sbMobile && sbMobile.classList.contains('flex')) toggleSidebar();
+      }
     }
 
     function goToOrders(status = '') {
