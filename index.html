@@ -232,11 +232,21 @@ const _fbProdsRef = doc(_fbDb, 'store', 'products');
 const _fbCatRef   = doc(_fbDb, 'store', 'categories');
 
 // ── Auth 狀態監聽：自動同步登入狀態 ──
-onAuthStateChanged(_fbAuth, (user) => {
+onAuthStateChanged(_fbAuth, async (user) => {
   if (user) {
     window._fbCurrentUser = { uid: user.uid, email: user.email };
     if (typeof simLogin === 'function') simLogin();
     console.log('[Firebase Auth] 已登入:', user.email);
+    // 自動從雲端同步個人資料
+    try {
+      const snap = await getDoc(doc(_fbDb, 'members', user.uid));
+      if (snap.exists()) {
+        const p = snap.data();
+        localStorage.setItem('a911_user_profile', JSON.stringify(p));
+        localStorage.setItem('apple911_profile', JSON.stringify({ name: p.name, phone: p.phone, email: p.email, line: p.lineId || '', address: p.address }));
+        if (typeof loadProfile === 'function') loadProfile();
+      }
+    } catch(e) { console.error('[Firebase] 同步個人資料失敗:', e.message); }
   } else {
     window._fbCurrentUser = null;
     if (typeof logout === 'function' && isLoggedIn) logout();
@@ -255,11 +265,10 @@ window._fbLogin = async function() {
   // 若不含 @ 視為手機號碼，去 Firestore 找對應 email
   if (!account.includes('@')) {
     try {
-      const snap = await getDoc(doc(_fbDb, 'store', 'members'));
-      const list = snap.exists() ? (snap.data().list || []) : [];
-      const member = list.find(m => m.phone === account);
-      if (!member) { if(typeof showToast==='function') showToast('此手機號碼尚未註冊'); return; }
-      emailToUse = member.email;
+      const q = query(collection(_fbDb, 'members'), where('phone', '==', account));
+      const snap = await getDocs(q);
+      if (snap.empty) { if(typeof showToast==='function') showToast('此手機號碼尚未註冊'); return; }
+      emailToUse = snap.docs[0].data().email;
     } catch(e) {
       if(typeof showToast==='function') showToast('查詢失敗，請稍後再試');
       return;
@@ -314,14 +323,10 @@ window._fbRegister = async function() {
       uid, name, phone, email, birthday, address,
       registeredAt: Date.now(), note: ''
     };
-    // 存到 Firestore members
-    const membersRef = doc(_fbDb, 'store', 'members');
-    const snap = await getDoc(membersRef);
-    const list = snap.exists() ? (snap.data().list || []) : [];
-    list.push(memberData);
-    await setDoc(membersRef, { list, updatedAt: Date.now() });
-    // 存到 localStorage
-    localStorage.setItem('a911_user_profile', JSON.stringify({ name, phone, email, birthday, address }));
+    // 直接存到獨立集合 members/{uid}
+    await setDoc(doc(_fbDb, 'members', uid), memberData);
+    // 存到 localStorage 作為快取
+    localStorage.setItem('a911_user_profile', JSON.stringify(memberData));
     localStorage.setItem('apple911_profile',   JSON.stringify({ name, phone, email, address }));
     if (typeof closeAuth  === 'function') closeAuth();
     if (typeof showToast  === 'function') showToast('註冊成功，歡迎加入！');
@@ -339,7 +344,18 @@ window._fbRegister = async function() {
 window._fbGoogleLogin = async function() {
   try {
     const provider = new GoogleAuthProvider();
-    await signInWithPopup(_fbAuth, provider);
+    const cred = await signInWithPopup(_fbAuth, provider);
+    const user = cred.user;
+    // 檢查是否有會員資料，若無則建立基本資料
+    const ref = doc(_fbDb, 'members', user.uid);
+    const snap = await getDoc(ref);
+    if (!snap.exists()) {
+      const memberData = {
+        uid: user.uid, name: user.displayName || '', phone: '', email: user.email, birthday: '', address: '',
+        registeredAt: Date.now(), note: 'Google Login'
+      };
+      await setDoc(ref, memberData);
+    }
     if (typeof closeAuth === 'function') closeAuth();
     if (typeof showToast === 'function') showToast('Google 授權成功');
   } catch(e) {
@@ -387,6 +403,16 @@ window._fbUpdateOrder = async function(orderId, data) {
     await updateDoc(ref, data);
     console.log('[Firebase] 訂單更新成功:', orderId);
   } catch(e) { console.error('[Firebase] 訂單更新失敗:', e.message); }
+};
+
+// ── 更新個人資料 ──
+window._fbUpdateProfile = async function(profile) {
+  if (!window._fbCurrentUser) return;
+  try {
+    const ref = doc(_fbDb, 'members', window._fbCurrentUser.uid);
+    await updateDoc(ref, profile);
+    console.log('[Firebase] 個人資料更新成功');
+  } catch(e) { console.error('[Firebase] 個人資料更新失敗:', e.message); }
 };
 
 // ── 初始同步商品 / 分類 ──

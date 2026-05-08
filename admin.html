@@ -1863,9 +1863,6 @@ onAuthStateChanged(_fbAuth, (user) => {
 const _fbOrdersCol = collection(_fbDb, 'orders');
 const _fbOrdersQuery = query(_fbOrdersCol, orderBy('time', 'desc'));
 onSnapshot(_fbOrdersQuery, (snap) => {
-  const list = [];
-  snap.forEach(d => list.push(doc.data ? d.data() : d)); // 某些環境 d 直接是資料
-  // Firestore SDK snap.forEach 的 d 是 DocumentSnapshot
   const realList = [];
   snap.forEach(docSnap => realList.push(docSnap.data()));
   orders = realList;
@@ -1875,12 +1872,38 @@ onSnapshot(_fbOrdersQuery, (snap) => {
   console.error('[Firebase] 監聽訂單失敗:', err.message);
 });
 
+// ── 即時監聽會員 ──
+const _fbMembersCol = collection(_fbDb, 'members');
+onSnapshot(_fbMembersCol, (snap) => {
+  const list = [];
+  snap.forEach(docSnap => list.push(docSnap.data()));
+  // 更新 _membersCache（這是在 admin.html 中定義的會員列表變數）
+  if (typeof _membersCache !== 'undefined') {
+    _membersCache = list;
+  }
+  // 如果在會員頁面，觸發重新渲染
+  if (currentPage === 'members') {
+    if (typeof renderMembers === 'function') renderMembers();
+  }
+  console.log('[Firebase] 會員即時更新，共', list.length, '筆');
+}, (err) => {
+  console.error('[Firebase] 監聽會員失敗:', err.message);
+});
+
 window._fbUpdateOrder = async function(orderId, data) {
   try {
     const ref = doc(_fbDb, 'orders', orderId);
     await updateDoc(ref, data);
     console.log('[Firebase] 訂單更新成功:', orderId);
   } catch(e) { console.error('[Firebase] 訂單更新失敗:', e.message); }
+};
+
+window._fbUpdateMember = async function(uid, data) {
+  try {
+    const ref = doc(_fbDb, 'members', uid);
+    await updateDoc(ref, data);
+    console.log('[Firebase] 會員更新成功:', uid);
+  } catch(e) { console.error('[Firebase] 會員更新失敗:', e.message); }
 };
 
 window._fbSaveProducts = async function(prods) {
