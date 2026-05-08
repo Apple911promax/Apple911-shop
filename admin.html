@@ -737,15 +737,15 @@
 
       const doSave = (imageData) => {
         const prods = _productsCache.slice();
-        const newId = prods.length > 0 ? Math.max(...prods.map(p=>p.id)) + 1 : 1;
         prods.push({
-          id: newId, name, price,
-          category: item?.name||'', cat: item?.name||'',
+          id: String(Date.now()), name, price,
+          cat: item?.name||'',
           itemId, brandId, seriesId, categoryName,
           description: desc,
-          image: imageData, img: 'fa-box',
-          active,
-          ...(price === 0 ? { tag:'現場報價' } : {})
+          image: imageData, img: document.getElementById('prod-icon')?.value||'fa-box',
+          active: active === true,
+          sortOrder: 0,
+          createdAt: Date.now()
         });
         saveProducts(prods);
         ['prod-name','prod-price','prod-description'].forEach(id => document.getElementById(id).value = '');
@@ -1064,11 +1064,10 @@
       const categoryName = [item?.name, brand?.name, series?.name].filter(Boolean).join(' / ');
       const doSave = (imageData) => {
         const prods = _productsCache.slice();
-        const newId = prods.length > 0 ? Math.max(...prods.map(p=>p.id)) + 1 : 1;
-        prods.push({ id: newId, name, price, category: item?.name||'', cat: item?.name||'',
+        prods.push({ id: String(Date.now()), name, price, cat: item?.name||'',
           itemId: prodPath[0].id, brandId: prodPath[1].id, seriesId: prodPath[2].id,
-          categoryName, description: desc, image: imageData, img: 'fa-box', active,
-          ...(price === 0 ? { tag:'現場報價' } : {}) });
+          categoryName, description: desc, image: imageData, img: document.getElementById('prod-icon')?.value||'fa-box', active: active === true,
+          sortOrder: 0, createdAt: Date.now() });
         saveProducts(prods);
         document.getElementById('prod-name').value = '';
         document.getElementById('prod-price').value = '';
