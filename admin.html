@@ -332,13 +332,6 @@
     // ════════════════════════════════════════════════════════════
     const ADMIN_PASS  = '0909';
     const STATUS_LIST = ['未付款','已付款','處理中','已出貨','已完成','已取消'];
-    const DEFAULT_PRODUCTS = [
-      {id:1,name:'惡魔防摔殼 終極版',  price:890, cat:'case',  category:'case',  img:'fa-mobile-screen',   image:'',description:'',active:true},
-      {id:2,name:'太空艙滿版保護貼',  price:450, cat:'case',  category:'case',  img:'fa-shield-halved',   image:'',description:'',active:true},
-      {id:3,name:'螢幕總成維修',      price:0,   cat:'repair',category:'repair',img:'fa-screwdriver-wrench',image:'',description:'',active:true,tag:'現場報價'},
-      {id:4,name:'電池檢測與更換',    price:0,   cat:'repair',category:'repair',img:'fa-battery-half',     image:'',description:'',active:true,tag:'現場報價'}
-    ];
-
     let orders      = [];
     let currentPage = 'dashboard';
 
@@ -672,8 +665,7 @@
     // 商品管理
     // ════════════════════════════════════════════════════════════
     function loadProducts() {
-      const s = JSON.parse(localStorage.getItem('a911_products') || 'null');
-      return (s && s.length > 0) ? s : DEFAULT_PRODUCTS;
+      return JSON.parse(localStorage.getItem('a911_products') || '[]');
     }
 
     function saveProducts(prods) {
