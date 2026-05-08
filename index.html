@@ -386,7 +386,8 @@ window._fbUpdateProfile = async function(profile) {
   if (!window._fbCurrentUser) return;
   try {
     const ref = doc(_fbDb, 'members', window._fbCurrentUser.uid);
-    await updateDoc(ref, profile);
+    // 使用 setDoc + merge: true 確保文件不存在時也能建立
+    await setDoc(ref, profile, { merge: true });
     console.log('[Firebase] 個人資料更新成功');
   } catch(e) { console.error('[Firebase] 個人資料更新失敗:', e.message); }
 };
