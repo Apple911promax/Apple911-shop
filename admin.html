@@ -1195,13 +1195,26 @@
     }
 
     // ════════════════════════════════════════════════════════════
-    // 商品拖曳排序
+    // 商品拖曳排序（支援滑鼠 + 手機 touch）
     // ════════════════════════════════════════════════════════════
     function initProdDrag(seriesId) {
       const list = document.getElementById('prod-drag-list');
       if (!list) return;
-      let dragSrc = null;
 
+      // ── 共用：將新順序寫入資料 ──
+      function persistOrder() {
+        const newOrder = [...list.querySelectorAll('.prod-drag-row')].map(r => r.dataset.prodId);
+        const prods = loadProducts();
+        const seriesProds = prods.filter(p => p.seriesId === seriesId);
+        const others      = prods.filter(p => p.seriesId !== seriesId);
+        const sorted = newOrder.map(id => seriesProds.find(p => p.id === id)).filter(Boolean);
+        sorted.forEach((p, i) => { p.sortOrder = i; });
+        saveProducts([...others, ...sorted]);
+        showToast('排序已儲存');
+      }
+
+      // ── 桌面：HTML5 drag ──
+      let dragSrc = null;
       list.querySelectorAll('.prod-drag-row').forEach(row => {
         row.addEventListener('dragstart', e => {
           dragSrc = row;
@@ -1212,40 +1225,105 @@
         row.addEventListener('dragend', () => {
           row.classList.remove('dragging');
           list.querySelectorAll('.prod-drag-row').forEach(r => r.classList.remove('drag-over'));
+          dragSrc = null;
         });
         row.addEventListener('dragover', e => {
           e.preventDefault();
-          e.dataTransfer.dropEffect = 'move';
           list.querySelectorAll('.prod-drag-row').forEach(r => r.classList.remove('drag-over'));
           if (row !== dragSrc) row.classList.add('drag-over');
         });
-        row.addEventListener('dragleave', () => {
-          row.classList.remove('drag-over');
-        });
+        row.addEventListener('dragleave', () => row.classList.remove('drag-over'));
         row.addEventListener('drop', e => {
           e.preventDefault();
           if (!dragSrc || dragSrc === row) return;
           row.classList.remove('drag-over');
+          const rows = [...list.querySelectorAll('.prod-drag-row')];
+          if (rows.indexOf(dragSrc) < rows.indexOf(row)) row.after(dragSrc);
+          else row.before(dragSrc);
+          persistOrder();
+        });
+      });
 
-          // 計算 DOM 中的新順序
-          const rows   = [...list.querySelectorAll('.prod-drag-row')];
-          const srcIdx = rows.indexOf(dragSrc);
-          const tgtIdx = rows.indexOf(row);
+      // ── 手機：touch 事件模擬 ──
+      let touchSrc = null;      // 被拖的 row
+      let clone    = null;      // 跟著手指的視覺複製
+      let lastOver = null;      // 上次 highlight 的 row
 
-          // 移動 DOM
-          if (srcIdx < tgtIdx) row.after(dragSrc);
-          else                  row.before(dragSrc);
+      function rowAtPoint(x, y) {
+        // 暫時隱藏 clone 才能用 elementFromPoint
+        if (clone) clone.style.display = 'none';
+        const el = document.elementFromPoint(x, y);
+        if (clone) clone.style.display = '';
+        return el ? el.closest('.prod-drag-row') : null;
+      }
 
-          // 同步到資料
-          const newRows   = [...list.querySelectorAll('.prod-drag-row')];
-          const newOrder  = newRows.map(r => r.dataset.prodId);
-          const prods     = loadProducts();
-          const seriesProds = prods.filter(p => p.seriesId === seriesId);
-          const others      = prods.filter(p => p.seriesId !== seriesId);
-          const sorted = newOrder.map(id => seriesProds.find(p => p.id === id)).filter(Boolean);
-          sorted.forEach((p, i) => { p.sortOrder = i; });
-          saveProducts([...others, ...sorted]);
-          showToast('排序已儲存');
+      list.querySelectorAll('.drag-handle').forEach(handle => {
+        handle.addEventListener('touchstart', e => {
+          e.preventDefault();           // 阻止頁面捲動
+          const touch = e.touches[0];
+          touchSrc = handle.closest('.prod-drag-row');
+          if (!touchSrc) return;
+
+          touchSrc.classList.add('dragging');
+
+          // 建立跟手的複製品
+          const rect = touchSrc.getBoundingClientRect();
+          clone = touchSrc.cloneNode(true);
+          Object.assign(clone.style, {
+            position:  'fixed',
+            left:      rect.left + 'px',
+            top:       rect.top  + 'px',
+            width:     rect.width + 'px',
+            zIndex:    '9999',
+            opacity:   '0.85',
+            pointerEvents: 'none',
+            boxShadow: '0 8px 30px rgba(0,243,255,0.3)',
+            background: '#0a0f18',
+            border:    '1px solid #00f3ff',
+            transition: 'none',
+          });
+          document.body.appendChild(clone);
+        }, { passive: false });
+
+        handle.addEventListener('touchmove', e => {
+          e.preventDefault();
+          if (!touchSrc || !clone) return;
+          const touch = e.touches[0];
+
+          // 移動複製品
+          const rect = touchSrc.getBoundingClientRect();
+          clone.style.top = (touch.clientY - rect.height / 2) + 'px';
+
+          // 找出手指下的 row
+          const over = rowAtPoint(touch.clientX, touch.clientY);
+          if (lastOver && lastOver !== over) lastOver.classList.remove('drag-over');
+          if (over && over !== touchSrc) {
+            over.classList.add('drag-over');
+            lastOver = over;
+          } else {
+            lastOver = null;
+          }
+        }, { passive: false });
+
+        handle.addEventListener('touchend', e => {
+          if (!touchSrc) return;
+          const touch = e.changedTouches[0];
+
+          // 清理
+          if (clone) { clone.remove(); clone = null; }
+          touchSrc.classList.remove('dragging');
+          if (lastOver) lastOver.classList.remove('drag-over');
+
+          const over = rowAtPoint(touch.clientX, touch.clientY);
+          if (over && over !== touchSrc) {
+            const rows = [...list.querySelectorAll('.prod-drag-row')];
+            if (rows.indexOf(touchSrc) < rows.indexOf(over)) over.after(touchSrc);
+            else over.before(touchSrc);
+            persistOrder();
+          }
+
+          touchSrc = null;
+          lastOver = null;
         });
       });
     }
