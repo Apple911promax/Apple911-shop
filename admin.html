@@ -1199,7 +1199,7 @@
 
     function loadCategories() {
       const s = JSON.parse(localStorage.getItem('a911_categories') || 'null');
-      return (s && s.length > 0) ? s : JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
+      return s !== null ? s : JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
     }
     function saveCategories(cats) {
       localStorage.setItem('a911_categories', JSON.stringify(cats));
