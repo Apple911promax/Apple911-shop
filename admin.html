@@ -487,9 +487,9 @@
         const shipLabel = order.ship==='cvs'?'超商取貨':order.ship==='home'?'宅配到府':'到店取貨';
         const payLabel  = order.pay==='bank'?'銀行轉帳':order.pay==='linepay'?'LINE Pay':order.pay==='storepay'?'到店付款':order.pay||'-';
         const itemsText = (order.items||[]).map(i=>i.name).join('、') || '-';
-        const cName  = order.customerName    || '-';
-        const cPhone = order.customerPhone   || '-';
-        const cAddr  = order.customerAddress || '-';
+        const cName  = order.customerName || order.name || order.customer || order.buyerName || '-';
+        const cPhone = order.customerPhone || order.phone || order.mobile || order.buyerPhone || '-';
+        const cAddr  = order.customerAddress || order.address || order.homeAddr || order.shipAddress || '-';
 
         return `
         <div class="bg-panelbg border border-slate-700 tech-clip p-4 hover:border-neoncyan transition cursor-pointer" onclick="toggleOrderRow('${order.id}')">
