@@ -334,6 +334,7 @@
     const STATUS_LIST = ['未付款','已付款','處理中','已出貨','已完成','已取消'];
     let orders      = [];
     let currentPage = 'dashboard';
+    let _productsCache = []; // 商品資料：唯一來源為 Firestore，不使用 localStorage
 
     // ════════════════════════════════════════════════════════════
     // 登入 / 登出
@@ -665,11 +666,11 @@
     // 商品管理
     // ════════════════════════════════════════════════════════════
     function loadProducts() {
-      return JSON.parse(localStorage.getItem('a911_products') || '[]');
+      return _productsCache;
     }
 
     function saveProducts(prods) {
-      localStorage.setItem('a911_products', JSON.stringify(prods));
+      _productsCache = prods;
       if (window._fbSaveProducts) window._fbSaveProducts(prods);
       console.log('[後台DEBUG] saveProducts 儲存', prods.length, '筆:', prods.map(p=>({id:p.id,name:p.name,active:p.active,cat:p.cat,itemId:p.itemId,brandId:p.brandId,seriesId:p.seriesId,categoryName:p.categoryName})));
     }
@@ -735,7 +736,7 @@
       const categoryName = [item?.name, brand?.name, series?.name].filter(Boolean).join(' / ');
 
       const doSave = (imageData) => {
-        const prods = JSON.parse(localStorage.getItem('a911_products') || '[]');
+        const prods = _productsCache.slice();
         const newId = prods.length > 0 ? Math.max(...prods.map(p=>p.id)) + 1 : 1;
         prods.push({
           id: newId, name, price,
@@ -1062,7 +1063,7 @@
       const series = brand ? (brand.series||[]).find(s => s.id === prodPath[2].id) : null;
       const categoryName = [item?.name, brand?.name, series?.name].filter(Boolean).join(' / ');
       const doSave = (imageData) => {
-        const prods = JSON.parse(localStorage.getItem('a911_products') || '[]');
+        const prods = _productsCache.slice();
         const newId = prods.length > 0 ? Math.max(...prods.map(p=>p.id)) + 1 : 1;
         prods.push({ id: newId, name, price, category: item?.name||'', cat: item?.name||'',
           itemId: prodPath[0].id, brandId: prodPath[1].id, seriesId: prodPath[2].id,
@@ -1645,7 +1646,7 @@ window._fbSaveCategories = async function(cats) {
     if (ps.exists()) {
       const prods = ps.data().list || [];
       if (prods.length > 0) {
-        localStorage.setItem('a911_products', JSON.stringify(prods));
+        _productsCache = prods;
         if (typeof renderStats     === 'function') renderStats();
         if (typeof renderProdDrill === 'function') renderProdDrill();
         if (typeof _dbgAdminRun    === 'function') _dbgAdminRun();
