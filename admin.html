@@ -487,74 +487,76 @@
         const shipLabel = order.ship==='cvs'?'超商取貨':order.ship==='home'?'宅配到府':'到店取貨';
         const payLabel  = order.pay==='bank'?'銀行轉帳':order.pay==='linepay'?'LINE Pay':order.pay==='storepay'?'到店付款':order.pay||'-';
         const itemsText = (order.items||[]).map(i=>i.name).join('、') || '-';
-        const optHtml   = STATUS_LIST.map(s =>
-          `<option value="${s}" ${order.status===s?'selected':''}>${s}</option>`).join('');
         const cName  = order.customerName    || '-';
         const cPhone = order.customerPhone   || '-';
         const cAddr  = order.customerAddress || '-';
 
         return `
-        <div class="border-b border-slate-800 last:border-0 hover:bg-white/[0.02] transition cursor-pointer" onclick="toggleOrderRow('${order.id}')">
-          <div class="flex items-center justify-between px-4 py-4 gap-3">
-            <div class="flex-1 min-w-0 space-y-2">
-              <div>
-                <p class="text-gray-600 text-[10px] uppercase tracking-widest font-bold mb-0.5">客戶姓名</p>
-                <p class="text-white text-sm font-bold">${cName}</p>
+        <div class="bg-panelbg border border-slate-700 tech-clip p-4 hover:border-neoncyan transition cursor-pointer" onclick="toggleOrderRow('${order.id}')">
+          <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+            <div class="flex-1 min-w-0">
+              <p class="text-[10px] uppercase tracking-widest text-gray-600 mb-1">訂單編號</p>
+              <p class="text-white text-xl font-bold truncate">${order.id}</p>
+              <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                <div>
+                  <p class="text-[10px] uppercase tracking-widest text-gray-600">客戶姓名</p>
+                  <p class="text-white">${cName}</p>
+                </div>
+                <div>
+                  <p class="text-[10px] uppercase tracking-widest text-gray-600">聯絡手機</p>
+                  <p class="text-neoncyan font-tech">${cPhone}</p>
+                </div>
               </div>
-              <div>
-                <p class="text-gray-600 text-[10px] uppercase tracking-widest font-bold mb-0.5">聯絡手機</p>
-                <p class="text-neoncyan text-xs font-tech tracking-wider">${cPhone}</p>
-              </div>
-              <div>
-                <p class="text-gray-600 text-[10px] uppercase tracking-widest font-bold mb-0.5">服務項目</p>
-                <p class="text-gray-300 text-xs">${itemsText}</p>
-              </div>
-              <p class="text-gray-700 text-[10px] font-tech tracking-widest">ID: ${order.id}</p>
             </div>
-            <div class="shrink-0 flex flex-col items-end gap-2">
+            <div class="shrink-0 text-right">
+              <p class="text-[10px] uppercase tracking-widest text-gray-600 mb-1">當前進度</p>
               <span class="status-badge badge-${order.status}">${order.status}</span>
-              <p class="text-gray-600 text-[10px]">${order.time||'-'}</p>
+              <p class="text-gray-600 text-[10px] mt-2">${order.time||'-'}</p>
             </div>
           </div>
-          <div id="order-row-${order.id}" class="hidden px-4 pb-4 space-y-3 border-t border-slate-800/60">
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs pt-3">
-              <div><p class="text-gray-600 uppercase tracking-widest font-bold mb-1 text-[10px]">配送 / 付款</p>
-                <p class="text-gray-400">${shipLabel}</p><p class="text-gray-400">${payLabel}</p></div>
-              <div><p class="text-gray-600 uppercase tracking-widest font-bold mb-1 text-[10px]">地址</p>
-                <p class="text-gray-400">${cAddr}</p></div>
-              <div class="col-span-2 md:col-span-2 md:text-right">
-                <p class="text-gray-600 uppercase tracking-widest font-bold mb-1 text-[10px]">金額</p>
-                <p class="text-goldlight font-tech font-bold text-base">NT$ ${order.total}</p>
+          <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-300">
+            <div>
+              <p class="text-[10px] uppercase tracking-widest text-gray-600 mb-1">服務項目</p>
+              <p>${itemsText}</p>
+            </div>
+            <div>
+              <p class="text-[10px] uppercase tracking-widest text-gray-600 mb-1">配送 / 付款</p>
+              <p>${shipLabel}</p>
+              <p>${payLabel}</p>
+            </div>
+            <div>
+              <p class="text-[10px] uppercase tracking-widest text-gray-600 mb-1">地址</p>
+              <p class="text-gray-500">${cAddr}</p>
+            </div>
+          </div>
+          <div id="order-row-${order.id}" class="hidden mt-4 p-4 bg-slate-900/50 border border-slate-800 tech-clip">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-3 text-xs text-gray-400">
+              <div>
+                <p class="font-bold text-gray-500 uppercase tracking-widest mb-1">訂單內容</p>
+                <p>${itemsText}</p>
+              </div>
+              <div>
+                <p class="font-bold text-gray-500 uppercase tracking-widest mb-1">配送方式</p>
+                <p>${shipLabel}</p>
+              </div>
+              <div>
+                <p class="font-bold text-gray-500 uppercase tracking-widest mb-1">付款方式</p>
+                <p>${payLabel}</p>
+              </div>
+              <div class="text-right">
+                <p class="font-bold text-gray-500 uppercase tracking-widest mb-1">金額</p>
+                <p class="text-goldlight font-tech font-bold">NT$ ${order.total}</p>
               </div>
             </div>
-            <div class="flex flex-wrap gap-2 items-center pt-1 border-t border-slate-800/60">
-              <select id="status-select-${order.id}" onclick="event.stopPropagation()"
-                class="bg-darkbg border border-slate-600 text-white p-2 tech-clip text-xs focus:border-neoncyan transition flex-1 min-w-[120px]">
-                ${optHtml}
-              </select>
-              <button onclick="event.stopPropagation();applyStatus('${order.id}')"
-                class="px-4 py-2 bg-slate-800 text-neoncyan font-bold tech-btn text-xs hover:bg-neoncyan hover:text-black transition whitespace-nowrap">
-                套用狀態
-              </button>
-              ${order.status==='未付款'?`
-              <button onclick="event.stopPropagation();markPaid('${order.id}')"
-                class="px-4 py-2 bg-slate-800 text-green-400 font-bold tech-btn text-xs hover:bg-green-400 hover:text-black transition whitespace-nowrap">
-                <i class="fa-solid fa-check mr-1"></i>標記已付款
-              </button>`:''}
-              <button onclick="event.stopPropagation();copyOrder('${order.id}')"
-                class="px-4 py-2 bg-slate-800 text-gray-400 font-bold tech-btn text-xs hover:bg-slate-600 hover:text-white transition whitespace-nowrap">
-                <i class="fa-regular fa-copy mr-1"></i>複製
-              </button>
+            <div class="flex flex-wrap gap-2 mt-3">
+              <button onclick="event.stopPropagation();toggleOrderRow('${order.id}')" class="px-4 py-2 bg-slate-800 text-white font-bold tech-btn text-xs hover:bg-slate-700 transition">收合內容</button>
             </div>
           </div>
         </div>`;
       }).join('');
 
       tableEl.innerHTML = `
-        <div class="bg-panelbg border border-slate-700 tech-clip overflow-hidden">
-          <div class="grid gap-2 px-4 py-2 border-b border-slate-700 text-[10px] text-gray-600 tracking-widest font-bold uppercase" style="grid-template-columns:1fr 1fr auto">
-            <span>Client 客戶資訊</span><span>Item 項目</span><span>Status 進度</span>
-          </div>
+        <div class="space-y-4">
           ${rowsHtml}
         </div>
         <p class="text-xs text-gray-600 px-1">共 ${filtered.length} 筆訂單</p>`;
