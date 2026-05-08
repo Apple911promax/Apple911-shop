@@ -690,7 +690,7 @@
         return;
       }
       container.innerHTML = prods.map(p => `
-        <div class="bg-panelbg border ${p.active===false?'border-slate-800 opacity-50':'border-slate-700'} tech-clip p-4 flex flex-wrap justify-between items-center gap-3">
+        <div class="bg-panelbg border ${p.active===false?'border-slate-800 opacity-50':'border-slate-700'} tech-clip p-4 flex flex-wrap justify-between items-center gap-3" id="prod-row-${p.id}">
           <div class="flex items-center gap-3 flex-1 min-w-0">
             ${p.image ? `<img src="${p.image}" class="w-10 h-10 object-cover rounded border border-slate-700 shrink-0">` : `<i class="fa-solid ${p.img||'fa-box'} text-xl text-slate-500 shrink-0"></i>`}
             <div class="min-w-0">
@@ -701,11 +701,15 @@
           <div class="flex items-center gap-3 shrink-0 flex-wrap">
             <span class="text-goldlight font-tech text-sm font-bold">${p.price===0?'現場報價':'NT$ '+p.price}</span>
             <span class="text-xs px-2 py-1 rounded font-bold ${p.active===false?'text-gray-600 bg-slate-900':'text-green-400 bg-green-900/20'}">${p.active===false?'下架':'上架'}</span>
-            <button onclick="toggleProductActive(${p.id})"
+            <button onclick="editProduct('${p.id}')"
+              class="text-xs text-gray-500 hover:text-neoncyan transition px-3 py-1 bg-slate-800 rounded font-bold">
+              編輯
+            </button>
+            <button onclick="toggleProductActive('${p.id}')"
               class="text-xs text-gray-500 hover:text-neoncyan transition px-3 py-1 bg-slate-800 rounded font-bold">
               ${p.active===false?'上架':'下架'}
             </button>
-            <button onclick="deleteProduct(${p.id})" class="text-slate-600 hover:text-neonred transition px-2">
+            <button onclick="deleteProduct('${p.id}')" class="text-slate-600 hover:text-neonred transition px-2">
               <i class="fa-solid fa-trash-can"></i>
             </button>
           </div>
@@ -771,7 +775,7 @@
 
     function toggleProductActive(id) {
       const prods = loadProducts();
-      const prod  = prods.find(p => p.id === id);
+      const prod  = prods.find(p => p.id == id);
       if (!prod) return;
       prod.active = prod.active === false;
       saveProducts(prods);
@@ -782,11 +786,102 @@
 
     function deleteProduct(id) {
       showConfirm('確定要刪除此商品？', () => {
-        saveProducts(loadProducts().filter(p => p.id !== id));
+        saveProducts(loadProducts().filter(p => p.id != id));
         renderProdDrill();
         renderStats();
         showToast('商品已刪除');
       });
+    }
+
+    function editProduct(id) {
+      // 如果已有展開的編輯列，先收起
+      const existing = document.getElementById('prod-edit-row-' + id);
+      if (existing) { existing.remove(); return; }
+      const prods = loadProducts();
+      const prod  = prods.find(p => p.id == id);
+      if (!prod) return;
+      const row = document.getElementById('prod-row-' + id);
+      if (!row) return;
+      const editRow = document.createElement('div');
+      editRow.id = 'prod-edit-row-' + id;
+      editRow.className = 'bg-darkbg border-b border-slate-700 px-4 py-4 space-y-3';
+      editRow.innerHTML = `
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div class="md:col-span-2">
+            <label class="text-xs text-gray-400 block mb-1">商品名稱</label>
+            <input id="edit-name-${id}" type="text" value="${prod.name||''}" class="w-full bg-panelbg border border-slate-600 text-white p-2 tech-clip text-sm focus:border-neoncyan transition">
+          </div>
+          <div>
+            <label class="text-xs text-gray-400 block mb-1">價格（0 = 現場報價）</label>
+            <input id="edit-price-${id}" type="number" min="0" value="${prod.price||0}" class="w-full bg-panelbg border border-slate-600 text-white p-2 tech-clip text-sm focus:border-neoncyan transition">
+          </div>
+          <div>
+            <label class="text-xs text-gray-400 block mb-1">狀態</label>
+            <select id="edit-active-${id}" class="w-full bg-panelbg border border-slate-600 text-white p-2 tech-clip text-sm focus:border-neoncyan transition">
+              <option value="true" ${prod.active!==false?'selected':''}>上架</option>
+              <option value="false" ${prod.active===false?'selected':''}>下架</option>
+            </select>
+          </div>
+          <div class="md:col-span-2">
+            <label class="text-xs text-gray-400 block mb-1">商品說明</label>
+            <input id="edit-desc-${id}" type="text" value="${prod.description||''}" class="w-full bg-panelbg border border-slate-600 text-white p-2 tech-clip text-sm focus:border-neoncyan transition">
+          </div>
+          <div>
+            <label class="text-xs text-gray-400 block mb-1">Icon（無圖片時顯示）</label>
+            <input id="edit-img-${id}" type="text" value="${prod.img||'fa-box'}" placeholder="fa-box" class="w-full bg-panelbg border border-slate-600 text-white p-2 tech-clip text-sm focus:border-neoncyan transition">
+            <p class="text-[10px] text-gray-600 mt-1">FontAwesome icon 名稱，例如 fa-mobile-screen、fa-shield-halved</p>
+          </div>
+          <div>
+            <label class="text-xs text-gray-400 block mb-1">更換圖片（選填）</label>
+            <input id="edit-image-${id}" type="file" accept="image/*" class="w-full bg-panelbg border border-slate-600 text-white p-2 tech-clip text-xs focus:border-neoncyan transition file:mr-2 file:py-1 file:px-2 file:border-0 file:bg-slate-700 file:text-neoncyan file:text-xs file:font-bold file:cursor-pointer">
+            ${prod.image ? `<div class="mt-2"><img src="${prod.image}" class="h-16 object-contain rounded border border-slate-700"></div>` : ''}
+          </div>
+        </div>
+        <div class="flex gap-2 justify-end">
+          <button onclick="cancelEditProduct('${id}')" class="px-4 py-2 bg-slate-800 text-gray-400 font-bold tech-btn text-xs hover:bg-slate-600 hover:text-white transition">取消</button>
+          <button onclick="saveEditProduct('${id}')" class="px-4 py-2 bg-neoncyan text-black font-bold tech-btn text-xs hover:bg-white transition"><i class="fa-solid fa-floppy-disk mr-1"></i>儲存</button>
+        </div>`;
+      row.after(editRow);
+    }
+
+    function cancelEditProduct(id) {
+      const editRow = document.getElementById('prod-edit-row-' + id);
+      if (editRow) editRow.remove();
+    }
+
+    function saveEditProduct(id) {
+      const name   = document.getElementById('edit-name-'  + id)?.value.trim();
+      const price  = parseInt(document.getElementById('edit-price-' + id)?.value) || 0;
+      const active = document.getElementById('edit-active-' + id)?.value === 'true';
+      const desc   = document.getElementById('edit-desc-'  + id)?.value.trim();
+      const img    = document.getElementById('edit-img-'   + id)?.value.trim() || 'fa-box';
+      const fileInput = document.getElementById('edit-image-' + id);
+      if (!name) return showToast('商品名稱不可為空');
+      const doSave = (imageData) => {
+        const prods = loadProducts();
+        const prod  = prods.find(p => p.id == id);
+        if (!prod) return;
+        prod.name        = name;
+        prod.price       = price;
+        prod.active      = active;
+        prod.description = desc;
+        prod.img         = img;
+        prod.updatedAt   = Date.now();
+        if (imageData !== null) prod.image = imageData;
+        saveProducts(prods);
+        cancelEditProduct(id);
+        renderProdDrill();
+        renderStats();
+        showToast('已儲存：' + name);
+      };
+      const file = fileInput?.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = e => doSave(e.target.result);
+        reader.readAsDataURL(file);
+      } else {
+        doSave(null);
+      }
     }
 
     // ════════════════════════════════════════════════════════════
@@ -942,7 +1037,7 @@
       const filtered = prods.filter(p => p.seriesId === seriesId);
 
       const prodsHtml = filtered.map(p => `
-        <div class="flex items-center gap-3 px-4 py-3 border-b border-slate-800 last:border-0 hover:bg-white/[0.02] transition">
+        <div class="flex items-center gap-3 px-4 py-3 border-b border-slate-800 last:border-0 hover:bg-white/[0.02] transition" id="prod-row-${p.id}">
           ${p.image ? `<img src="${p.image}" class="w-10 h-10 object-cover rounded border border-slate-700 shrink-0">` : `<i class="fa-solid ${p.img||'fa-box'} text-lg text-slate-500 shrink-0 w-10 text-center"></i>`}
           <div class="flex-1 min-w-0">
             <p class="text-sm font-bold text-white truncate">${p.name}</p>
@@ -950,8 +1045,9 @@
           </div>
           <div class="flex items-center gap-2 shrink-0">
             <span class="text-xs px-2 py-1 rounded font-bold ${p.active===false?'text-gray-600 bg-slate-900':'text-green-400 bg-green-900/20'}">${p.active===false?'下架':'上架'}</span>
-            <button onclick="toggleProductActive(${p.id})" class="text-xs text-gray-500 hover:text-neoncyan transition px-2 py-1 bg-slate-800 rounded font-bold">${p.active===false?'上架':'下架'}</button>
-            <button onclick="deleteProduct(${p.id})" class="text-slate-600 hover:text-neonred transition px-2"><i class="fa-solid fa-trash-can text-sm"></i></button>
+            <button onclick="editProduct('${p.id}')" class="text-xs text-gray-500 hover:text-neoncyan transition px-2 py-1 bg-slate-800 rounded font-bold">編輯</button>
+            <button onclick="toggleProductActive('${p.id}')" class="text-xs text-gray-500 hover:text-neoncyan transition px-2 py-1 bg-slate-800 rounded font-bold">${p.active===false?'上架':'下架'}</button>
+            <button onclick="deleteProduct('${p.id}')" class="text-slate-600 hover:text-neonred transition px-2"><i class="fa-solid fa-trash-can text-sm"></i></button>
           </div>
         </div>`).join('');
 
