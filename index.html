@@ -131,7 +131,15 @@
     function _getLatestProducts(){return products;}
     function renderFrontCategories(){const storedCats=JSON.parse(localStorage.getItem('a911_categories')||'[]');const cats=storedCats;const sidebarEl=document.getElementById('front-cat-list');if(sidebarEl)renderSidebarMenu(cats);const gridEl=document.getElementById('home-cat-grid');if(gridEl){if(cats.length===0){gridEl.innerHTML='<div class="col-span-2 text-center py-10 text-gray-500 text-xs tracking-widest">載入分類中...</div>';}else{gridEl.innerHTML=cats.map(c=>`<div class="bg-darkbg border border-slate-800 p-6 tech-clip text-center cursor-pointer hover:border-neoncyan transition group" onclick="applyFilter('${c.name}')"><i class="fa-solid fa-tag text-4xl text-slate-600 mb-3 group-hover:text-neoncyan transition"></i><h3 class="font-bold text-white text-sm">${c.name}</h3></div>`).join('')+`<div class="bg-slate-900 border border-slate-700 p-6 tech-clip text-center cursor-pointer hover:border-goldlight transition col-span-2 group" onclick="applyFilter('all')"><i class="fa-solid fa-globe text-4xl text-slate-500 mb-3 group-hover:text-goldlight transition"></i><h3 class="font-bold text-gold-gradient text-sm">瀏覽全部 <span class="en-sub block mt-1">VIEW ALL</span></h3></div>`;}}}
 
-    function renderSidebarMenu(catsArg){/* ... */}
+    function renderSidebarMenu(catsArg){
+      const sidebarEl=document.getElementById('front-cat-list');
+      if(!sidebarEl)return;
+      sidebarEl.innerHTML=catsArg.map(c=>`
+        <button onclick="applyFilter('${c.name}')" class="w-full text-left p-4 bg-darkbg border border-neoncyan/20 text-gray-400 font-bold tech-clip transition uppercase hover:bg-white/5 hover:border-neoncyan hover:text-white group">
+          <i class="fa-solid fa-tag mr-2 text-neoncyan/50 group-hover:text-neoncyan transition"></i>${c.name}
+        </button>
+      `).join('');
+    }
     function sidebarToggleItem(itemId){/* ... */}
     function sidebarToggleBrand(itemId,brandId){/* ... */}
     function sidebarSelectSeries(itemId,itemName,brandId,brandName,seriesId,seriesName){/* ... */}
@@ -143,7 +151,32 @@
     function navToFront(id){/* ... */}
     function navFrontBack(){/* ... */}
     function renderFrontDrill(){/* ... */}
-    function applyFilter(cat){sidebarOpenItemId=null;sidebarOpenBrandId=null;frontPath=[];if(cat!=='all'){const cats=_getFrontCats();const item=cats.find(c=>c.name===cat);if(item){frontPath=[{id:item.id,name:item.name}];renderFrontDrill();closeAllDrawers();return;}}const list=document.getElementById('product-list');list.innerHTML='';const allProds=_getLatestProducts();const active=allProds.filter(p=>p.active!==false);const filtered=cat==='all'?active:active.filter(p=>p.cat===cat);document.getElementById('current-view-title').innerText=cat==='all'?'全部商品與服務':cat;list.innerHTML=filtered.map(_prodCard).join('')||'<p class="col-span-2 lg:col-span-4 text-center py-10 text-gray-500 text-sm tracking-widest">尚無商品</p>';showSection('product');}
+    function applyFilter(cat){
+      sidebarOpenItemId=null;
+      sidebarOpenBrandId=null;
+      frontPath=[];
+      if(cat!=='all'){
+        const cats=_getFrontCats();
+        const item=cats.find(c=>c.name===cat);
+        if(item && item.brands && item.brands.length > 0){
+          frontPath=[{id:item.id,name:item.name}];
+          // 若有子分類則可選用鑽入式介面，但依需求不阻斷下方商品渲染
+          if(typeof renderFrontDrill === 'function' && renderFrontDrill.toString().indexOf('/*') === -1) {
+            renderFrontDrill();
+          }
+        }
+      }
+      const list=document.getElementById('product-list');
+      if(!list) return;
+      list.innerHTML='';
+      const allProds=_getLatestProducts();
+      const active=allProds.filter(p=>p.active!==false);
+      const filtered=cat==='all'?active:active.filter(p=>p.cat===cat);
+      document.getElementById('current-view-title').innerText=cat==='all'?'全部商品與服務':cat;
+      list.innerHTML=filtered.map(_prodCard).join('')||'<p class="col-span-2 lg:col-span-4 text-center py-10 text-gray-500 text-sm tracking-widest">尚無商品</p>';
+      showSection('product');
+      closeAllDrawers();
+    }
     function openProdModal(id){const p=_getLatestProducts().find(p=>p.id==id);if(!p)return;const imgEl=document.getElementById('prod-modal-img');imgEl.innerHTML=p.image?`<img src="${p.image}" class="max-h-48 object-contain rounded">`:`<div class="h-32 flex items-center justify-center text-6xl text-slate-600"><i class="fa-solid ${p.img||'fa-box'}"></i></div>`;document.getElementById('prod-modal-name').innerText=p.name||'';document.getElementById('prod-modal-price').innerText=p.price===0?(p.tag||'現場報價'):'NT$ '+p.price;const descEl=document.getElementById('prod-modal-desc');descEl.innerText=(p.description&&p.description.trim())?p.description.trim():'';document.getElementById('prod-modal-add-btn').onclick=()=>{addToCart(id);};const modal=document.getElementById('prod-modal');modal.classList.remove('hidden');modal.classList.add('flex');}
     function closeProdModal(){const modal=document.getElementById('prod-modal');modal.classList.add('hidden');modal.classList.remove('flex');}
     function addToCart(id){const p=_getLatestProducts().find(p=>p.id==id);if(p)cart.push(p);renderCart();showToast('已加入購物車');}
