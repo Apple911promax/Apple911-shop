@@ -102,7 +102,7 @@
     <nav class="sticky top-0 z-40 bg-panelbg/95 backdrop-blur-md border-b-2 border-neoncyan/50 shadow-[0_0_15px_rgba(0,243,255,0.15)]">
       <div class="px-4 py-3 flex justify-between items-center">
         <div class="flex items-center gap-3">
-          <button id="sidebar-toggle" type="button" onclick="toggleSidebar()" class="text-neoncyan p-1">
+          <button id="sidebar-open-btn" type="button" onclick="toggleSidebar()" class="text-neoncyan p-1 hidden">
             <i class="fa-solid fa-bars text-xl"></i>
           </button>
           <div class="font-esport text-xl font-black tracking-widest text-white flex items-center gap-2">
@@ -126,9 +126,14 @@
 
       <!-- 桌面左側選單 -->
       <aside id="sidebar-desktop" class="hidden md:flex flex-col w-56 shrink-0 bg-panelbg border-r border-neoncyan/20">
-        <div class="p-4 border-b border-slate-800">
-          <p class="text-[10px] text-gray-600 tracking-widest uppercase font-bold">系統選單庫</p>
-          <p class="text-[9px] text-gray-700 tracking-widest font-tech">SYSTEM DATABASE</p>
+        <div class="p-4 border-b border-slate-800 flex items-center justify-between gap-2">
+          <div>
+            <p class="text-[10px] text-gray-600 tracking-widest uppercase font-bold">系統選單庫</p>
+            <p class="text-[9px] text-gray-700 tracking-widest font-tech">SYSTEM DATABASE</p>
+          </div>
+          <button id="sidebar-close-btn" type="button" onclick="toggleSidebar()" class="text-neoncyan p-1 hidden">
+            <i class="fa-solid fa-xmark text-xl"></i>
+          </button>
         </div>
         <nav class="flex-1 p-3 space-y-1 overflow-y-auto">
           <button onclick="switchPage('dashboard')" id="nav-dashboard"
@@ -439,15 +444,28 @@
     }
 
     function updateSidebarToggleIcon() {
-      const icon = document.querySelector('#sidebar-toggle i');
-      if (!icon) return;
+      const openBtn = document.getElementById('sidebar-open-btn');
+      const closeBtn = document.getElementById('sidebar-close-btn');
       const sbDesktop = document.getElementById('sidebar-desktop');
       const sbMobile = document.getElementById('sidebar-mobile');
       const isDesktop = window.matchMedia('(min-width: 768px)').matches;
       const isOpen = isDesktop
         ? sbDesktop && !sbDesktop.classList.contains('hidden')
         : sbMobile && sbMobile.classList.contains('flex');
-      icon.className = `fa-solid ${isOpen ? 'fa-xmark' : 'fa-bars'} text-xl`;
+      if (openBtn) {
+        if (isDesktop) {
+          openBtn.classList.add('hidden');
+        } else {
+          openBtn.classList.toggle('hidden', isOpen);
+        }
+      }
+      if (closeBtn) {
+        if (isDesktop) {
+          closeBtn.classList.toggle('hidden', !isOpen);
+        } else {
+          closeBtn.classList.add('hidden');
+        }
+      }
     }
 
     // ════════════════════════════════════════════════════════════
