@@ -344,6 +344,7 @@
       main.classList.add('flex');
       loadOrders();
       renderProducts();
+      if (typeof updateSidebarToggleIcon === 'function') updateSidebarToggleIcon();
     }
 
     function doLogout() {
@@ -452,6 +453,7 @@
       orders = JSON.parse(localStorage.getItem('apple911_orders') || '[]');
       renderStats();
       if (currentPage === 'members-orders' && currentMoTab === 'orders') renderTable();
+      if (typeof updateSidebarToggleIcon === 'function') updateSidebarToggleIcon();
     }
 
     function saveOrders() {
