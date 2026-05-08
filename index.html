@@ -259,7 +259,39 @@ onAuthStateChanged(_fbAuth, async (user) => {
 });
 
 // ── 前台 Email 登入 ──
-// ... (維持原樣) ...
+window._fbLogin = async function() {
+  const account  = document.getElementById('login-account')?.value.trim();
+  const password = document.getElementById('login-password')?.value;
+  if (!account || !password) { if(typeof showToast==='function') showToast('請輸入帳號與密碼'); return; }
+
+  let emailToUse = account;
+
+  // 若不含 @ 視為手機號碼，去 Firestore 找對應 email
+  if (!account.includes('@')) {
+    try {
+      const q = query(collection(_fbDb, 'members'), where('phone', '==', account));
+      const snap = await getDocs(q);
+      if (snap.empty) { if(typeof showToast==='function') showToast('此手機號碼尚未註冊'); return; }
+      emailToUse = snap.docs[0].data().email;
+    } catch(e) {
+      if(typeof showToast==='function') showToast('查詢失敗，請稍後再試');
+      return;
+    }
+  }
+
+  try {
+    await signInWithEmailAndPassword(_fbAuth, emailToUse, password);
+    if (typeof closeAuth === 'function') closeAuth();
+    if (typeof showToast === 'function') showToast('登入成功');
+  } catch(e) {
+    const msg = e.code === 'auth/invalid-credential' ? '帳號或密碼錯誤' :
+                e.code === 'auth/user-not-found'      ? '帳號不存在'     :
+                e.code === 'auth/wrong-password'      ? '密碼錯誤'       :
+                e.code === 'auth/invalid-email'       ? '請輸入有效的信箱' : '登入失敗，請稍後再試';
+    if (typeof showToast === 'function') showToast(msg);
+    console.error('[Firebase Auth] 登入失敗:', e.code);
+  }
+};
 
 // ── 前台 Email 註冊 ──
 window._fbRegister = async function() {
