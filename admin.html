@@ -345,7 +345,9 @@
     const STATUS_LIST = ['未付款','已付款','處理中','已出貨','已完成','已取消'];
     let orders      = [];
     let currentPage = 'dashboard';
-    let _productsCache = []; // 商品資料：唯一來源為 Firestore，不使用 localStorage
+    let _productsCache = []; 
+    window._membersCache = []; // 會員資料快取
+
 
     // ════════════════════════════════════════════════════════════
     // 登入 / 登出
@@ -1638,7 +1640,7 @@
       listView.classList.remove('hidden');
       detailView.classList.add('hidden');
 
-      const members = JSON.parse(localStorage.getItem('a911_members') || '[]');
+      const members = window._membersCache || [];
       if (members.length === 0) {
         listView.innerHTML = `<div class="bg-panelbg border border-slate-700 tech-clip p-16 text-center">
           <i class="fa-solid fa-users text-4xl text-slate-700 mb-4 block"></i>
@@ -1699,7 +1701,7 @@
       const detailView = document.getElementById('member-detail-view');
       if (!listView || !detailView) return;
 
-      const members = JSON.parse(localStorage.getItem('a911_members') || '[]');
+      const members = window._membersCache || [];
       const m = members.find(x => (x.id || x.phone) === memberId);
       if (!m) return;
 
