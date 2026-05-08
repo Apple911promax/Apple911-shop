@@ -457,14 +457,13 @@
     // 訂單資料
     // ════════════════════════════════════════════════════════════
     function loadOrders() {
-      orders = JSON.parse(localStorage.getItem('apple911_orders') || '[]');
+      // 現在訂單由 Firebase onSnapshot 即時更新，不需手動從 localStorage 載入
       renderStats();
       if (currentPage === 'members-orders' && currentMoTab === 'orders') renderTable();
     }
 
     function saveOrders() {
-      localStorage.setItem('apple911_orders', JSON.stringify(orders));
-      if (window._fbSaveOrders) window._fbSaveOrders(orders);
+      // 廢棄：改為直接更新 Firestore 單筆文件
     }
 
     // ════════════════════════════════════════════════════════════
@@ -481,14 +480,17 @@
         { label:'商品數量', value: prods.filter(p=>p.active!==false).length,     color:'text-goldlight', icon:'fa-box',          page:'products' },
         { label:'優惠券',   value: coupons.length,                               color:'text-purple-400',icon:'fa-ticket',        page:'coupons' },
       ];
-      document.getElementById('stats-row').innerHTML = stats.map(s => `
-        <div class="bg-panelbg border border-slate-700 tech-clip p-4 flex items-center gap-3 hover:border-cyan-500 transition cursor-pointer" onclick="${s.page?`switchPage('${s.page}')`:'goToOrders(\''+ (s.label==='總訂單'?'':s.label) +'\')'}">
-          <i class="fa-solid ${s.icon} text-2xl text-slate-600 shrink-0"></i>
-          <div>
-            <div class="text-2xl font-bold font-tech ${s.color}">${s.value}</div>
-            <div class="text-xs text-gray-500">${s.label}</div>
-          </div>
-        </div>`).join('');
+      const statsRow = document.getElementById('stats-row');
+      if (statsRow) {
+        statsRow.innerHTML = stats.map(s => `
+          <div class="bg-panelbg border border-slate-700 tech-clip p-4 flex items-center gap-3 hover:border-cyan-500 transition cursor-pointer" onclick="${s.page?`switchPage('${s.page}')`:'goToOrders(\''+ (s.label==='總訂單'?'':s.label) +'\')'}">
+            <i class="fa-solid ${s.icon} text-2xl text-slate-600 shrink-0"></i>
+            <div>
+              <div class="text-2xl font-bold font-tech ${s.color}">${s.value}</div>
+              <div class="text-xs text-gray-500">${s.label}</div>
+            </div>
+          </div>`).join('');
+      }
     }
 
     // ════════════════════════════════════════════════════════════
@@ -628,20 +630,19 @@
     // 訂單操作
     // ════════════════════════════════════════════════════════════
     function applyStatus(orderId) {
-      const sel   = document.getElementById('status-select-' + orderId);
-      const order = orders.find(o => o.id === orderId);
-      if (!sel || !order) return;
-      order.status = sel.value;
-      saveOrders(); renderStats(); renderTable();
-      showToast('狀態已更新：' + order.status);
+      const sel = document.getElementById('status-select-' + orderId);
+      if (!sel || !window._fbUpdateOrder) return;
+      const newStatus = sel.value;
+      window._fbUpdateOrder(orderId, { status: newStatus }).then(() => {
+        showToast('狀態已更新：' + newStatus);
+      });
     }
 
     function markPaid(orderId) {
-      const order = orders.find(o => o.id === orderId);
-      if (!order) return;
-      order.status = '已付款';
-      saveOrders(); renderStats(); renderTable();
-      showToast('已標記為已付款');
+      if (!window._fbUpdateOrder) return;
+      window._fbUpdateOrder(orderId, { status: '已付款' }).then(() => {
+        showToast('已標記為已付款');
+      });
     }
 
     function copyOrder(orderId) {
@@ -1769,13 +1770,13 @@
     }
 
     function applyStatusFromDetail(orderId, memberId) {
-      const sel   = document.getElementById('md-status-' + orderId);
-      const order = orders.find(o => o.id === orderId);
-      if (!sel || !order) return;
-      order.status = sel.value;
-      saveOrders(); renderStats();
-      showMemberDetail(memberId);
-      showToast('狀態已更新：' + order.status);
+      const sel = document.getElementById('md-status-' + orderId);
+      if (!sel || !window._fbUpdateOrder) return;
+      const newStatus = sel.value;
+      window._fbUpdateOrder(orderId, { status: newStatus }).then(() => {
+        showMemberDetail(memberId);
+        showToast('狀態已更新：' + newStatus);
+      });
     }
 
     // ════════════════════════════════════════════════════════════
@@ -1802,7 +1803,7 @@
 <!-- Firebase 整合 START — 可整段刪除 -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
-import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+import { getFirestore, doc, setDoc, getDoc, collection, query, orderBy, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
 
 const _fbCfg = {
@@ -1817,15 +1818,12 @@ const _fbApp      = initializeApp(_fbCfg);
 const _fbDb       = getFirestore(_fbApp);
 const _fbAuth     = getAuth(_fbApp);
 const _fbProdsRef    = doc(_fbDb, 'store', 'products');
-const _fbOrdRef      = doc(_fbDb, 'store', 'orders');
 const _fbCatRef      = doc(_fbDb, 'store', 'categories');
 const _fbMembersRef  = doc(_fbDb, 'store', 'members');
 
 // ── 後台管理員 Email 登入 ──
 window._fbAdminLogin = async function() {
-  const email    = document.getElementById('admin-password').value.trim(); // 欄位重用為 email
-  // 若欄位輸入含 @ 視為 email+密碼模式；否則顯示提示
-  // 實際上後台登入欄位需分成 email + password，見下方說明
+  const email    = document.getElementById('admin-password').value.trim();
   const passEl   = document.getElementById('admin-pass-field');
   const password = passEl ? passEl.value : email;
   const emailVal = passEl ? email : null;
@@ -1837,7 +1835,6 @@ window._fbAdminLogin = async function() {
   }
   try {
     await signInWithEmailAndPassword(_fbAuth, emailVal, password);
-    // 登入成功由 onAuthStateChanged 處理
   } catch(e) {
     document.getElementById('login-error').classList.remove('hidden');
     document.getElementById('login-error').textContent =
@@ -1862,18 +1859,35 @@ onAuthStateChanged(_fbAuth, (user) => {
   }
 });
 
+// ── 即時監聽訂單 ──
+const _fbOrdersCol = collection(_fbDb, 'orders');
+const _fbOrdersQuery = query(_fbOrdersCol, orderBy('time', 'desc'));
+onSnapshot(_fbOrdersQuery, (snap) => {
+  const list = [];
+  snap.forEach(d => list.push(doc.data ? d.data() : d)); // 某些環境 d 直接是資料
+  // Firestore SDK snap.forEach 的 d 是 DocumentSnapshot
+  const realList = [];
+  snap.forEach(docSnap => realList.push(docSnap.data()));
+  orders = realList;
+  console.log('[Firebase] 訂單即時更新，共', orders.length, '筆');
+  if (typeof loadOrders === 'function') loadOrders();
+}, (err) => {
+  console.error('[Firebase] 監聽訂單失敗:', err.message);
+});
+
+window._fbUpdateOrder = async function(orderId, data) {
+  try {
+    const ref = doc(_fbDb, 'orders', orderId);
+    await updateDoc(ref, data);
+    console.log('[Firebase] 訂單更新成功:', orderId);
+  } catch(e) { console.error('[Firebase] 訂單更新失敗:', e.message); }
+};
+
 window._fbSaveProducts = async function(prods) {
   try {
     await setDoc(_fbProdsRef, { list: prods, updatedAt: Date.now() });
     console.log('[Firebase] 商品儲存成功，共', prods.length, '筆');
   } catch(e) { console.error('[Firebase] 商品儲存失敗:', e.message); }
-};
-
-window._fbSaveOrders = async function(list) {
-  try {
-    await setDoc(_fbOrdRef, { list, updatedAt: Date.now() });
-    console.log('[Firebase] 訂單儲存成功，共', list.length, '筆');
-  } catch(e) { console.error('[Firebase] 訂單儲存失敗:', e.message); }
 };
 
 window._fbSaveCategories = async function(cats) {
@@ -1894,12 +1908,6 @@ window._fbSaveCategories = async function(cats) {
         if (typeof renderProdDrill === 'function') renderProdDrill();
         if (typeof _dbgAdminRun    === 'function') _dbgAdminRun();
       }
-    }
-    const os = await getDoc(_fbOrdRef);
-    if (os.exists()) {
-      const list = os.data().list || [];
-      localStorage.setItem('apple911_orders', JSON.stringify(list));
-      if (typeof loadOrders === 'function') loadOrders();
     }
     const cs = await getDoc(_fbCatRef);
     if (cs.exists()) {
