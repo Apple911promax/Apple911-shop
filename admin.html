@@ -422,6 +422,7 @@
       const ov = document.getElementById('sidebar-overlay');
       if (window.matchMedia('(min-width: 768px)').matches && sbDesktop) {
         sbDesktop.classList.toggle('hidden');
+        updateSidebarToggleIcon();
         return;
       }
       if (!sbMobile) return;
@@ -429,6 +430,19 @@
       sbMobile.classList.toggle('hidden',  isOpen);
       sbMobile.classList.toggle('flex',   !isOpen);
       if (ov) ov.classList.toggle('hidden',  isOpen);
+      updateSidebarToggleIcon();
+    }
+
+    function updateSidebarToggleIcon() {
+      const icon = document.querySelector('#sidebar-toggle i');
+      if (!icon) return;
+      const sbDesktop = document.getElementById('sidebar-desktop');
+      const sbMobile = document.getElementById('sidebar-mobile');
+      const isDesktop = window.matchMedia('(min-width: 768px)').matches;
+      const isOpen = isDesktop
+        ? sbDesktop && !sbDesktop.classList.contains('hidden')
+        : sbMobile && sbMobile.classList.contains('flex');
+      icon.className = `fa-solid ${isOpen ? 'fa-xmark' : 'fa-bars'} text-xl`;
     }
 
     // ════════════════════════════════════════════════════════════
@@ -1558,6 +1572,7 @@ window._fbSaveCategories = async function(cats) {
       localStorage.setItem('apple911_orders', JSON.stringify(list));
       if (typeof loadOrders === 'function') loadOrders();
     }
+    if (typeof updateSidebarToggleIcon === 'function') updateSidebarToggleIcon();
     const cs = await getDoc(_fbCatRef);
     if (cs.exists()) {
       const cats = cs.data().list || [];
