@@ -487,6 +487,8 @@
         const shipLabel = order.ship==='cvs'?'超商取貨':order.ship==='home'?'宅配到府':'到店取貨';
         const payLabel  = order.pay==='bank'?'銀行轉帳':order.pay==='linepay'?'LINE Pay':order.pay==='storepay'?'到店付款':order.pay||'-';
         const itemsText = (order.items||[]).map(i=>i.name).join('、') || '-';
+        const optHtml   = STATUS_LIST.map(s =>
+          `<option value="${s}" ${order.status===s?'selected':''}>${s}</option>`).join('');
         const cName  = order.customerName || order.name || order.customer || order.buyerName || '-';
         const cPhone = order.customerPhone || order.phone || order.mobile || order.buyerPhone || '-';
         const cAddr  = order.customerAddress || order.address || order.homeAddr || order.shipAddress || '-';
@@ -496,11 +498,11 @@
           <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
             <div class="flex-1 min-w-0">
               <p class="text-[10px] uppercase tracking-widest text-gray-600 mb-1">訂單編號</p>
-              <p class="text-white text-xl font-bold truncate">${order.id}</p>
+              <p class="text-neoncyan text-xl font-bold truncate">${order.id}</p>
               <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                 <div>
                   <p class="text-[10px] uppercase tracking-widest text-gray-600">客戶姓名</p>
-                  <p class="text-white">${cName}</p>
+                  <p class="text-neoncyan">${cName}</p>
                 </div>
                 <div>
                   <p class="text-[10px] uppercase tracking-widest text-gray-600">聯絡手機</p>
@@ -511,23 +513,42 @@
             <div class="shrink-0 text-right">
               <p class="text-[10px] uppercase tracking-widest text-gray-600 mb-1">當前進度</p>
               <span class="status-badge badge-${order.status}">${order.status}</span>
-              <p class="text-gray-600 text-[10px] mt-2">${order.time||'-'}</p>
+              <p class="text-neoncyan text-[10px] mt-2">${order.time||'-'}</p>
             </div>
           </div>
-          <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-300">
+          <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
             <div>
               <p class="text-[10px] uppercase tracking-widest text-gray-600 mb-1">服務項目</p>
-              <p>${itemsText}</p>
+              <p class="text-neoncyan">${itemsText}</p>
             </div>
             <div>
               <p class="text-[10px] uppercase tracking-widest text-gray-600 mb-1">配送 / 付款</p>
-              <p>${shipLabel}</p>
-              <p>${payLabel}</p>
+              <p class="text-neoncyan">${shipLabel}</p>
+              <p class="text-neoncyan">${payLabel}</p>
             </div>
             <div>
               <p class="text-[10px] uppercase tracking-widest text-gray-600 mb-1">地址</p>
-              <p class="text-gray-500">${cAddr}</p>
+              <p class="text-neoncyan">${cAddr}</p>
             </div>
+          </div>
+          <div class="mt-4 flex flex-wrap gap-2 items-center">
+            <select id="status-select-${order.id}" onclick="event.stopPropagation()"
+              class="bg-darkbg border border-slate-600 text-neoncyan p-2 tech-clip text-xs focus:border-neoncyan transition flex-1 min-w-[120px]">
+              ${optHtml}
+            </select>
+            <button onclick="event.stopPropagation();applyStatus('${order.id}')"
+              class="px-4 py-2 bg-slate-800 text-neoncyan font-bold tech-btn text-xs hover:bg-neoncyan hover:text-black transition whitespace-nowrap">
+              套用狀態
+            </button>
+            ${order.status==='未付款'?`
+            <button onclick="event.stopPropagation();markPaid('${order.id}')"
+              class="px-4 py-2 bg-slate-800 text-green-400 font-bold tech-btn text-xs hover:bg-green-400 hover:text-black transition whitespace-nowrap">
+              <i class="fa-solid fa-check mr-1"></i>標記已付款
+            </button>`:''}
+            <button onclick="event.stopPropagation();copyOrder('${order.id}')"
+              class="px-4 py-2 bg-slate-800 text-gray-400 font-bold tech-btn text-xs hover:bg-slate-600 hover:text-white transition whitespace-nowrap">
+              <i class="fa-regular fa-copy mr-1"></i>複製
+            </button>
           </div>
           <div id="order-row-${order.id}" class="hidden mt-4 p-4 bg-slate-900/50 border border-slate-800 tech-clip">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-3 text-xs text-gray-400">
