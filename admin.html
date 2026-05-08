@@ -254,9 +254,13 @@
 
         <!-- ── 商品管理 ── -->
         <div id="page-products" class="page space-y-4">
-          <h2 class="text-sm font-bold text-white tracking-widest border-l-4 border-neoncyan pl-2">
-            商品管理 <span class="text-gray-500 font-sans font-normal text-xs ml-1">PRODUCTS</span>
-          </h2>
+          <div class="flex items-center justify-between gap-4">
+            <h2 class="text-sm font-bold text-white tracking-widest border-l-4 border-neoncyan pl-2">
+              商品管理 <span class="text-gray-500 font-sans font-normal text-xs ml-1">PRODUCTS</span>
+            </h2>
+            <button onclick="showQuickAddProduct()"
+              class="px-4 py-2 bg-neoncyan text-black font-bold tech-btn text-xs hover:bg-white transition whitespace-nowrap"><i class="fa-solid fa-plus mr-1"></i>新增商品</button>
+          </div>
           <div id="prod-drill-view"></div>
         </div>
 
@@ -292,6 +296,17 @@
   <div id="toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 bg-neoncyan text-black px-6 py-3 font-bold tech-btn z-[100] opacity-0 transition-opacity whitespace-nowrap shadow-2xl text-sm pointer-events-none"></div>
 
   <!-- Custom Confirm Dialog -->
+  <!-- Quick Add Product Modal -->
+  <div id="quick-add-product-modal" class="hidden fixed inset-0 bg-black/80 z-[200] flex items-center justify-center p-6">
+    <div class="bg-panelbg border border-neoncyan/50 tech-clip w-full max-w-xs shadow-[0_0_30px_rgba(0,243,255,0.15)] p-6">
+      <div class="flex justify-between items-center mb-4">
+        <p class="text-xs font-bold text-neoncyan tracking-widest">選擇系列</p>
+        <button onclick="closeQuickAddModal()" class="text-gray-500 hover:text-white transition text-xs"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div id="quick-add-content"></div>
+    </div>
+  </div>
+
   <div id="confirm-modal" class="hidden fixed inset-0 bg-black/80 z-[200] flex items-center justify-center p-6">
     <div class="bg-panelbg border border-neoncyan/50 tech-clip w-full max-w-xs shadow-[0_0_30px_rgba(0,243,255,0.15)] p-6 space-y-5">
       <div class="flex items-center gap-3">
@@ -1075,6 +1090,96 @@
       const file = fileInput?.files[0];
       if (file) { const reader = new FileReader(); reader.onload = e => doSave(e.target.result); reader.readAsDataURL(file); }
       else doSave('');
+    }
+
+    function showQuickAddProduct() {
+      const modal = document.getElementById('quick-add-product-modal');
+      if (!modal) return;
+      const cats = loadCategories();
+      let html = `
+        <div class="space-y-3">
+          <div>
+            <label class="text-xs text-gray-400 block mb-1">品項 <span class="text-neonred">*</span></label>
+            <select id="quick-item" onchange="updateQuickBrands()" class="w-full bg-darkbg border border-slate-600 text-white p-2 tech-clip text-xs focus:border-neoncyan transition">
+              <option value="">請選擇品項</option>
+              ${cats.map(c => `<option value="${c.id}">${c.name}</option>`).join('')}
+            </select>
+          </div>
+          <div id="quick-brand-container" class="hidden">
+            <label class="text-xs text-gray-400 block mb-1">品牌 <span class="text-neonred">*</span></label>
+            <select id="quick-brand" onchange="updateQuickSeries()" class="w-full bg-darkbg border border-slate-600 text-white p-2 tech-clip text-xs focus:border-neoncyan transition">
+              <option value="">請先選擇品項</option>
+            </select>
+          </div>
+          <div id="quick-series-container" class="hidden">
+            <label class="text-xs text-gray-400 block mb-1">系列 <span class="text-neonred">*</span></label>
+            <select id="quick-series" class="w-full bg-darkbg border border-slate-600 text-white p-2 tech-clip text-xs focus:border-neoncyan transition">
+              <option value="">請先選擇品牌</option>
+            </select>
+          </div>
+        </div>
+        <div class="flex justify-end gap-3 mt-5">
+          <button onclick="closeQuickAddModal()" class="px-4 py-2 bg-slate-800 text-gray-400 font-bold tech-btn text-xs hover:bg-slate-600 hover:text-white transition">取消</button>
+          <button onclick="proceedQuickAddProduct()" class="px-4 py-2 bg-neoncyan text-black font-bold tech-btn text-xs hover:bg-white transition">繼續</button>
+        </div>`;
+      modal.querySelector('#quick-add-content').innerHTML = html;
+      modal.classList.remove('hidden');
+    }
+
+    function closeQuickAddModal() {
+      const modal = document.getElementById('quick-add-product-modal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function updateQuickBrands() {
+      const itemId = parseInt(document.getElementById('quick-item')?.value);
+      const cats = loadCategories();
+      const item = cats.find(c => c.id === itemId);
+      const brandSel = document.getElementById('quick-brand');
+      const brandContainer = document.getElementById('quick-brand-container');
+      if (item && item.brands && item.brands.length > 0) {
+        brandSel.innerHTML = '<option value="">請選擇品牌</option>' +
+          item.brands.map(b => `<option value="${b.id}">${b.name}</option>`).join('');
+        brandContainer.classList.remove('hidden');
+        document.getElementById('quick-series-container').classList.add('hidden');
+      } else {
+        brandContainer.classList.add('hidden');
+        document.getElementById('quick-series-container').classList.add('hidden');
+      }
+    }
+
+    function updateQuickSeries() {
+      const itemId = parseInt(document.getElementById('quick-item')?.value);
+      const brandId = parseInt(document.getElementById('quick-brand')?.value);
+      const cats = loadCategories();
+      const item = cats.find(c => c.id === itemId);
+      const brand = item ? (item.brands||[]).find(b => b.id === brandId) : null;
+      const seriesSel = document.getElementById('quick-series');
+      const seriesContainer = document.getElementById('quick-series-container');
+      if (brand && brand.series && brand.series.length > 0) {
+        seriesSel.innerHTML = '<option value="">請選擇系列</option>' +
+          brand.series.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+        seriesContainer.classList.remove('hidden');
+      } else {
+        seriesContainer.classList.add('hidden');
+      }
+    }
+
+    function proceedQuickAddProduct() {
+      const itemId = parseInt(document.getElementById('quick-item')?.value);
+      const brandId = parseInt(document.getElementById('quick-brand')?.value);
+      const seriesId = parseInt(document.getElementById('quick-series')?.value);
+      if (!itemId || !brandId || !seriesId) return showToast('請完整選擇品項、品牌、系列');
+      prodPath = [{id:itemId},{id:brandId},{id:seriesId}];
+      closeQuickAddModal();
+      renderProdDrill();
+      setTimeout(() => {
+        const form = document.getElementById('pdr-add-form');
+        if (form) {
+          form.classList.remove('hidden');
+          document.getElementById('prod-name')?.focus();
+        }
+      }, 100);
     }
 
     // ════════════════════════════════════════════════════════════
