@@ -1879,7 +1879,9 @@ onSnapshot(_fbMembersCol, (snap) => {
   const list = [];
   snap.forEach(docSnap => list.push(docSnap.data()));
   // 更新 _membersCache（這是在 admin.html 中定義的會員列表變數）
-  window._membersCache = list;
+  if (typeof _membersCache !== 'undefined') {
+    window._membersCache = list;
+  }
   // 如果在會員頁面，觸發重新渲染
   if (currentPage === 'members') {
     if (typeof renderMembers === 'function') renderMembers();
@@ -1919,31 +1921,31 @@ window._fbSaveCategories = async function(cats) {
   } catch(e) { console.error('[Firebase] 分類儲存失敗:', e.message); }
 };
 
-(async function() {
-  try {
-    const ps = await getDoc(_fbProdsRef);
-    if (ps.exists()) {
-      const prods = ps.data().list || [];
-      if (prods.length > 0) {
-        _productsCache = prods;
-        if (typeof renderStats     === 'function') renderStats();
-        if (typeof renderProdDrill === 'function') renderProdDrill();
-        if (typeof _dbgAdminRun    === 'function') _dbgAdminRun();
-      }
+onSnapshot(_fbProdsRef, (snap) => {
+  if (snap.exists()) {
+    const prods = snap.data().list || [];
+    if (prods.length > 0) {
+      _productsCache = prods;
+      if (typeof renderStats     === 'function') renderStats();
+      if (typeof renderProdDrill === 'function') renderProdDrill();
+      if (typeof _dbgAdminRun    === 'function') _dbgAdminRun();
     }
-    const cs = await getDoc(_fbCatRef);
-    if (cs.exists()) {
-      const cats = cs.data().list || [];
-      if (cats.length > 0) _categoriesCache = cats;
-    }
-    const ms = await getDoc(_fbMembersRef);
-    if (ms.exists()) {
-      const mlist = ms.data().list || [];
+  }
+  console.log('[Firebase] 後台商品即時同步，共', _productsCache.length, '筆');
+}, (e) => { console.error('[Firebase] 後台商品監聽失敗:', e.message); });
 
+onSnapshot(_fbCatRef, (snap) => {
+  if (snap.exists()) {
+    const cats = snap.data().list || [];
+    if (cats.length > 0) {
+      _categoriesCache = cats;
+      if (typeof renderProdDrill === 'function') renderProdDrill();
     }
-    console.log('[Firebase] 後台初始同步完成');
-  } catch(e) { console.error('[Firebase] 後台初始同步失敗:', e.message); }
-})();
+  }
+  console.log('[Firebase] 後台分類即時同步');
+}, (e) => { console.error('[Firebase] 後台分類監聽失敗:', e.message); });
+
+console.log('[Firebase] 後台監聽已啟動');
 </script>
 <!-- Firebase 整合 END -->
 
