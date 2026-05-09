@@ -561,14 +561,27 @@ window._fbLogin = async function() {
   } catch(e) { if (typeof showToast === 'function') showToast('登入失敗'); }
 };
 window._fbRegister = async function() {
+  console.log('[DEBUG] _fbRegister 已進入');
   const name=document.getElementById('reg-name')?.value.trim(), phone=document.getElementById('reg-phone')?.value.trim(), email=document.getElementById('reg-email')?.value.trim(), password=document.getElementById('reg-password')?.value, by=document.getElementById('reg-birth-year')?.value, bm=document.getElementById('reg-birth-month')?.value, bd=document.getElementById('reg-birth-day')?.value, address=document.getElementById('reg-address')?.value.trim();
-  if (!name || !phone || !email || !password || !by || !bm || !bd || !address) { if(typeof showToast==='function') showToast('請填寫完整資料'); return; }
+  console.log('[DEBUG] 欄位值', { name, phone, email, passwordLength: password?.length, by, bm, bd, address });
+  if (!name || !phone || !email || !password || !by || !bm || !bd || !address) {
+    console.warn('[DEBUG] 驗證未通過，缺少欄位:', { name:!!name, phone:!!phone, email:!!email, password:!!password, by:!!by, bm:!!bm, bd:!!bd, address:!!address });
+    if(typeof showToast==='function') showToast('請填寫完整資料'); return;
+  }
   try {
+    console.log('[DEBUG] 呼叫 createUserWithEmailAndPassword, email:', email, 'passwordLength:', password.length);
     const cred = await createUserWithEmailAndPassword(_fbAuth, email, password);
+    console.log('[DEBUG] Auth 建立成功, uid:', cred.user.uid);
     const memberData = { uid: cred.user.uid, name, phone, email, birthday: `${by}-${String(bm).padStart(2,'0')}-${String(bd).padStart(2,'0')}`, address, registeredAt: Date.now() };
+    console.log('[DEBUG] memberData:', memberData);
+    console.log('[DEBUG] 呼叫 setDoc members/', cred.user.uid);
     await setDoc(doc(_fbDb, 'members', cred.user.uid), memberData);
+    console.log('[DEBUG] setDoc 成功');
     window._memberProfile = memberData;
-  } catch(e) { if(typeof showToast==='function') showToast('註冊失敗'); }
+  } catch(e) {
+    console.error('[DEBUG] 錯誤發生 code:', e.code, 'message:', e.message);
+    if(typeof showToast==='function') showToast('註冊失敗');
+  }
 };
 window._fbGoogleLogin = async function() {
   try {
