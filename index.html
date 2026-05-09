@@ -135,15 +135,74 @@
     function renderSidebarMenu(catsArg){
       const sidebarEl=document.getElementById('front-cat-list');
       if(!sidebarEl)return;
-      sidebarEl.innerHTML=catsArg.map(c=>`
-        <button onclick="applyFilter('${c.name}')" class="w-full text-left p-4 bg-darkbg border border-neoncyan/20 text-gray-400 font-bold tech-clip transition uppercase hover:bg-white/5 hover:border-neoncyan hover:text-white group">
-          <i class="fa-solid fa-tag mr-2 text-neoncyan/50 group-hover:text-neoncyan transition"></i>${c.name}
-        </button>
-      `).join('');
+      sidebarEl.innerHTML=catsArg.map(c=>{
+        const hasBrands=c.brands&&c.brands.length>0;
+        return`<div class="sidebar-item" id="sidebar-item-${c.id}">
+          <button onclick="${hasBrands?`sidebarToggleItem(${c.id})`:`applyFilter('${c.name}')`}" class="w-full text-left p-4 bg-darkbg border border-neoncyan/20 text-gray-400 font-bold tech-clip transition uppercase hover:bg-white/5 hover:border-neoncyan hover:text-white group flex justify-between items-center">
+            <span><i class="fa-solid fa-tag mr-2 text-neoncyan/50 group-hover:text-neoncyan transition"></i>${c.name}</span>
+            ${hasBrands?`<i class="fa-solid fa-chevron-right text-xs text-neoncyan/40 transition" id="sidebar-arrow-${c.id}"></i>`:''}
+          </button>
+          ${hasBrands?`<div class="hidden pl-2 space-y-1 mt-1" id="sidebar-brands-${c.id}">${c.brands.map(b=>{
+            const hasSeries=b.series&&b.series.length>0;
+            return`<div id="sidebar-brand-${c.id}-${b.id}">
+              <button onclick="${hasSeries?`sidebarToggleBrand(${c.id},${b.id})`:`applyFilter('${c.name}')`}" class="w-full text-left px-4 py-2 text-sm text-gray-400 hover:text-neoncyan transition flex justify-between items-center">
+                <span><i class="fa-solid fa-chevron-right text-[10px] mr-2 text-neoncyan/30"></i>${b.name}</span>
+                ${hasSeries?`<i class="fa-solid fa-chevron-right text-xs text-neoncyan/30 transition" id="sidebar-arrow-${c.id}-${b.id}"></i>`:''}
+              </button>
+              ${hasSeries?`<div class="hidden pl-4 space-y-1" id="sidebar-series-${c.id}-${b.id}">${b.series.map(s=>`
+                <button onclick="sidebarSelectSeries(${c.id},'${c.name}',${b.id},'${b.name}',${s.id},'${s.name}')" class="w-full text-left px-4 py-2 text-xs text-gray-500 hover:text-white hover:bg-white/5 transition rounded">
+                  <i class="fa-solid fa-minus text-[8px] mr-2 text-neoncyan/20"></i>${s.name}
+                </button>`).join('')}</div>`:''}
+            </div>`;
+          }).join('')}</div>`:''}
+        </div>`;
+      }).join('');
     }
-    function sidebarToggleItem(itemId){/* ... */}
-    function sidebarToggleBrand(itemId,brandId){/* ... */}
-    function sidebarSelectSeries(itemId,itemName,brandId,brandName,seriesId,seriesName){/* ... */}
+    function sidebarToggleItem(itemId){
+      const brandsEl=document.getElementById('sidebar-brands-'+itemId);
+      const arrowEl=document.getElementById('sidebar-arrow-'+itemId);
+      if(!brandsEl)return;
+      const isOpen=!brandsEl.classList.contains('hidden');
+      // 關閉其他已展開的分類
+      document.querySelectorAll('[id^="sidebar-brands-"]').forEach(el=>{el.classList.add('hidden');});
+      document.querySelectorAll('[id^="sidebar-arrow-"]:not([id*="-"],[id*="--"])').forEach(el=>{el.style.transform='';});
+      if(!isOpen){
+        brandsEl.classList.remove('hidden');
+        if(arrowEl)arrowEl.style.transform='rotate(90deg)';
+        sidebarOpenItemId=itemId;
+      } else {
+        sidebarOpenItemId=null;
+      }
+      sidebarOpenBrandId=null;
+    }
+    function sidebarToggleBrand(itemId,brandId){
+      const seriesEl=document.getElementById(`sidebar-series-${itemId}-${brandId}`);
+      const arrowEl=document.getElementById(`sidebar-arrow-${itemId}-${brandId}`);
+      if(!seriesEl)return;
+      const isOpen=!seriesEl.classList.contains('hidden');
+      // 關閉同分類下其他品牌
+      const brandsEl=document.getElementById('sidebar-brands-'+itemId);
+      if(brandsEl){brandsEl.querySelectorAll('[id^="sidebar-series-"]').forEach(el=>el.classList.add('hidden'));brandsEl.querySelectorAll('[id^="sidebar-arrow-"]').forEach(el=>{el.style.transform='';});}
+      if(!isOpen){
+        seriesEl.classList.remove('hidden');
+        if(arrowEl)arrowEl.style.transform='rotate(90deg)';
+        sidebarOpenBrandId=brandId;
+      } else {
+        sidebarOpenBrandId=null;
+      }
+    }
+    function sidebarSelectSeries(itemId,itemName,brandId,brandName,seriesId,seriesName){
+      frontPath=[{id:itemId,name:itemName},{id:brandId,name:brandName},{id:seriesId,name:seriesName}];
+      const list=document.getElementById('product-list');
+      if(!list)return;
+      const allProds=_getLatestProducts();
+      const active=allProds.filter(p=>p.active!==false);
+      const filtered=active.filter(p=>p.cat===itemName&&p.brand===brandName&&p.series===seriesName);
+      document.getElementById('current-view-title').innerText=seriesName;
+      list.innerHTML=filtered.map(_prodCard).join('')||`<p class="col-span-2 lg:col-span-4 text-center py-10 text-gray-500 text-sm tracking-widest">${seriesName} 尚無商品</p>`;
+      showSection('product');
+      closeAllDrawers();
+    }
     let frontPath=[];
     let sidebarOpenItemId=null;
     let sidebarOpenBrandId=null;
