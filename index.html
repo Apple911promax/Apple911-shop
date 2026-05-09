@@ -574,7 +574,7 @@
   </script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
-import { getFirestore, doc, getDoc, setDoc, collection, query, where, getDocs, orderBy, updateDoc } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc, collection, query, where, getDocs, orderBy, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
 const _fbCfg = { apiKey: "AIzaSyDpasiFnj0UQpNKndmya4__C1J8bJxGN4g", authDomain: "apple911-shop.firebaseapp.com", projectId: "apple911-shop", storageBucket: "apple911-shop.firebasestorage.app", messagingSenderId: "335224055176", appId: "1:335224055176:web:62f37cdf81f6233c16063d" };
 const _fbApp      = initializeApp(_fbCfg);
@@ -670,13 +670,14 @@ window._fbGetOrders = async function() {
 };
 window._fbUpdateOrder = async function(orderId, data) { try { await updateDoc(doc(_fbDb, 'orders', orderId), data); } catch(e) {} };
 window._fbUpdateProfile = async function(profile) { if (!window._fbCurrentUser) return; try { await setDoc(doc(_fbDb, 'members', window._fbCurrentUser.uid), profile, { merge: true }); } catch(e) {} };
-(async function() {
-  try {
-    const ps = await getDoc(_fbProdsRef); if (ps.exists()) products = ps.data().list || [];
-    const cs = await getDoc(_fbCatRef); if (cs.exists()) { categories = cs.data().list || []; }
-    if (typeof renderFrontCategories === 'function') renderFrontCategories();
-  } catch(e) {}
-})();
+onSnapshot(_fbProdsRef, (snap) => {
+  if (snap.exists()) { products = snap.data().list || []; }
+  if (typeof renderFrontCategories === 'function') renderFrontCategories();
+});
+onSnapshot(_fbCatRef, (snap) => {
+  if (snap.exists()) { categories = snap.data().list || []; }
+  if (typeof renderFrontCategories === 'function') renderFrontCategories();
+});
 </script>
 </body>
 </html>
