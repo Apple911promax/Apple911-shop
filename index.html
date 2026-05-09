@@ -243,9 +243,66 @@
     function removeFromCart(index){cart.splice(index,1);renderCart();}
     function renderCart(){const countBadge=document.getElementById('cart-count'),cartContainer=document.getElementById('cart-items'),totalEl=document.getElementById('cart-total');countBadge.innerText=cart.length;if(cart.length>0)countBadge.classList.remove('scale-0');else countBadge.classList.add('scale-0');if(cart.length===0){cartContainer.innerHTML='<div class="flex h-full items-center justify-center text-gray-500 font-bold tracking-widest uppercase">EMPTY</div>';totalEl.innerText='NT$ 0';return;}let total=0;cartContainer.innerHTML=cart.map((item,index)=>{total+=item.price;return`<div class="bg-darkbg p-4 border border-slate-700 flex justify-between items-center rounded tech-clip"><div class="text-left"><div class="text-white text-sm font-bold">${item.name}</div><div class="text-goldlight font-tech text-sm">NT$ ${item.price}</div></div><button onclick="removeFromCart(${index})" class="text-slate-500 hover:text-neonred p-2 transition text-lg"><i class="fa-solid fa-trash-can"></i></button></div>`}).join('');totalEl.innerText='NT$ '+total;}
     function checkout(){if(cart.length===0)return showToast('購物車為空');if(!isLoggedIn){showToast('請先登入');document.getElementById('auth-modal').classList.replace('hidden','flex');return;}closeAllDrawers();showSection('checkout');const container=document.getElementById('checkout-cart-items'),totalEl=document.getElementById('checkout-total');let total=0;container.innerHTML=cart.map(i=>{total+=i.price;return`<div class="flex justify-between items-center text-sm"><span class="text-white">${i.name}</span><span class="text-goldlight font-tech">NT$ ${i.price}</span></div>`}).join('');totalEl.innerText='NT$ '+total;initCities();prefillCheckout();}
-    function initCities(){/* ... */}
-    function updateDistricts(){/* ... */}
-    function handleShippingChange(){/* ... */}
+    const CITY_DISTRICTS = {
+  '台北市': ['中正區','大同區','中山區','松山區','大安區','萬華區','信義區','士林區','北投區','內湖區','南港區','文山區'],
+  '新北市': ['板橋區','三重區','中和區','永和區','新莊區','新店區','土城區','蘆洲區','汐止區','樹林區','淡水區'],
+  '桃園市': ['桃園區','中壢區','平鎮區','八德區','楊梅區','蘆竹區','龜山區','龍潭區','大溪區'],
+  '台中市': ['中區','東區','南區','西區','北區','北屯區','西屯區','南屯區','太平區','大里區','豐原區'],
+  '台南市': ['中西區','東區','南區','北區','安平區','安南區','永康區','歸仁區','新營區'],
+  '高雄市': ['楠梓區','左營區','鼓山區','三民區','新興區','前金區','苓雅區','前鎮區','小港區','鳳山區'],
+  '屏東縣': ['屏東市','潮州鎮','東港鎮','恆春鎮','內埔鄉','萬丹鄉']
+};
+
+function initCities(){
+  const citySel = document.getElementById('cvs-city');
+  if (!citySel) return;
+
+  citySel.innerHTML = '<option value="">請選擇縣市</option>' +
+    Object.keys(CITY_DISTRICTS).map(c => `<option value="${c}">${c}</option>`).join('');
+
+  updateDistricts();
+}
+
+function updateDistricts(){
+  const citySel = document.getElementById('cvs-city');
+  const distSel = document.getElementById('cvs-district');
+  if (!citySel || !distSel) return;
+
+  const city = citySel.value;
+  const districts = CITY_DISTRICTS[city] || [];
+
+  distSel.innerHTML = '<option value="">請選擇地區</option>' +
+    districts.map(d => `<option value="${d}">${d}</option>`).join('');
+}
+
+function handleShippingChange(){
+  const ship = document.getElementById('ship-method')?.value || '';
+  const paySel = document.getElementById('pay-method');
+
+  document.getElementById('ship-cvs-fields')?.classList.add('hidden');
+  document.getElementById('ship-home-fields')?.classList.add('hidden');
+  document.getElementById('ship-store-fields')?.classList.add('hidden');
+
+  if (ship === 'cvs') {
+    document.getElementById('ship-cvs-fields')?.classList.remove('hidden');
+    if (paySel) {
+      paySel.innerHTML = '<option value="">請選擇付款方式</option><option value="bank">銀行轉帳</option><option value="linepay">LINE Pay</option>';
+    }
+    initCities();
+  } else if (ship === 'home') {
+    document.getElementById('ship-home-fields')?.classList.remove('hidden');
+    if (paySel) {
+      paySel.innerHTML = '<option value="">請選擇付款方式</option><option value="bank">銀行轉帳</option><option value="linepay">LINE Pay</option>';
+    }
+  } else if (ship === 'store') {
+    document.getElementById('ship-store-fields')?.classList.remove('hidden');
+    if (paySel) {
+      paySel.innerHTML = '<option value="">請選擇付款方式</option><option value="storepay">到店付款</option><option value="bank">銀行轉帳</option><option value="linepay">LINE Pay</option>';
+    }
+  } else {
+    if (paySel) paySel.innerHTML = '<option value="">請先選擇配送方式</option>';
+  }
+}
     function setFieldError(el){el.classList.add('border-red-500','ring-1','ring-red-500');const ev=el.tagName==='SELECT'||el.tagName==='TEXTAREA'?'change':'input';el.addEventListener(ev,()=>clearFieldError(el),{once:true});}
     function clearFieldError(el){el.classList.remove('border-red-500','ring-1','ring-red-500');}
     function validateCheckoutFields(){/* ... */}
