@@ -526,16 +526,16 @@ const _fbCatRef   = doc(_fbDb, 'store', 'categories');
 onAuthStateChanged(_fbAuth, async (user) => {
   if (user) {
     window._fbCurrentUser = { uid: user.uid, email: user.email };
-    if (typeof simLogin === 'function') simLogin();
     try {
       const snap = await getDoc(doc(_fbDb, 'members', user.uid));
       if (snap.exists()) {
         window._memberProfile = snap.data();
-        if (typeof loadProfile === 'function') loadProfile();
       } else {
         window._memberProfile = { email: user.email, uid: user.uid };
       }
     } catch(e) { console.error('[Firebase] 同步個人資料失敗:', e.message); }
+    if (typeof simLogin === 'function') simLogin();
+    if (typeof loadProfile === 'function') loadProfile();
   } else {
     window._fbCurrentUser = null; window._memberProfile = null;
     if (typeof logout === 'function' && isLoggedIn) logout();
@@ -568,9 +568,6 @@ window._fbRegister = async function() {
     const memberData = { uid: cred.user.uid, name, phone, email, birthday: `${by}-${String(bm).padStart(2,'0')}-${String(bd).padStart(2,'0')}`, address, registeredAt: Date.now() };
     await setDoc(doc(_fbDb, 'members', cred.user.uid), memberData);
     window._memberProfile = memberData;
-    if (typeof closeAuth === 'function') closeAuth();
-    if (typeof showToast === 'function') showToast('註冊成功');
-    if (typeof loadProfile === 'function') loadProfile();
   } catch(e) { if(typeof showToast==='function') showToast('註冊失敗'); }
 };
 window._fbGoogleLogin = async function() {
