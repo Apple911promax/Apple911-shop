@@ -197,7 +197,302 @@
     function renderCoupons(){/* ... */}
     function toggleCoupons(){/* ... */}
     function openPaymentInfo(){/* ... */}
-    function openTerms(type){/* ... */}
+    function openTerms(type){
+      const data={
+        payment:{
+          title:'付款資訊',
+          content:`<div class="space-y-4 text-xs text-gray-300 leading-relaxed">
+            <p>本網站採「先付款後出貨」制度（到店取貨除外），請詳閱以下說明：</p>
+            <div class="bg-darkbg border border-slate-700 p-4 rounded space-y-1">
+              <h4 class="text-neoncyan font-bold mb-2">付款方式</h4>
+              <p>1. 銀行轉帳</p>
+              <p>2. LINE Pay</p>
+              <p>3. 到店付款（限到店取貨）</p>
+            </div>
+            <div class="bg-darkbg border border-slate-700 p-4 rounded space-y-1">
+              <h4 class="text-neoncyan font-bold mb-2">付款規則</h4>
+              <p>・超商取貨 / 宅配到府訂單，需完成付款後才會出貨</p>
+              <p>・訂單成立後請於 24 小時內完成付款</p>
+              <p>・未於期限內付款，本店有權自動取消訂單，不另行通知</p>
+            </div>
+            <div class="bg-darkbg border border-slate-700 p-4 rounded space-y-1">
+              <h4 class="text-neoncyan font-bold mb-2">付款確認</h4>
+              <p>・請上傳付款截圖或填寫帳號末五碼</p>
+              <p>・若未提供付款證明，將無法確認訂單並安排出貨</p>
+            </div>
+            <div class="bg-darkbg border border-slate-700 p-4 rounded space-y-1">
+              <h4 class="text-neoncyan font-bold mb-2">缺貨與付款處理</h4>
+              <p>・若付款後遇商品缺貨，本店會主動聯繫客戶</p>
+              <p>・客戶可選擇等待補貨、更換其他商品，或申請退款</p>
+              <p>・若因缺貨導致訂單無法成立，本店將協助退款，不另行賠償</p>
+            </div>
+            <div class="bg-darkbg border border-slate-700 p-4 rounded space-y-1">
+              <h4 class="text-neoncyan font-bold mb-2">付款異常說明</h4>
+              <p>・若因銀行系統、LINE Pay 或第三方支付異常導致付款延遲，本店不負相關責任</p>
+              <p>・訂單將以實際入帳時間為準進行處理與出貨安排</p>
+            </div>
+            <div class="bg-darkbg border border-neonred/30 p-4 rounded space-y-1">
+              <h4 class="text-neonred font-bold mb-2">重要聲明</h4>
+              <p>・若因填寫錯誤或未回傳付款資訊導致出貨延誤，本店不負相關責任</p>
+            </div>
+          </div>`
+        },
+        shipping:{
+          title:'配送取件',
+          content:`<div class="space-y-4 text-xs text-gray-300 leading-relaxed">
+            <div class="bg-darkbg border border-slate-700 p-4 rounded space-y-1">
+              <h4 class="text-neoncyan font-bold mb-2">配送方式</h4>
+              <p>1. 超商取貨（需先付款）</p>
+              <p>2. 宅配到府（需先付款）</p>
+              <p>3. 到店取貨（可現場付款）</p>
+            </div>
+            <div class="bg-darkbg border border-slate-700 p-4 rounded space-y-1">
+              <h4 class="text-neoncyan font-bold mb-2">運費說明</h4>
+              <p>・到店取貨：免運費</p>
+              <p>・宅配：本島 NT$100 / 離島 NT$200</p>
+              <p>・滿 NT$699 免運</p>
+              <p>・實際運費以結帳頁面顯示為準</p>
+            </div>
+            <div class="bg-darkbg border border-slate-700 p-4 rounded space-y-1">
+              <h4 class="text-neoncyan font-bold mb-2">出貨時間</h4>
+              <p>・付款完成且確認有庫存後，約 1～3 個工作天內安排出貨</p>
+              <p>・若遇商品缺貨、供應商延遲、物流繁忙、天災或不可抗力因素，出貨時間將順延</p>
+              <p>・若商品需調貨或預購，實際出貨時間以客服通知為準</p>
+            </div>
+            <div class="bg-darkbg border border-slate-700 p-4 rounded space-y-1">
+              <h4 class="text-neoncyan font-bold mb-2">配送責任</h4>
+              <p>・商品一經交由物流公司後，配送時間與狀況由物流業者負責</p>
+              <p>・若因地址填寫錯誤、電話錯誤、無人收件、拒收等原因導致配送失敗，相關費用需由訂購人自行負擔</p>
+              <p>・若因物流延誤導致到貨時間延後，本店不負賠償責任</p>
+            </div>
+            <div class="bg-darkbg border border-slate-700 p-4 rounded space-y-1">
+              <h4 class="text-neoncyan font-bold mb-2">物流風險說明</h4>
+              <p>・商品交由物流公司後，其運送過程風險由物流業者負責</p>
+              <p>・若商品於運送過程中損壞或遺失，將依物流公司規範協助處理</p>
+              <p>・本店不負運送期間造成之直接或間接損失賠償責任</p>
+            </div>
+            <div class="bg-darkbg border border-slate-700 p-4 rounded space-y-1">
+              <h4 class="text-neoncyan font-bold mb-2">到店取貨</h4>
+              <p>・商品備妥後，本店會通知客戶取貨</p>
+              <p>・商品保留 3 日，逾期未取，本店有權取消訂單</p>
+              <p>・若已付款訂單逾期未取，請聯繫客服協助後續處理</p>
+            </div>
+            <div class="bg-darkbg border border-neonred/30 p-4 rounded space-y-1">
+              <h4 class="text-neonred font-bold mb-2">未取貨與拒收處理</h4>
+              <p>・超商取貨未領取或宅配拒收，導致商品退回，本店有權暫停該帳號訂單服務</p>
+              <p>・若需重新寄送，需由客戶自行負擔來回運費</p>
+              <p>・多次未取貨或拒收紀錄，本店有權拒絕未來訂單</p>
+            </div>
+          </div>`
+        },
+        tracking:{
+          title:'進度查詢',
+          content:`<div class="space-y-4 text-xs text-gray-300 leading-relaxed">
+            <div class="bg-darkbg border border-slate-700 p-4 rounded space-y-1">
+              <h4 class="text-neoncyan font-bold mb-2">訂單狀態說明</h4>
+              <p>・<span class="text-yellow-400 font-bold">未付款</span>：尚未完成付款</p>
+              <p>・<span class="text-blue-400 font-bold">已付款</span>：已確認款項</p>
+              <p>・<span class="text-purple-400 font-bold">理貨中</span>：訂單確認中或備貨中</p>
+              <p>・<span class="text-orange-400 font-bold">缺貨通知</span>：商品暫時缺貨，客服將協助處理</p>
+              <p>・<span class="text-neoncyan font-bold">已出貨</span>：商品已寄出</p>
+              <p>・<span class="text-green-400 font-bold">已完成</span>：訂單已結案</p>
+              <p>・<span class="text-goldlight font-bold">待取貨</span>：可至門市取件</p>
+            </div>
+            <div class="bg-darkbg border border-slate-700 p-4 rounded space-y-1">
+              <h4 class="text-neoncyan font-bold mb-2">訂單修改</h4>
+              <p>・未付款或未出貨前可申請修改</p>
+              <p>・已出貨後恕無法變更配送資料</p>
+              <p>・若需修改商品、數量、收件資訊，請盡快聯繫客服</p>
+            </div>
+            <div class="bg-darkbg border border-slate-700 p-4 rounded space-y-1">
+              <h4 class="text-neoncyan font-bold mb-2">缺貨處理</h4>
+              <p>・若訂單商品缺貨，本店會主動通知客戶</p>
+              <p>・客戶可選擇等待補貨、更換商品、取消缺貨商品或取消整筆訂單</p>
+              <p>・若訂單中部分商品缺貨，本店會與客戶確認是否分批出貨或調整訂單</p>
+            </div>
+            <div class="bg-darkbg border border-neonred/30 p-4 rounded space-y-1">
+              <h4 class="text-neonred font-bold mb-2">重要提醒</h4>
+              <p>・本店不保證訂單成立後一定出貨</p>
+              <p>・若遇缺貨、停產、價格錯誤、供應異常或系統異常，本店保留取消訂單或調整訂單之權利</p>
+            </div>
+          </div>`
+        },
+        returns:{
+          title:'退換貨政策',
+          content:`<div class="space-y-4 text-xs text-gray-300 leading-relaxed">
+            <p>退換貨申請：請於收到商品後 <span class="text-neonred font-bold">3 日內</span>聯繫客服並提供照片證明。</p>
+            <div class="bg-darkbg border border-slate-700 p-4 rounded space-y-1">
+              <h4 class="text-neoncyan font-bold mb-2">可退換貨情況</h4>
+              <p>・商品瑕疵</p>
+              <p>・商品寄錯</p>
+              <p>・商品缺件</p>
+              <p>・商品於運送過程中明顯受損</p>
+            </div>
+            <div class="bg-darkbg border border-slate-700 p-4 rounded space-y-1">
+              <h4 class="text-neoncyan font-bold mb-2">退貨條件</h4>
+              <p>・商品須為全新未使用</p>
+              <p>・包裝、配件、贈品需完整</p>
+              <p>・不得有安裝、拆封、使用、刮傷或人為損壞痕跡</p>
+            </div>
+            <div class="bg-darkbg border border-neonred/30 p-4 rounded space-y-1">
+              <h4 class="text-neonred font-bold mb-2">以下情況不接受退貨</h4>
+              <p>・商品已使用或安裝（包含手機殼、保護貼、線材、充電器等）</p>
+              <p>・人為損壞（摔傷、刮傷、泡水、擠壓）</p>
+              <p>・包裝、配件、贈品不完整</p>
+              <p>・非本店販售商品</p>
+              <p>・個人主觀因素（不喜歡、不適用、買錯型號但已拆封使用）</p>
+              <p>・客製化、代訂、預購或特殊規格商品，除商品本身瑕疵外，不接受取消或退貨</p>
+            </div>
+            <div class="bg-darkbg border border-slate-700 p-4 rounded space-y-1">
+              <h4 class="text-neoncyan font-bold mb-2">優惠與活動說明</h4>
+              <p>・訂單優惠、滿額活動與贈品，需於訂單成立時符合條件方適用</p>
+              <p>・若因退貨、取消或分批出貨導致未達優惠門檻，本店有權調整優惠內容或補收差額</p>
+              <p>・贈品如未一併退回，本店有權依市價扣除相關費用</p>
+            </div>
+            <div class="bg-darkbg border border-neonred/30 p-4 rounded space-y-1">
+              <h4 class="text-neonred font-bold mb-2">重要聲明</h4>
+              <p>・3C 產品非試用商品，鑑賞期非試用期</p>
+              <p>・退貨商品若不符合條件，本店有權拒絕退貨</p>
+              <p>・若因退貨後未達免運或活動門檻，退款金額將扣除原優惠、運費或活動差額</p>
+            </div>
+          </div>`
+        },
+        warranty:{
+          title:'維修保固',
+          content:`<div class="space-y-4 text-xs text-gray-300 leading-relaxed">
+            <div class="bg-darkbg border border-slate-700 p-4 rounded space-y-1">
+              <h4 class="text-neoncyan font-bold mb-2">維修說明</h4>
+              <p>・維修前皆會提供報價</p>
+              <p>・確認報價後才會進行維修</p>
+              <p>・部分維修需收訂金或檢測費</p>
+              <p>・若需訂料、特殊零件或代訂料件，確認後恕無法任意取消</p>
+            </div>
+            <div class="bg-darkbg border border-slate-700 p-4 rounded space-y-1">
+              <h4 class="text-neoncyan font-bold mb-2">維修風險說明</h4>
+              <p>・維修過程中可能因機器老化、摔傷、泡水、主機板異常或先前維修紀錄導致其他問題</p>
+              <p>・本店將盡力處理，但不保證可完全避免風險</p>
+              <p>・若維修前已告知風險，客戶同意後進行維修，後續不接受以已告知風險為由要求退費或賠償</p>
+            </div>
+            <div class="bg-darkbg border border-slate-700 p-4 rounded space-y-1">
+              <h4 class="text-neoncyan font-bold mb-2">保固範圍</h4>
+              <p>・維修項目於保固期間內，如非人為問題可協助處理</p>
+              <p>・保固僅限原維修項目，不包含其他未維修部位</p>
+            </div>
+            <div class="bg-darkbg border border-neonred/30 p-4 rounded space-y-1">
+              <h4 class="text-neonred font-bold mb-2">不在保固範圍</h4>
+              <p>・摔落、泡水、外力損壞</p>
+              <p>・自行拆機或他人維修</p>
+              <p>・使用不當造成故障</p>
+              <p>・外觀刮傷、耗材老化、正常耗損</p>
+              <p>・非原維修項目之故障</p>
+            </div>
+            <div class="bg-darkbg border border-slate-700 p-4 rounded space-y-1">
+              <h4 class="text-neoncyan font-bold mb-2">資料與設備風險聲明</h4>
+              <p>・維修過程中可能涉及資料移除、系統重置或零件更換，建議客戶事先備份資料</p>
+              <p>・若因設備狀況（如無法開機、主機板損壞）導致資料無法保留，本店不負資料遺失責任</p>
+              <p>・客戶送修即表示同意上述風險</p>
+            </div>
+            <div class="bg-darkbg border border-slate-700 p-4 rounded space-y-1">
+              <h4 class="text-neoncyan font-bold mb-2">取件逾期說明</h4>
+              <p>・維修完成後本店將通知取件</p>
+              <p>・若逾期未取且未主動聯繫，本店有權不負保管責任或酌收保管費</p>
+            </div>
+            <div class="bg-darkbg border border-neonred/30 p-4 rounded space-y-1">
+              <h4 class="text-neonred font-bold mb-2">重要聲明</h4>
+              <p>・維修屬技術服務，一經確認施作恕不接受退費</p>
+              <p>・若設備本身存在多重故障，單項維修完成不代表整機所有問題皆已排除</p>
+            </div>
+          </div>`
+        },
+        terms:{
+          title:'服務條款',
+          content:`<div class="space-y-4 text-xs text-gray-300 leading-relaxed">
+            <p>當您使用本網站，即表示同意以下內容：</p>
+            <div class="bg-darkbg border border-slate-700 p-4 rounded space-y-1">
+              <h4 class="text-neoncyan font-bold mb-2">訂單權利</h4>
+              <p>・本店保留是否接受訂單與出貨之權利</p>
+              <p>・若遇商品缺貨、停產、價格錯誤、成本異動、供應商異常或系統錯誤，本店有權取消訂單、延後出貨或與客戶協商更換商品</p>
+              <p>・訂單成立通知不代表商品一定可出貨，實際出貨仍需依庫存、供應狀況與付款確認為準</p>
+            </div>
+            <div class="bg-darkbg border border-slate-700 p-4 rounded space-y-1">
+              <h4 class="text-neoncyan font-bold mb-2">付款後缺貨說明</h4>
+              <p>・即使訂單已完成付款，仍可能因庫存誤差、供應商異常或系統延遲導致缺貨情況</p>
+              <p>・本店不保證所有已付款訂單皆可出貨</p>
+            </div>
+            <div class="bg-darkbg border border-slate-700 p-4 rounded space-y-1">
+              <h4 class="text-neoncyan font-bold mb-2">退款處理</h4>
+              <p>・若因缺貨導致無法出貨，客戶可選擇取消訂單並申請退款</p>
+              <p>・退款將於確認後依原付款方式辦理，實際入帳時間依銀行或支付平台作業時間為準</p>
+            </div>
+            <div class="bg-darkbg border border-slate-700 p-4 rounded space-y-1">
+              <h4 class="text-neoncyan font-bold mb-2">分批出貨說明</h4>
+              <p>・若訂單中部分商品缺貨，本店有權與客戶協商後進行分批出貨</p>
+              <p>・若分批出貨導致優惠條件改變，本店保留調整訂單金額之權利</p>
+            </div>
+            <div class="bg-darkbg border border-slate-700 p-4 rounded space-y-1">
+              <h4 class="text-neoncyan font-bold mb-2">異常訂單處理</h4>
+              <p>・若訂單出現異常情況（包含但不限於大量下單、異常金額、系統錯誤、價格異常等），本店有權暫停、取消或調整該訂單</p>
+              <p>・若因系統錯誤或價格異常導致訂單成立，本店有權取消訂單並進行退款處理</p>
+            </div>
+            <div class="bg-darkbg border border-slate-700 p-4 rounded space-y-1">
+              <h4 class="text-neoncyan font-bold mb-2">資料責任</h4>
+              <p>・會員或訂購人需提供正確資料</p>
+              <p>・若因資料錯誤、電話無法聯繫、地址錯誤、門市資料錯誤導致延誤、退件或損失，由訂購人自行負責</p>
+            </div>
+            <div class="bg-darkbg border border-neonred/30 p-4 rounded space-y-1">
+              <h4 class="text-neonred font-bold mb-2">拒絕服務</h4>
+              <p>本店有權拒絕以下情況之訂單或服務：</p>
+              <p>・惡意棄單</p>
+              <p>・多次未取貨</p>
+              <p>・無故拒收</p>
+              <p>・惡意退貨</p>
+              <p>・對客服或工作人員有不當言語或行為</p>
+              <p>・影響本店正常營運之行為</p>
+            </div>
+            <div class="bg-darkbg border border-slate-700 p-4 rounded space-y-1">
+              <h4 class="text-neoncyan font-bold mb-2">隱私權</h4>
+              <p>・個人資料僅用於訂單處理、付款確認、配送與客服聯繫</p>
+              <p>・本店不會任意提供給無關第三方</p>
+            </div>
+            <div class="bg-darkbg border border-slate-700 p-4 rounded space-y-1">
+              <h4 class="text-neoncyan font-bold mb-2">責任限制</h4>
+              <p>・本網站對於系統錯誤、付款延遲、物流延誤、缺貨、供應商異常、天災或不可抗力因素不負賠償責任</p>
+              <p>・若因上述情況導致訂單無法完成，本店將以退款、換貨或協商方式處理</p>
+            </div>
+            <div class="bg-darkbg border border-slate-700 p-4 rounded space-y-1">
+              <h4 class="text-neoncyan font-bold mb-2">物流風險說明</h4>
+              <p>・商品交由物流公司後，其運送過程風險由物流業者負責</p>
+              <p>・若商品於運送過程中損壞或遺失，將依物流公司規範協助處理</p>
+              <p>・本店不負運送期間造成之直接或間接損失賠償責任</p>
+            </div>
+            <div class="bg-darkbg border border-slate-700 p-4 rounded space-y-1">
+              <h4 class="text-neoncyan font-bold mb-2">爭議處理</h4>
+              <p>・若有交易爭議，雙方應先以客服協商方式處理</p>
+              <p>・本網站交易依中華民國法律規範</p>
+              <p>・如需法律途徑，雙方同意以台灣高雄地方法院為第一審管轄法院</p>
+            </div>
+            <div class="bg-darkbg border border-slate-700 p-4 rounded space-y-1">
+              <h4 class="text-neoncyan font-bold mb-2">條款變更</h4>
+              <p>・本店保留修改服務內容與條款之權利</p>
+              <p>・條款更新後將公告於網站，不另行個別通知</p>
+            </div>
+          </div>`
+        },
+        member:{
+          title:'會員條款',
+          content:`<div class="space-y-4 text-xs text-gray-300 leading-relaxed">
+            <p>完成註冊並使用本網站服務，即表示同意本會員條款。</p>
+          </div>`
+        }
+      };
+      const d=data[type];
+      if(!d)return;
+      document.getElementById('modal-title').innerHTML=d.title;
+      document.getElementById('modal-content').innerHTML=d.content;
+      document.body.style.overflow='hidden';
+      const modal=document.getElementById('terms-modal');
+      modal.classList.replace('hidden','flex');
+    }
     function closeTerms(){document.getElementById('terms-modal').classList.replace('flex','hidden');document.body.style.overflow='auto';}
     function checkRegPass(){/* ... */}
     function updateRegBirthDays(){/* ... */}
