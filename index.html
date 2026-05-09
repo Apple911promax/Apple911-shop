@@ -497,8 +497,8 @@
     }
     function closeTerms(){document.getElementById('terms-modal').classList.replace('flex','hidden');document.body.style.overflow='auto';}
     function checkRegPass(){/* ... */}
-    function updateRegBirthDays(){const y=parseInt(document.getElementById('reg-birth-year').value)||0;const m=parseInt(document.getElementById('reg-birth-month').value)||0;const dEl=document.getElementById('reg-birth-day');if(!dEl)return;const prev=dEl.value;const days=y&&m?new Date(y,m,0).getDate():31;dEl.innerHTML='<option value="">日</option>';for(let i=1;i<=days;i++){const o=document.createElement('option');o.value=i;o.textContent=i;dEl.appendChild(o);}if(prev&&parseInt(prev)<=days)dEl.value=prev;}
-    function initRegBirthSelects(){const currentYear=new Date().getFullYear();const yEl=document.getElementById('reg-birth-year');const mEl=document.getElementById('reg-birth-month');if(!yEl||!mEl)return;for(let y=currentYear;y>=1920;y--){const o=document.createElement('option');o.value=y;o.textContent=y;yEl.appendChild(o);}for(let m=1;m<=12;m++){const o=document.createElement('option');o.value=m;o.textContent=m;mEl.appendChild(o);}}
+    function updateRegBirthDays(){/* ... */}
+    function initRegBirthSelects(){/* ... */}
     function handleUserClick(){if(isLoggedIn)showSection('member');else document.getElementById('auth-modal').classList.replace('hidden','flex');}
     function closeAuth(){document.getElementById('auth-modal').classList.replace('flex','hidden');}
     function switchAuth(view){document.getElementById('auth-view-login').classList.add('hidden');document.getElementById('auth-view-register').classList.add('hidden');document.getElementById(`auth-view-${view}`).classList.remove('hidden');document.getElementById('auth-title').innerText=view==='login'?'SYSTEM LOGIN':'NEW REGISTRATION';}
@@ -589,7 +589,7 @@ window._fbGoogleLogin = async function() {
     if (typeof loadProfile === 'function') loadProfile();
   } catch(e) { if(typeof showToast==='function') showToast('Google 登入失敗'); }
 };
-window.logout = async function() { try { await signOut(_fbAuth); } catch(e) {} logout(); };
+window.logout = async function() { try { await signOut(_fbAuth); } catch(e) {} isLoggedIn=false; window._memberProfile=null; window._fbCurrentUser=null; const dot=document.getElementById('user-status-dot'); if(dot)dot.classList.replace('bg-neoncyan','bg-slate-600'); if(typeof showSection==='function')showSection('home'); };
 window._fbAddOrder = async function(newOrder) { try { await setDoc(doc(_fbDb, 'orders', newOrder.id), newOrder); } catch(e) {} };
 window._fbGetOrders = async function() {
   if (!window._fbCurrentUser) return [];
