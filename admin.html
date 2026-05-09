@@ -1623,10 +1623,12 @@
       document.getElementById('confirm-modal').classList.remove('hidden');
       _confirmCb = cb;
     }
-    function confirmOk() {
-      document.getElementById('confirm-modal').classList.add('hidden');
-      if (_confirmCb) { _confirmCb(); _confirmCb = null; }
-    }
+   function confirmOk() {
+  const cb = _confirmCb;
+  _confirmCb = null;
+  document.getElementById('confirm-modal').classList.add('hidden');
+  if (typeof cb === 'function') cb();
+}
     function confirmCancel() {
       document.getElementById('confirm-modal').classList.add('hidden');
       _confirmCb = null;
