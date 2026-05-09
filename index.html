@@ -31,6 +31,11 @@
     .fab-menu{transform:translateY(20px);opacity:0;pointer-events:none;transition:all .3s cubic-bezier(.175,.885,.32,1.275);}.fab-menu.open{transform:translateY(0);opacity:1;pointer-events:auto;}.fab-main-icon{transition:transform .3s ease;}.fab-main-icon.open{transform:rotate(45deg);}
     ::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-thumb{background:#00f3ff;border-radius:4px;}.custom-scrollbar::-webkit-scrollbar{width:4px;}.custom-scrollbar::-webkit-scrollbar-thumb{background:#00f3ff;border-radius:10px;}
     input,select,textarea{font-size:16px!important;}
+    /* 取貨方式卡片 */
+    .ship-card{min-height:96px;position:relative;}
+    .ship-card.selected{border-color:#00f3ff!important;background:rgba(0,243,255,0.07)!important;box-shadow:0 0 12px rgba(0,243,255,0.18);}
+    .ship-card.selected .ship-card-icon{color:#00f3ff!important;}
+    .ship-card.selected span{color:#e2e8f0!important;}
   </style>
 </head>
 <body class="font-sans antialiased relative">
@@ -61,7 +66,117 @@
     <div id="home-view" class="px-4 py-8"><h2 class="text-sm font-bold flex items-center text-white tracking-widest border-l-4 border-neoncyan pl-2 mb-4">服務選單 <span class="en-sub ml-2">SELECT SERVICE</span></h2>
     <div class="grid grid-cols-2 gap-4" id="home-cat-grid"></div></div>
     <div id="product-view" class="px-4 py-8 hidden"><div class="flex justify-between items-end mb-6 border-b border-slate-800 pb-2"><h2 class="text-lg font-bold text-white tracking-widest" id="current-view-title">全部商品與服務</h2><button onclick="navFrontBack()" class="text-xs text-gray-500 font-bold hover:text-white transition"><i class="fa-solid fa-arrow-left"></i> 返回</button></div><div class="grid grid-cols-2 lg:grid-cols-4 gap-4" id="product-list"></div></div>
-    <div id="checkout-view" class="px-4 py-8 hidden"><div class="flex justify-between items-end mb-6 border-b border-slate-800 pb-2"><h2 class="text-lg font-bold text-white tracking-widest">訂單結帳 <span class="en-sub inline ml-1">CHECKOUT</span></h2><button onclick="showSection('home')" class="text-xs text-gray-500 font-bold hover:text-white transition"><i class="fa-solid fa-arrow-left"></i> 繼續購物</button></div><div class="grid grid-cols-1 md:grid-cols-2 gap-6"><div class="bg-darkbg border border-slate-700 p-5 rounded space-y-4 shadow-lg h-fit"><h4 class="text-white font-bold border-l-4 border-neoncyan pl-2 text-sm">購物清單明細</h4><div id="checkout-cart-items" class="space-y-3"></div><div class="border-t border-slate-700 pt-4 flex justify-between text-white font-bold"><span>總計金額</span><span id="checkout-total" class="text-goldlight font-tech text-lg">NT$ 0</span></div></div><div class="space-y-6"><div class="bg-darkbg border border-slate-700 p-5 rounded space-y-4 shadow-lg"><h4 class="text-white font-bold border-l-4 border-neoncyan pl-2 text-sm">配送與付款方式</h4><div><label class="text-xs text-gray-400 block mb-1">配送方式 <span class="text-neonred">*</span></label><select id="ship-method" onchange="handleShippingChange()" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none focus:border-neoncyan transition"><option value="">請選擇配送方式</option><option value="cvs">超商取貨 (需先付款)</option><option value="home">宅配到府 (需先付款)</option><option value="store">到店取貨 (可現場付款)</option></select></div><div><label class="text-xs text-gray-400 block mb-1">付款方式 <span class="text-neonred">*</span></label><select id="pay-method" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none focus:border-neoncyan transition"><option value="">請先選擇配送方式</option></select></div></div><div class="bg-darkbg border border-slate-700 p-5 rounded space-y-4 shadow-lg"><h4 class="text-white font-bold border-l-4 border-neoncyan pl-2 text-sm">顧客資料</h4><p class="text-xs text-gray-400">請填寫正確資料，以利配送與聯繫</p><div id="ship-cvs-fields" class="hidden space-y-4"><div><label class="text-xs text-gray-400 block mb-1">超商類型 <span class="text-neonred">*</span></label><select id="cvs-type" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none"><option value="">請選擇超商</option><option value="7-11">7-11</option><option value="FamilyMart">全家</option></select></div><div class="grid grid-cols-2 gap-4"><div><label class="text-xs text-gray-400 block mb-1">縣市 <span class="text-neonred">*</span></label><select id="cvs-city" onchange="updateDistricts()" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none"></select></div><div><label class="text-xs text-gray-400 block mb-1">地區 <span class="text-neonred">*</span></label><select id="cvs-district" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none"><option value="">請選擇地區</option></select></div></div><div class="grid grid-cols-2 gap-4"><div><label class="text-xs text-gray-400 block mb-1">取貨門市名稱 <span class="text-neonred">*</span></label><input type="text" id="cvs-store" placeholder="某某門市" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none"></div><div><label class="text-xs text-gray-400 block mb-1">門市店號 (選填)</label><input type="text" id="cvs-id" placeholder="6位數字" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none"></div></div><div><label class="text-xs text-gray-400 block mb-1">取貨人姓名 <span class="text-neonred">*</span></label><input type="text" id="cvs-name" placeholder="收件人姓名（請填真實姓名）" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none"></div><div><label class="text-xs text-gray-400 block mb-1">取貨人手機 <span class="text-neonred">*</span></label><input type="tel" id="cvs-phone" placeholder="請填寫正確手機（配送聯絡用）" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none"></div></div><div id="ship-home-fields" class="hidden space-y-4"><div><label class="text-xs text-gray-400 block mb-1">收件人姓名 <span class="text-neonred">*</span></label><input type="text" id="home-name" placeholder="收件人姓名（請填真實姓名）" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none"></div><div><label class="text-xs text-gray-400 block mb-1">收件人手機 <span class="text-neonred">*</span></label><input type="tel" id="home-phone" placeholder="請填寫正確手機（配送聯絡用）" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none"></div><div><label class="text-xs text-gray-400 block mb-1">宅配地址 <span class="text-neonred">*</span></label><textarea id="home-addr" rows="2" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none"></textarea></div></div><div id="ship-store-fields" class="hidden space-y-2"><p class="text-neoncyan text-sm font-bold"><i class="fa-solid fa-circle-info mr-2"></i>請於營業時間內到 Apple 911 門市取貨</p></div></div><div class="flex items-start gap-2 mb-2 px-1"><input type="checkbox" id="agree-terms" class="mt-1 w-4 h-4 accent-neoncyan cursor-pointer"><label for="agree-terms" class="text-xs text-gray-400 leading-relaxed cursor-pointer">我已閱讀並同意以下內容：<br><span class="text-neoncyan underline hover:text-white transition" onclick="openTerms('payment')">付款資訊</span>、<span class="text-neoncyan underline hover:text-white transition" onclick="openTerms('shipping')">配送取件</span>、<span class="text-neoncyan underline hover:text-white transition" onclick="openTerms('returns')">退換貨政策</span>、<span class="text-neoncyan underline hover:text-white transition" onclick="openTerms('warranty')">維修保固</span>、<span class="text-neoncyan underline hover:text-white transition" onclick="openTerms('terms')">服務條款</span></label></div><button id="submit-order-btn" onclick="submitOrder()" disabled class="w-full py-4 bg-neoncyan text-black font-bold tech-clip text-sm hover:bg-white transition shadow-lg tracking-widest uppercase">確認送出訂單 SUBMIT ORDER</button></div></div></div>
+    <div id="checkout-view" class="px-4 py-8 hidden">
+      <div class="flex justify-between items-end mb-6 border-b border-slate-800 pb-2">
+        <h2 class="text-lg font-bold text-white tracking-widest">訂單結帳 <span class="en-sub inline ml-1">CHECKOUT</span></h2>
+        <button onclick="showSection('home')" class="text-xs text-gray-500 font-bold hover:text-white transition"><i class="fa-solid fa-arrow-left"></i> 繼續購物</button>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- 左欄：購物清單 -->
+        <div class="bg-darkbg border border-slate-700 p-5 rounded space-y-4 shadow-lg h-fit">
+          <h4 class="text-white font-bold border-l-4 border-neoncyan pl-2 text-sm">購物清單明細</h4>
+          <div id="checkout-cart-items" class="space-y-3"></div>
+          <div class="border-t border-slate-700 pt-3 space-y-2">
+            <div class="flex justify-between text-sm text-gray-400">
+              <span>商品小計</span><span id="checkout-subtotal" class="font-tech">NT$ 0</span>
+            </div>
+            <div class="flex justify-between text-sm text-gray-400">
+              <span>運費</span><span id="checkout-shipping-fee" class="font-tech">—</span>
+            </div>
+            <div class="flex justify-between text-white font-bold pt-2 border-t border-slate-700">
+              <span>總計金額</span><span id="checkout-total" class="text-goldlight font-tech text-lg">NT$ 0</span>
+            </div>
+          </div>
+        </div>
+        <!-- 右欄：配送 / 付款 / 顧客資料 -->
+        <div class="space-y-6">
+          <!-- 配送與付款 -->
+          <div class="bg-darkbg border border-slate-700 p-5 rounded space-y-5 shadow-lg">
+            <h4 class="text-white font-bold border-l-4 border-neoncyan pl-2 text-sm">取貨方式 <span class="text-neonred">*</span></h4>
+            <!-- 取貨方式卡片 -->
+            <div class="grid grid-cols-3 gap-3" id="shipping-cards">
+              <!-- 超商取貨 -->
+              <button type="button" onclick="selectShipping('cvs')" id="ship-card-cvs"
+                class="ship-card flex flex-col items-center justify-center gap-2 p-4 border border-slate-600 bg-panelbg rounded text-center transition hover:border-neoncyan/60 focus:outline-none">
+                <i class="fa-solid fa-store text-2xl text-slate-400 ship-card-icon"></i>
+                <span class="text-xs font-bold text-gray-300 leading-tight">超商取貨</span>
+                <span class="text-[10px] text-gray-500 leading-tight">需先付款</span>
+              </button>
+              <!-- 宅配到府 -->
+              <button type="button" onclick="selectShipping('home')" id="ship-card-home"
+                class="ship-card flex flex-col items-center justify-center gap-2 p-4 border border-slate-600 bg-panelbg rounded text-center transition hover:border-neoncyan/60 focus:outline-none">
+                <i class="fa-solid fa-truck text-2xl text-slate-400 ship-card-icon"></i>
+                <span class="text-xs font-bold text-gray-300 leading-tight">宅配到府</span>
+                <span class="text-[10px] text-gray-500 leading-tight">需先付款</span>
+              </button>
+              <!-- 門市自取 -->
+              <button type="button" onclick="selectShipping('store')" id="ship-card-store"
+                class="ship-card flex flex-col items-center justify-center gap-2 p-4 border border-slate-600 bg-panelbg rounded text-center transition hover:border-neoncyan/60 focus:outline-none">
+                <i class="fa-solid fa-shop text-2xl text-slate-400 ship-card-icon"></i>
+                <span class="text-xs font-bold text-gray-300 leading-tight">門市自取</span>
+                <span class="text-[10px] text-gray-500 leading-tight">可現場付款</span>
+              </button>
+            </div>
+            <!-- 運費提示 -->
+            <div id="shipping-fee-hint" class="hidden text-xs text-gray-500 bg-darkbg border border-slate-700 px-3 py-2 rounded">
+              <i class="fa-solid fa-circle-info text-neoncyan mr-1"></i><span id="shipping-fee-hint-text"></span>
+            </div>
+            <!-- 付款方式 -->
+            <div>
+              <label class="text-xs text-gray-400 block mb-2">付款方式 <span class="text-neonred">*</span></label>
+              <select id="pay-method" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none focus:border-neoncyan transition">
+                <option value="">請先選擇取貨方式</option>
+              </select>
+            </div>
+          </div>
+          <!-- 顧客資料 -->
+          <div class="bg-darkbg border border-slate-700 p-5 rounded space-y-4 shadow-lg">
+            <h4 class="text-white font-bold border-l-4 border-neoncyan pl-2 text-sm">顧客資料</h4>
+            <p class="text-xs text-gray-400">請填寫正確資料，以利配送與聯繫</p>
+            <!-- 超商取貨欄位 -->
+            <div id="ship-cvs-fields" class="hidden space-y-4">
+              <div><label class="text-xs text-gray-400 block mb-1">取件人姓名 <span class="text-neonred">*</span></label><input type="text" id="cvs-name" placeholder="請填真實姓名" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none focus:border-neoncyan transition"></div>
+              <div><label class="text-xs text-gray-400 block mb-1">取件人手機 <span class="text-neonred">*</span></label><input type="tel" id="cvs-phone" placeholder="請填正確手機" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none focus:border-neoncyan transition"></div>
+              <div><label class="text-xs text-gray-400 block mb-1">超商類型 <span class="text-neonred">*</span></label><select id="cvs-type" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none focus:border-neoncyan transition"><option value="">請選擇超商</option><option value="7-11">7-11</option><option value="FamilyMart">全家</option></select></div>
+              <div class="grid grid-cols-2 gap-4">
+                <div><label class="text-xs text-gray-400 block mb-1">縣市 <span class="text-neonred">*</span></label><select id="cvs-city" onchange="updateDistricts()" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none focus:border-neoncyan transition"></select></div>
+                <div><label class="text-xs text-gray-400 block mb-1">區域 <span class="text-neonred">*</span></label><select id="cvs-district" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none focus:border-neoncyan transition"><option value="">請選擇區域</option></select></div>
+              </div>
+              <div class="grid grid-cols-2 gap-4">
+                <div><label class="text-xs text-gray-400 block mb-1">門市名稱 <span class="text-neonred">*</span></label><input type="text" id="cvs-store" placeholder="某某門市" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none focus:border-neoncyan transition"></div>
+                <div><label class="text-xs text-gray-400 block mb-1">門市代號 (選填)</label><input type="text" id="cvs-id" placeholder="6位數字" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none focus:border-neoncyan transition"></div>
+              </div>
+              <div><label class="text-xs text-gray-400 block mb-1">備註</label><textarea id="cvs-note" rows="2" placeholder="備註（選填）" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none focus:border-neoncyan transition"></textarea></div>
+            </div>
+            <!-- 宅配到府欄位 -->
+            <div id="ship-home-fields" class="hidden space-y-4">
+              <div><label class="text-xs text-gray-400 block mb-1">收件人姓名 <span class="text-neonred">*</span></label><input type="text" id="home-name" placeholder="請填真實姓名" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none focus:border-neoncyan transition"></div>
+              <div><label class="text-xs text-gray-400 block mb-1">收件人手機 <span class="text-neonred">*</span></label><input type="tel" id="home-phone" placeholder="請填正確手機" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none focus:border-neoncyan transition"></div>
+              <div><label class="text-xs text-gray-400 block mb-1">收件地址 <span class="text-neonred">*</span></label><textarea id="home-addr" rows="2" placeholder="縣市、鄉鎮市區、路段、門號" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none focus:border-neoncyan transition"></textarea></div>
+              <div><label class="text-xs text-gray-400 block mb-1">備註</label><textarea id="home-note" rows="2" placeholder="備註（選填）" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none focus:border-neoncyan transition"></textarea></div>
+            </div>
+            <!-- 門市自取欄位 -->
+            <div id="ship-store-fields" class="hidden space-y-4">
+              <p class="text-neoncyan text-xs font-bold"><i class="fa-solid fa-circle-info mr-2"></i>請於營業時間內到 Apple 911 門市取貨</p>
+              <div><label class="text-xs text-gray-400 block mb-1">取件人姓名 <span class="text-neonred">*</span></label><input type="text" id="store-name" placeholder="請填真實姓名" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none focus:border-neoncyan transition"></div>
+              <div><label class="text-xs text-gray-400 block mb-1">取件人手機 <span class="text-neonred">*</span></label><input type="tel" id="store-phone" placeholder="請填正確手機" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none focus:border-neoncyan transition"></div>
+              <div><label class="text-xs text-gray-400 block mb-1">預計到店日期</label><input type="date" id="store-date" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none focus:border-neoncyan transition"></div>
+              <div><label class="text-xs text-gray-400 block mb-1">備註</label><textarea id="store-note" rows="2" placeholder="備註（選填）" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none focus:border-neoncyan transition"></textarea></div>
+            </div>
+            <!-- 尚未選取提示 -->
+            <p id="ship-fields-placeholder" class="text-xs text-gray-500 text-center py-4">請先選擇取貨方式</p>
+          </div>
+          <!-- 條款同意 & 送出 -->
+          <div class="flex items-start gap-2 mb-2 px-1">
+            <input type="checkbox" id="agree-terms" class="mt-1 w-4 h-4 accent-neoncyan cursor-pointer">
+            <label for="agree-terms" class="text-xs text-gray-400 leading-relaxed cursor-pointer">我已閱讀並同意以下內容：<br>
+              <span class="text-neoncyan underline hover:text-white transition" onclick="openTerms('payment')">付款資訊</span>、<span class="text-neoncyan underline hover:text-white transition" onclick="openTerms('shipping')">配送取件</span>、<span class="text-neoncyan underline hover:text-white transition" onclick="openTerms('returns')">退換貨政策</span>、<span class="text-neoncyan underline hover:text-white transition" onclick="openTerms('warranty')">維修保固</span>、<span class="text-neoncyan underline hover:text-white transition" onclick="openTerms('terms')">服務條款</span>
+            </label>
+          </div>
+          <button id="submit-order-btn" onclick="submitOrder()" disabled class="w-full py-4 bg-neoncyan text-black font-bold tech-clip text-sm hover:bg-white transition shadow-lg tracking-widest uppercase">確認送出訂單 SUBMIT ORDER</button>
+        </div>
+      </div>
+    </div>
     <div id="order-success-view" class="px-4 py-8 hidden max-w-2xl mx-auto w-full"><div class="bg-darkbg border border-neoncyan p-8 rounded text-center shadow-lg mb-6 tech-clip"><i class="fa-regular fa-circle-check text-6xl text-neoncyan mb-4"></i><h2 class="text-2xl font-bold text-white mb-2 tracking-widest">訂單已成立</h2><p class="text-gray-400 text-sm">您的訂單編號：<span id="success-order-id" class="text-white font-tech font-bold"></span></p></div><div id="payment-instruction-box" class="bg-panelbg border border-slate-700 p-6 rounded space-y-4 shadow-lg hidden"><h4 class="text-neonred font-bold text-sm">請於 24 小時內完成付款，否則訂單將自動取消</h4><div class="bg-darkbg p-4 rounded border border-slate-800 text-gray-300 text-sm leading-relaxed" id="payment-details-text"></div><div class="border-t border-slate-700 pt-4 mt-4"><button onclick="handleUserClick(); switchMemberTab('orders');" class="w-full py-3 bg-slate-800 text-neoncyan font-bold tech-clip text-sm hover:bg-neoncyan hover:text-black transition uppercase tracking-widest">前往訂單紀錄查看與回報</button></div></div></div>
     <div id="member-view" class="px-4 py-8 hidden"><div class="bg-darkbg border border-cyan-500 p-5 tech-clip mb-6 flex items-center gap-4 shadow-lg shadow-cyan-900/40 hover:border-cyan-300 hover:shadow-cyan-500/30 transition"><div class="w-16 h-16 rounded-full border-2 border-neoncyan flex items-center justify-center"><i class="fa-solid fa-user-astronaut text-3xl text-neoncyan"></i></div><div class="flex-grow"><h3 class="text-xl font-bold text-cyan-400" id="member-name" style="text-shadow:0 0 8px rgba(0,243,255,0.45)">Apple 客戶</h3></div><button onclick="logout()" class="text-gray-500 hover:text-neonred text-xl transition"><i class="fa-solid fa-right-from-bracket"></i></button></div><div class="flex gap-4 border-b border-slate-800 mb-6"><button onclick="switchMemberTab('orders')" id="tab-btn-orders" class="member-tab-btn pb-2 text-sm font-bold text-gray-500 transition">訂單紀錄</button><button onclick="switchMemberTab('profile')" id="tab-btn-profile" class="member-tab-btn member-tab-active pb-2 text-sm font-bold text-gray-500 transition">個人設定</button><button onclick="switchMemberTab('coupons')" id="tab-btn-coupons" class="member-tab-btn pb-2 text-sm font-bold text-gray-500 transition">優惠券</button></div><div id="member-tab-orders" class="hidden space-y-4"><div id="orders-container" class="space-y-4"></div></div><div id="member-tab-coupons" class="hidden space-y-4"><div id="coupons-container"></div></div><div id="member-tab-profile" class="space-y-6"><div class="bg-darkbg border border-slate-700 p-5 rounded space-y-4"><div><label class="text-xs text-neoncyan block mb-1">真實姓名</label><input id="profile-name" type="text" class="w-full bg-panelbg border border-neoncyan/40 text-white p-3 rounded hover:border-neoncyan/70 focus:outline-none focus:border-neoncyan focus:shadow-[0_0_8px_rgba(0,243,255,0.4)] transition"></div><div><label class="text-xs text-neoncyan block mb-1">手機號碼</label><input id="profile-phone" type="tel" class="w-full bg-panelbg border border-neoncyan/40 text-white p-3 rounded hover:border-neoncyan/70 focus:outline-none focus:border-neoncyan focus:shadow-[0_0_8px_rgba(0,243,255,0.4)] transition"></div><div><label class="text-xs text-neoncyan block mb-1">電子信箱</label><input id="profile-email" type="email" class="w-full bg-panelbg border border-neoncyan/40 text-white p-3 rounded hover:border-neoncyan/70 focus:outline-none focus:border-neoncyan focus:shadow-[0_0_8px_rgba(0,243,255,0.4)] transition"></div><div><label class="text-xs text-neoncyan block mb-1">LINE ID</label><input id="profile-line" type="text" class="w-full bg-panelbg border border-neoncyan/40 text-white p-3 rounded hover:border-neoncyan/70 focus:outline-none focus:border-neoncyan focus:shadow-[0_0_8px_rgba(0,243,255,0.4)] transition"></div><div><label class="text-xs text-neoncyan block mb-1">常用地址</label><textarea id="profile-address" rows="2" class="w-full bg-panelbg border border-neoncyan/40 text-white p-3 rounded hover:border-neoncyan/70 focus:outline-none focus:border-neoncyan focus:shadow-[0_0_8px_rgba(0,243,255,0.4)] transition"></textarea></div><div><label class="text-xs text-neoncyan block mb-1">生日</label><div class="flex gap-2"><select id="profile-birth-year" class="flex-1 bg-panelbg border border-neoncyan/40 text-white p-3 rounded hover:border-neoncyan/70 focus:outline-none focus:border-neoncyan transition"><option value="">年</option></select><select id="profile-birth-month" class="flex-1 bg-panelbg border border-neoncyan/40 text-white p-3 rounded hover:border-neoncyan/70 focus:outline-none focus:border-neoncyan transition"><option value="">月</option></select><select id="profile-birth-day" class="flex-1 bg-panelbg border border-neoncyan/40 text-white p-3 rounded hover:border-neoncyan/70 focus:outline-none focus:border-neoncyan transition"><option value="">日</option></select></div><p class="text-xs text-gray-400 mt-1">生日僅可設定一次，儲存後不可修改</p></div></div><div class="flex justify-end"><button onclick="saveProfile()" class="px-6 py-3 bg-neoncyan text-black font-bold tech-clip text-sm hover:bg-white transition shadow-lg">儲存設定</button></div><div class="bg-darkbg border border-slate-700 p-5 rounded space-y-3"><h4 class="text-xs font-bold text-gray-400 border-l-4 border-neoncyan pl-2">最近訂單</h4><div id="profile-recent-orders"></div><button onclick="switchMemberTab('orders')" class="w-full py-3 bg-slate-800 text-neoncyan font-bold tech-clip text-xs hover:bg-neoncyan hover:text-black transition uppercase tracking-widest">查看全部訂單紀錄</button></div><div class="bg-darkbg border border-slate-700 p-5 rounded"><a href="https://line.me/R/ti/p/@apple911" target="_blank" class="flex items-center justify-between"><span class="text-xs text-gray-400">官方 LINE</span><span class="text-[#06C755] font-bold text-sm font-tech"><i class="fa-brands fa-line mr-1"></i>@apple911</span></a></div><div class="bg-darkbg border border-slate-700 p-5 rounded"><button onclick="openTerms('member')" class="flex items-center justify-between w-full"><span class="text-xs text-gray-400">會員條款</span><span class="text-neoncyan text-xs font-bold">閱讀 →</span></button></div></div></div>
   </main>
@@ -120,6 +235,16 @@
     let categories=[];
     const twData={'台北市':['中正區','大同區','中山區','松山區','大安區','萬華區','信義區','士林區','北投區','內湖區','南港區','文山區'],'新北市':['板橋區','三重區','中和區','永和區','新莊區','新店區','樹林區','鶯歌區','三峽區','淡水區','汐止區','瑞芳區','土城區','蘆洲區','五股區','泰山區','林口區','深坑區','石碇區','坪林區','三芝區','石門區','八里區','平溪區','雙溪區','貢寮區','金山區','萬里區','烏來區'],'台中市':['中區','東區','南區','西區','北區','北屯區','西屯區','南屯區','太平區','大里區','霧峰區','烏日區','豐原區','後里區','石岡區','東勢區','和平區','新社區','潭子區','大雅區','神岡區','大肚區','沙鹿區','龍井區','梧棲區','清水區','大甲區','外埔區','大安區'],'高雄市':['新興區','前金區','苓雅區','鹽埕區','鼓山區','旗津區','前鎮區','三民區','楠梓區','小港區','左營區','仁武區','大社區','岡山區','路竹區','阿蓮區','田寮區','燕巢區','橋頭區','梓官區','彌陀區','永安區','湖內區','鳳山區','大寮區','林園區','鳥松區','大樹區','旗山區','美濃區','六龜區','內門區','杉林區','甲仙區','桃源區','那瑪夏區','茂林區','茄萣區'],'台南市':['中西區','東區','南區','北區','安平區','安南區','永康區','歸仁區','新化區','left鎮區','玉井區','楠西區','南化區','仁德區','關廟區','龍崎區','官田區','麻豆區','佳里區','西港區','七股區','將軍區','學甲區','北門區','新營區','後壁區','白河區','東山區','六甲區','下營區','柳營區','鹽水區','善化區','大內區','山上區','新市區','安定區'],'桃園市':['中壢區','平鎮區','龍潭區','楊梅區','新屋區','觀音區','桃園區','龜山區','八德區','大溪區','復興區','大園區','蘆竹區'],'基隆市':['仁愛區','信義區','中正區','中山區','安樂區','暖暖區','七堵區'],'新竹市':['東區','北區','香山區'],'新竹縣':['竹北市','竹東鎮','新埔鎮','關西鎮','湖口鄉','新豐鄉','芎林鄉','橫山鄉','北埔鄉','寶山鄉','峨眉鄉','尖石鄉','五峰鄉'],'苗栗縣':['苗栗市','通霄鎮','苑裡鎮','竹南鎮','頭份市','後龍鎮','卓蘭鎮','大湖鄉','公館鄉','銅鑼鄉','南庄鄉','頭屋鄉','三義鄉','西湖鄉','造橋鄉','三灣鄉','獅潭鄉','泰安鄉'],'彰化縣':['彰化市','鹿港鎮','和美鎮','線西鄉','伸港鄉','福興鄉','秀水鄉','花壇鄉','芬園鄉','員林市','溪湖鎮','田中鎮','大村鄉','埔鹽鄉','埔心鄉','永靖鄉','社頭鄉','二水鄉','北斗鎮','二林鎮','田尾鄉','埤頭鄉','芳苑鄉','大城鄉','竹塘鄉','溪州鄉'],'屏東縣':['屏東市','東港鎮','潮州鎮','恆春鎮','萬丹鄉','長治鄉','麟洛鄉','九如鄉','里港鄉','高樹鄉','鹽埔鄉','內埔鄉','竹田鄉','新園鄉','枋寮鄉','琉球鄉'],'宜蘭縣':['宜蘭市','羅東鎮','蘇澳鎮','頭城鎮','礁溪鄉','壯圍鄉','員山鄉','冬山鄉','五結鄉','三星鄉','大同鄉','南澳鄉'],'花蓮縣':['花蓮市','新城鄉','秀林鄉','吉安鄉','壽豐鄉','鳳林鎮','光復鄉','豐濱鄉','瑞穗鄉','萬榮鄉','玉里鎮','卓溪鄉','富里鄉'],'台東縣':['台東市','綠島鄉','蘭嶼鄉','延平鄉','卑南鄉','鹿野鄉','關山鎮','海端鄉','池上鄉','東河鄉','成功鎮','長濱鄉','太麻里鄉','金峰鄉','大武鄉','達仁鄉'],'南投縣':['南投市','埔里鎮','草屯鎮','竹山鎮','集集鎮','名間鄉','鹿谷鄉','中寮鄉','魚池鄉','國姓鄉','信義鄉','仁愛鄉','水里鄉'],'雲林縣':['斗六市','斗南鎮','虎尾鎮','西螺鎮','土庫鎮','北港鎮','古坑鄉','大埤鄉','莿桐鄉','林內鄉','二崙鄉','崙背鄉','麥寮鄉','東勢鄉','褒忠鄉','台西鄉','元長鄉','四湖鄉','口湖鄉','水林鄉'],'嘉義市':['東區','西區'],'嘉義縣':['太保市','朴子市','布袋鎮','大林鎮','民雄鄉','溪口鄉','新港鄉','六腳鄉','東石鄉','義竹鄉','鹿草鄉','水上鄉','中埔鄉','竹崎鄉','梅山鄉','番路鄉','大埔鄉','阿里山鄉'],'澎湖縣':['馬公市','湖西鄉','白沙鄉','西嶼鄉','望安鄉','七美鄉'],'金門縣':['金城鎮','金湖鎮','金沙鎮','金寧鄉','烈嶼鄉','烏坵鄉'],'連江縣':['南竿鄉','北竿鄉','莒光鄉','東引鄉']};
     const termsData={payment:{title:'付款資訊',content:'...'},shipping:{title:'配送取件',content:'...'},tracking:{title:'進度查詢',content:'...'},returns:{title:'退換貨政策',content:'...'},warranty:{title:'維修保固',content:'...'},terms:{title:'服務條款',content:'...'},member:{title:'會員條款',content:'...'}};
+    /* ── 運費設定（集中管理，不要寫死在多處）── */
+    const SHIPPING_CONFIG = {
+      freeThreshold: 699,       // 滿額免運門檻
+      cvs:   { fee: 0,   label: '超商取貨' },   // 超商統一為 0（需先付款）
+      home:  { mainlandFee: 100, islandFee: 200, label: '宅配到府' },
+      store: { fee: 0,   label: '門市自取' }
+    };
+    // 目前取貨方式（'cvs' | 'home' | 'store' | ''）
+    let currentShipping = '';
+
     let cart=[];
     let orders=[];
     let isLoggedIn=false;
@@ -242,14 +367,260 @@
     function addToCart(id){const p=_getLatestProducts().find(p=>p.id==id);if(p)cart.push(p);renderCart();showToast('已加入購物車');}
     function removeFromCart(index){cart.splice(index,1);renderCart();}
     function renderCart(){const countBadge=document.getElementById('cart-count'),cartContainer=document.getElementById('cart-items'),totalEl=document.getElementById('cart-total');countBadge.innerText=cart.length;if(cart.length>0)countBadge.classList.remove('scale-0');else countBadge.classList.add('scale-0');if(cart.length===0){cartContainer.innerHTML='<div class="flex h-full items-center justify-center text-gray-500 font-bold tracking-widest uppercase">EMPTY</div>';totalEl.innerText='NT$ 0';return;}let total=0;cartContainer.innerHTML=cart.map((item,index)=>{total+=item.price;return`<div class="bg-darkbg p-4 border border-slate-700 flex justify-between items-center rounded tech-clip"><div class="text-left"><div class="text-white text-sm font-bold">${item.name}</div><div class="text-goldlight font-tech text-sm">NT$ ${item.price}</div></div><button onclick="removeFromCart(${index})" class="text-slate-500 hover:text-neonred p-2 transition text-lg"><i class="fa-solid fa-trash-can"></i></button></div>`}).join('');totalEl.innerText='NT$ '+total;}
-    function checkout(){if(cart.length===0)return showToast('購物車為空');if(!isLoggedIn){showToast('請先登入');document.getElementById('auth-modal').classList.replace('hidden','flex');return;}closeAllDrawers();showSection('checkout');const container=document.getElementById('checkout-cart-items'),totalEl=document.getElementById('checkout-total');let total=0;container.innerHTML=cart.map(i=>{total+=i.price;return`<div class="flex justify-between items-center text-sm"><span class="text-white">${i.name}</span><span class="text-goldlight font-tech">NT$ ${i.price}</span></div>`}).join('');totalEl.innerText='NT$ '+total;initCities();prefillCheckout();}
-    function initCities(){/* ... */}
-    function updateDistricts(){/* ... */}
-    function handleShippingChange(){/* ... */}
+    function checkout(){
+      if(cart.length===0)return showToast('購物車為空');
+      if(!isLoggedIn){showToast('請先登入');document.getElementById('auth-modal').classList.replace('hidden','flex');return;}
+      closeAllDrawers();
+      showSection('checkout');
+      // 購物清單
+      const container=document.getElementById('checkout-cart-items');
+      if(container){
+        container.innerHTML=cart.map(i=>`<div class="flex justify-between items-center text-sm"><span class="text-white">${i.name}</span><span class="text-goldlight font-tech">NT$ ${i.price}</span></div>`).join('');
+      }
+      // 重置取貨卡片 & 欄位狀態
+      currentShipping='';
+      document.querySelectorAll('.ship-card').forEach(c=>c.classList.remove('selected'));
+      ['cvs','home','store'].forEach(m=>{
+        const el=document.getElementById('ship-'+m+'-fields');
+        if(el) el.classList.add('hidden');
+      });
+      const placeholder=document.getElementById('ship-fields-placeholder');
+      if(placeholder) placeholder.classList.remove('hidden');
+      const hintBox=document.getElementById('shipping-fee-hint');
+      if(hintBox) hintBox.classList.add('hidden');
+      // 付款方式重置
+      const payEl=document.getElementById('pay-method');
+      if(payEl) payEl.innerHTML='<option value="">請先選擇取貨方式</option>';
+      // 金額更新
+      updateCheckoutTotal();
+      initCities();
+      prefillCheckout();
+    }
+    function initCities(){
+      const cityEl=document.getElementById('cvs-city');
+      if(!cityEl)return;
+      cityEl.innerHTML='<option value="">請選擇縣市</option>';
+      Object.keys(twData).forEach(city=>{
+        const o=document.createElement('option');
+        o.value=city; o.textContent=city;
+        cityEl.appendChild(o);
+      });
+    }
+    function updateDistricts(){
+      const city=document.getElementById('cvs-city')?.value;
+      const distEl=document.getElementById('cvs-district');
+      if(!distEl)return;
+      distEl.innerHTML='<option value="">請選擇區域</option>';
+      if(!city||!twData[city])return;
+      twData[city].forEach(d=>{
+        const o=document.createElement('option');
+        o.value=d; o.textContent=d;
+        distEl.appendChild(o);
+      });
+    }
+    /* 計算運費（單獨抽出，方便維護） */
+    function calcShippingFee(method, subtotal){
+      if(method==='store') return 0;
+      if(method==='cvs'){
+        // 超商：滿免運門檻免運，否則免運（依條款超商本身無額外運費，統一先付款）
+        return 0;
+      }
+      if(method==='home'){
+        if(subtotal >= SHIPPING_CONFIG.freeThreshold) return 0;
+        // 簡單預設本島，使用者可在備註補充離島
+        return SHIPPING_CONFIG.home.mainlandFee;
+      }
+      return 0;
+    }
+    /* 更新結帳頁小計 / 運費 / 總計 */
+    function updateCheckoutTotal(){
+      const subtotal = cart.reduce((s,i)=>s+(i.price||0),0);
+      const fee = calcShippingFee(currentShipping, subtotal);
+      const total = subtotal + fee;
+      const subEl=document.getElementById('checkout-subtotal');
+      const feeEl=document.getElementById('checkout-shipping-fee');
+      const totEl=document.getElementById('checkout-total');
+      if(subEl) subEl.textContent='NT$ '+subtotal;
+      if(feeEl){
+        if(!currentShipping){ feeEl.textContent='—'; }
+        else if(fee===0){ feeEl.textContent='免運費'; }
+        else{ feeEl.textContent='NT$ '+fee; }
+      }
+      if(totEl) totEl.textContent='NT$ '+total;
+    }
+    /* 卡片點選：更新狀態、切換付款選項、切換欄位 */
+    function selectShipping(method){
+      currentShipping=method;
+      // 卡片視覺
+      document.querySelectorAll('.ship-card').forEach(c=>c.classList.remove('selected'));
+      const card=document.getElementById('ship-card-'+method);
+      if(card) card.classList.add('selected');
+      // 欄位切換
+      ['cvs','home','store'].forEach(m=>{
+        const el=document.getElementById('ship-'+m+'-fields');
+        if(el) el.classList.add('hidden');
+      });
+      const placeholder=document.getElementById('ship-fields-placeholder');
+      if(placeholder) placeholder.classList.add('hidden');
+      const target=document.getElementById('ship-'+method+'-fields');
+      if(target) target.classList.remove('hidden');
+      // 付款方式
+      const payEl=document.getElementById('pay-method');
+      if(payEl){
+        if(method==='store'){
+          payEl.innerHTML=`<option value="">請選擇付款方式</option>
+            <option value="transfer">銀行轉帳</option>
+            <option value="linepay">LINE Pay</option>
+            <option value="onsite">到店付款</option>`;
+        } else {
+          payEl.innerHTML=`<option value="">請選擇付款方式</option>
+            <option value="transfer">銀行轉帳</option>
+            <option value="linepay">LINE Pay</option>`;
+        }
+      }
+      // 運費提示
+      const hintBox=document.getElementById('shipping-fee-hint');
+      const hintText=document.getElementById('shipping-fee-hint-text');
+      if(hintBox && hintText){
+        const subtotal=cart.reduce((s,i)=>s+(i.price||0),0);
+        const fee=calcShippingFee(method,subtotal);
+        if(method==='store'){
+          hintText.textContent='到店自取免運費';
+        } else if(method==='cvs'){
+          hintText.textContent='超商取貨免運費（需先付款）';
+        } else if(method==='home'){
+          if(fee===0){
+            hintText.textContent=`本島 NT$${SHIPPING_CONFIG.home.mainlandFee} / 離島 NT$${SHIPPING_CONFIG.home.islandFee}（滿 NT$${SHIPPING_CONFIG.freeThreshold} 免運，目前已達免運門檻）`;
+          } else {
+            hintText.textContent=`本島 NT$${SHIPPING_CONFIG.home.mainlandFee} / 離島 NT$${SHIPPING_CONFIG.home.islandFee}（滿 NT$${SHIPPING_CONFIG.freeThreshold} 免運）`;
+          }
+        }
+        hintBox.classList.remove('hidden');
+      }
+      updateCheckoutTotal();
+    }
+    /* 舊名相容（HTML 中 onchange="handleShippingChange()" 的 select 已移除，保留不讓呼叫出錯） */
+    function handleShippingChange(){ /* 已由 selectShipping() 取代 */ }
     function setFieldError(el){el.classList.add('border-red-500','ring-1','ring-red-500');const ev=el.tagName==='SELECT'||el.tagName==='TEXTAREA'?'change':'input';el.addEventListener(ev,()=>clearFieldError(el),{once:true});}
     function clearFieldError(el){el.classList.remove('border-red-500','ring-1','ring-red-500');}
-    function validateCheckoutFields(){/* ... */}
-    function submitOrder(){/* ... */}
+    function validateCheckoutFields(){
+      if(!currentShipping){ showToast('請選擇取貨方式'); return false; }
+      const pay=document.getElementById('pay-method')?.value;
+      if(!pay){ showToast('請選擇付款方式'); return false; }
+      if(currentShipping==='home'){
+        const name=document.getElementById('home-name');
+        const phone=document.getElementById('home-phone');
+        const addr=document.getElementById('home-addr');
+        let ok=true;
+        if(!name?.value.trim()){ setFieldError(name); ok=false; }
+        if(!phone?.value.trim()){ setFieldError(phone); ok=false; }
+        if(!addr?.value.trim()){ setFieldError(addr); ok=false; }
+        if(!ok){ showToast('請填寫宅配必填資料'); return false; }
+      }
+      if(currentShipping==='cvs'){
+        const name=document.getElementById('cvs-name');
+        const phone=document.getElementById('cvs-phone');
+        const type=document.getElementById('cvs-type');
+        const city=document.getElementById('cvs-city');
+        const district=document.getElementById('cvs-district');
+        const store=document.getElementById('cvs-store');
+        let ok=true;
+        if(!name?.value.trim()){ setFieldError(name); ok=false; }
+        if(!phone?.value.trim()){ setFieldError(phone); ok=false; }
+        if(!type?.value){ setFieldError(type); ok=false; }
+        if(!city?.value){ setFieldError(city); ok=false; }
+        if(!district?.value){ setFieldError(district); ok=false; }
+        if(!store?.value.trim()){ setFieldError(store); ok=false; }
+        if(!ok){ showToast('請填寫超商取貨必填資料'); return false; }
+      }
+      if(currentShipping==='store'){
+        const name=document.getElementById('store-name');
+        const phone=document.getElementById('store-phone');
+        let ok=true;
+        if(!name?.value.trim()){ setFieldError(name); ok=false; }
+        if(!phone?.value.trim()){ setFieldError(phone); ok=false; }
+        if(!ok){ showToast('請填寫取件人姓名與手機'); return false; }
+      }
+      return true;
+    }
+    function submitOrder(){
+      if(!validateCheckoutFields()) return;
+      const subtotal=cart.reduce((s,i)=>s+(i.price||0),0);
+      const shippingFee=calcShippingFee(currentShipping,subtotal);
+      const orderTotal=subtotal+shippingFee;
+      const paymentMethod=document.getElementById('pay-method')?.value||'';
+      // 組合 shippingInfo
+      let shippingInfo={};
+      let note='';
+      if(currentShipping==='home'){
+        shippingInfo={
+          name:document.getElementById('home-name')?.value.trim()||'',
+          phone:document.getElementById('home-phone')?.value.trim()||'',
+          address:document.getElementById('home-addr')?.value.trim()||''
+        };
+        note=document.getElementById('home-note')?.value.trim()||'';
+      } else if(currentShipping==='cvs'){
+        shippingInfo={
+          name:document.getElementById('cvs-name')?.value.trim()||'',
+          phone:document.getElementById('cvs-phone')?.value.trim()||'',
+          cvsType:document.getElementById('cvs-type')?.value||'',
+          city:document.getElementById('cvs-city')?.value||'',
+          district:document.getElementById('cvs-district')?.value||'',
+          storeName:document.getElementById('cvs-store')?.value.trim()||'',
+          storeId:document.getElementById('cvs-id')?.value.trim()||''
+        };
+        note=document.getElementById('cvs-note')?.value.trim()||'';
+      } else if(currentShipping==='store'){
+        shippingInfo={
+          name:document.getElementById('store-name')?.value.trim()||'',
+          phone:document.getElementById('store-phone')?.value.trim()||'',
+          pickupDate:document.getElementById('store-date')?.value||''
+        };
+        note=document.getElementById('store-note')?.value.trim()||'';
+      }
+      const orderId='ORD-'+Date.now();
+      const newOrder={
+        id: orderId,
+        userId: window._fbCurrentUser?.uid||'guest',
+        items: cart.map(i=>({id:i.id,name:i.name,price:i.price})),
+        subtotal,
+        shippingFee,
+        orderTotal,
+        shippingMethod: currentShipping,
+        paymentMethod,
+        shippingInfo,
+        note,
+        status: paymentMethod==='onsite'?'待取貨':'未付款',
+        time: Date.now()
+      };
+      // 存進 Firebase
+      if(window._fbAddOrder){
+        window._fbAddOrder(newOrder).catch(()=>{});
+      }
+      // 存進本地 orders
+      orders.unshift(newOrder);
+      // 顯示成功頁
+      showSection('order-success');
+      document.getElementById('success-order-id').textContent=orderId;
+      // 需要付款才顯示付款說明
+      const payBox=document.getElementById('payment-instruction-box');
+      const payText=document.getElementById('payment-details-text');
+      if(payBox && payText){
+        if(paymentMethod==='transfer'){
+          payBox.classList.remove('hidden');
+          payText.innerHTML=`<p>請轉帳至以下帳號後，回報帳號末 5 碼：</p><p class="mt-2 text-neoncyan font-bold">（請洽客服取得轉帳帳號）</p><p class="mt-2">訂單金額：<span class="text-goldlight font-tech font-bold">NT$ ${orderTotal}</span></p>`;
+        } else if(paymentMethod==='linepay'){
+          payBox.classList.remove('hidden');
+          payText.innerHTML=`<p>請透過 LINE Pay 付款後，截圖回傳給客服確認。</p><p class="mt-2">訂單金額：<span class="text-goldlight font-tech font-bold">NT$ ${orderTotal}</span></p>`;
+        } else {
+          payBox.classList.add('hidden');
+        }
+      }
+      // 清空購物車與結帳狀態
+      cart=[];
+      currentShipping='';
+      renderCart();
+    }
     function cancelOrder(orderId){/* ... */}
     function renderOrders(){/* ... */}
     function switchMemberTab(tab){document.getElementById('member-tab-orders').classList.add('hidden');document.getElementById('member-tab-profile').classList.add('hidden');document.getElementById('member-tab-coupons').classList.add('hidden');document.getElementById('tab-btn-orders').classList.remove('member-tab-active');document.getElementById('tab-btn-profile').classList.remove('member-tab-active');document.getElementById('tab-btn-coupons').classList.remove('member-tab-active');document.getElementById('member-tab-'+tab).classList.remove('hidden');document.getElementById('tab-btn-'+tab).classList.add('member-tab-active');if(tab==='profile')loadProfile();if(tab==='orders'||tab==='profile'){if(window._fbGetOrders){window._fbGetOrders().then(list=>{orders=list;if(tab==='orders')renderOrders();if(tab==='profile')renderProfileRecentOrders();});}else{if(tab==='orders')renderOrders();if(tab==='profile')renderProfileRecentOrders();}}if(tab==='coupons')renderCoupons();}
@@ -568,7 +939,20 @@
     function updateBirthDays(){const y=parseInt(document.getElementById('profile-birth-year').value)||0;const m=parseInt(document.getElementById('profile-birth-month').value)||0;const dEl=document.getElementById('profile-birth-day');if(!dEl)return;const prev=dEl.value;const days=y&&m?new Date(y,m,0).getDate():31;dEl.innerHTML='<option value="">日</option>';for(let i=1;i<=days;i++){const o=document.createElement('option');o.value=i;o.textContent=i;dEl.appendChild(o);}if(prev&&parseInt(prev)<=days)dEl.value=prev;}function initBirthSelects(){const currentYear=new Date().getFullYear();const yEl=document.getElementById('profile-birth-year');const mEl=document.getElementById('profile-birth-month');if(!yEl||!mEl)return;for(let y=currentYear;y>=1920;y--){const o=document.createElement('option');o.value=y;o.textContent=y;yEl.appendChild(o);}for(let m=1;m<=12;m++){const o=document.createElement('option');o.value=m;o.textContent=m;mEl.appendChild(o);}yEl.addEventListener('change',updateBirthDays);mEl.addEventListener('change',updateBirthDays);}
     function saveProfile(){if(!window._fbCurrentUser){showToast('請先登入');return;}const p=window._memberProfile||{};const _by=document.getElementById('profile-birth-year').value;const _bm=document.getElementById('profile-birth-month').value;const _bd=document.getElementById('profile-birth-day').value;const birthday=p.birthday||(_by&&_bm&&_bd?`${_by}-${String(_bm).padStart(2,'0')}-${String(_bd).padStart(2,'0')}`:'');const profile={uid:window._fbCurrentUser.uid,email:window._fbCurrentUser.email,name:document.getElementById('profile-name').value.trim(),phone:document.getElementById('profile-phone').value.trim(),lineId:document.getElementById('profile-line').value.trim(),address:document.getElementById('profile-address').value.trim(),birthday:birthday,updatedAt:Date.now()};window._memberProfile=profile;if(window._fbUpdateProfile){window._fbUpdateProfile(profile).then(()=>{showToast('雲端資料已同步');loadProfile();}).catch(e=>{console.error(e);showToast('儲存失敗');});}else{showToast('同步功能尚未就緒');}if(profile.name)document.getElementById('member-name').innerText=profile.name;}
     function loadProfile(){const p=window._memberProfile;if(!p)return;['name','phone','email','lineId','address'].forEach(k=>{const el=document.getElementById('profile-'+(k==='lineId'?'line':k));if(el)el.value=p[k]||'';});if(p.name)document.getElementById('member-name').innerText=p.name;if(p.birthday){const _parts=p.birthday.split('-');const _yEl=document.getElementById('profile-birth-year');const _mEl=document.getElementById('profile-birth-month');const _dEl=document.getElementById('profile-birth-day');if(_yEl){_yEl.value=_parts[0];_yEl.disabled=true;}if(_mEl){_mEl.value=String(parseInt(_parts[1]));_mEl.disabled=true;}updateBirthDays();if(_dEl){_dEl.value=String(parseInt(_parts[2]));_dEl.disabled=true;}}}
-    function prefillCheckout(){const p=window._memberProfile;if(!p)return;['cvs-name','home-name'].forEach(id=>{const el=document.getElementById(id);if(el&&!el.value)el.value=p.name||'';});['cvs-phone','home-phone'].forEach(id=>{const el=document.getElementById(id);if(el&&!el.value)el.value=p.phone||'';});const addr=document.getElementById('home-addr');if(addr&&!addr.value)addr.value=p.address||'';}
+    function prefillCheckout(){
+      const p=window._memberProfile;
+      if(!p)return;
+      // 宅配
+      ['home-name'].forEach(id=>{const el=document.getElementById(id);if(el&&!el.value)el.value=p.name||'';});
+      ['home-phone'].forEach(id=>{const el=document.getElementById(id);if(el&&!el.value)el.value=p.phone||'';});
+      const addr=document.getElementById('home-addr');if(addr&&!addr.value)addr.value=p.address||'';
+      // 超商
+      ['cvs-name'].forEach(id=>{const el=document.getElementById(id);if(el&&!el.value)el.value=p.name||'';});
+      ['cvs-phone'].forEach(id=>{const el=document.getElementById(id);if(el&&!el.value)el.value=p.phone||'';});
+      // 門市自取
+      const sname=document.getElementById('store-name');if(sname&&!sname.value)sname.value=p.name||'';
+      const sphone=document.getElementById('store-phone');if(sphone&&!sphone.value)sphone.value=p.phone||'';
+    }
     function reportPayment(orderId){/* ... */}
     window.onload=function(){renderCart();renderFrontCategories();initBirthSelects();initRegBirthSelects();loadProfile();if(isLoggedIn)document.getElementById('user-status-dot').classList.replace('bg-slate-600','bg-neoncyan');document.getElementById('agree-terms').addEventListener('change',function(){document.getElementById('submit-order-btn').disabled=!this.checked;});document.getElementById('submit-order-btn').addEventListener('mousedown',function(){if(!document.getElementById('agree-terms').checked)showToast('請先閱讀並同意購物與服務條款');});};
   </script>
