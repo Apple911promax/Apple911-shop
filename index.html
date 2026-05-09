@@ -197,7 +197,7 @@
       if(!list)return;
       const allProds=_getLatestProducts();
       const active=allProds.filter(p=>p.active!==false);
-      const filtered=active.filter(p=>p.cat===itemName&&p.brand===brandName&&p.series===seriesName);
+      const filtered=active.filter(p=>p.seriesId==seriesId);
       document.getElementById('current-view-title').innerText=seriesName;
       list.innerHTML=filtered.map(_prodCard).join('')||`<p class="col-span-2 lg:col-span-4 text-center py-10 text-gray-500 text-sm tracking-widest">${seriesName} 尚無商品</p>`;
       showSection('product');
