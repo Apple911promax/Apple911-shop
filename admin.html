@@ -347,7 +347,7 @@
     let currentPage = 'dashboard';
     let _productsCache = []; 
     window._membersCache = []; // 會員資料快取
-    let _categoriesCache = null; // 分類資料快取；null=尚未載入，[]=已載入但無品項
+    let _categoriesCache = []; // 分類資料快取（Firestore 同步）
 
 
     // ════════════════════════════════════════════════════════════
@@ -1438,10 +1438,7 @@
     let catPath = [];
 
     function loadCategories() {
-      if (_categoriesCache === null) {
-        _categoriesCache = JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
-      }
-      return _categoriesCache;
+      return _categoriesCache.length > 0 ? _categoriesCache : JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
     }
     function saveCategories(cats) {
       _categoriesCache = cats; if (window._fbSaveCategories) window._fbSaveCategories(cats);
@@ -1927,12 +1924,10 @@ window._fbSaveCategories = async function(cats) {
 onSnapshot(_fbProdsRef, (snap) => {
   if (snap.exists()) {
     const prods = snap.data().list || [];
-    if (prods.length > 0) {
-      _productsCache = prods;
-      if (typeof renderStats     === 'function') renderStats();
-      if (typeof renderProdDrill === 'function') renderProdDrill();
-      if (typeof _dbgAdminRun    === 'function') _dbgAdminRun();
-    }
+    _productsCache = prods;
+    if (typeof renderStats     === 'function') renderStats();
+    if (typeof renderProdDrill === 'function') renderProdDrill();
+    if (typeof _dbgAdminRun    === 'function') _dbgAdminRun();
   }
   console.log('[Firebase] 後台商品即時同步，共', _productsCache.length, '筆');
 }, (e) => { console.error('[Firebase] 後台商品監聽失敗:', e.message); });
