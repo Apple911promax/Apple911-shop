@@ -347,6 +347,7 @@
     let currentPage = 'dashboard';
     let _productsCache = []; 
     window._membersCache = []; // 會員資料快取
+    let _categoriesCache = []; // 分類資料快取（Firestore 同步）
 
 
     // ════════════════════════════════════════════════════════════
@@ -473,7 +474,7 @@
     // ════════════════════════════════════════════════════════════
     function renderStats() {
       const prods   = loadProducts();
-      const coupons = JSON.parse(localStorage.getItem('apple911_coupons') || '[]');
+      const coupons = [];
       const stats = [
         { label:'總訂單',   value: orders.length,                                color:'text-white',     icon:'fa-list-ul',      action:()=>goToOrders('') },
         { label:'未付款',   value: orders.filter(o=>o.status==='未付款').length,  color:'text-neonred',   icon:'fa-clock',        action:()=>goToOrders('未付款') },
@@ -1437,12 +1438,10 @@
     let catPath = [];
 
     function loadCategories() {
-      const s = JSON.parse(localStorage.getItem('a911_categories') || 'null');
-      return s !== null ? s : JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
+      return _categoriesCache.length > 0 ? _categoriesCache : JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
     }
     function saveCategories(cats) {
-      localStorage.setItem('a911_categories', JSON.stringify(cats));
-      if (window._fbSaveCategories) window._fbSaveCategories(cats);
+      _categoriesCache = cats; if (window._fbSaveCategories) window._fbSaveCategories(cats);
     }
 
     function showCatMgmt() {
@@ -1937,12 +1936,12 @@ window._fbSaveCategories = async function(cats) {
     const cs = await getDoc(_fbCatRef);
     if (cs.exists()) {
       const cats = cs.data().list || [];
-      if (cats.length > 0) localStorage.setItem('a911_categories', JSON.stringify(cats));
+      if (cats.length > 0) _categoriesCache = cats;
     }
     const ms = await getDoc(_fbMembersRef);
     if (ms.exists()) {
       const mlist = ms.data().list || [];
-      if (mlist.length > 0) localStorage.setItem('a911_members', JSON.stringify(mlist));
+
     }
     console.log('[Firebase] 後台初始同步完成');
   } catch(e) { console.error('[Firebase] 後台初始同步失敗:', e.message); }
