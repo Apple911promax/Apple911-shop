@@ -503,10 +503,12 @@
       const kw = (document.getElementById('search-input')?.value || '').trim().toLowerCase();
       const st =  document.getElementById('filter-status')?.value || '';
       return orders.filter(o => {
+        const oName  = o.shippingInfo?.name  || o.customerName  || o.name  || o.customer  || o.buyerName  || '';
+        const oPhone = o.shippingInfo?.phone || o.customerPhone || o.phone || o.mobile    || o.buyerPhone || '';
         const matchKw = !kw || o.id.toLowerCase().includes(kw) ||
           (o.items||[]).some(i => i.name.toLowerCase().includes(kw)) ||
-          (o.customerName||'').toLowerCase().includes(kw) ||
-          (o.customerPhone||'').includes(kw);
+          oName.toLowerCase().includes(kw) ||
+          oPhone.includes(kw);
         const matchSt = !st || o.status === st;
         return matchKw && matchSt;
       });
@@ -526,14 +528,18 @@
       }
 
       const rowsHtml = filtered.map(order => {
-        const shipLabel = order.ship==='cvs'?'超商取貨':order.ship==='home'?'宅配到府':'到店取貨';
-        const payLabel  = order.pay==='bank'?'銀行轉帳':order.pay==='linepay'?'LINE Pay':order.pay==='storepay'?'到店付款':order.pay||'-';
+        const _ship = order.shippingMethod || order.ship || '';
+        const _pay  = order.paymentMethod  || order.pay  || '';
+        const shipLabel = _ship==='cvs'?'超商取貨':_ship==='home'?'宅配到府':_ship==='store'?'到店取貨':'—';
+        const payLabel  = _pay==='transfer'?'銀行轉帳':_pay==='linepay'?'LINE Pay':_pay==='onsite'?'到店付款':_pay==='bank'?'銀行轉帳':_pay==='storepay'?'到店付款':_pay||'-';
         const itemsText = (order.items||[]).map(i=>i.name).join('、') || '-';
         const optHtml   = STATUS_LIST.map(s =>
           `<option value="${s}" ${order.status===s?'selected':''}>${s}</option>`).join('');
-        const cName  = order.customerName || order.name || order.customer || order.buyerName || '-';
-        const cPhone = order.customerPhone || order.phone || order.mobile || order.buyerPhone || '-';
-        const cAddr  = order.customerAddress || order.address || order.homeAddr || order.shipAddress || '-';
+        const cName  = order.shippingInfo?.name  || order.customerName  || order.name  || order.customer  || order.buyerName  || '-';
+        const cPhone = order.shippingInfo?.phone || order.customerPhone || order.phone || order.mobile    || order.buyerPhone || '-';
+        const cAddr  = order.shippingInfo?.address || order.customerAddress || order.address || order.homeAddr || order.shipAddress || '-';
+        const cTotal = order.total || order.orderTotal || 0;
+        const cTime  = order.time ? new Date(order.time).toLocaleString('zh-TW') : '-';
 
         return `
         <div class="bg-panelbg border border-slate-700 tech-clip p-4 hover:border-neoncyan transition cursor-pointer" onclick="toggleOrderRow('${order.id}')">
@@ -555,7 +561,7 @@
             <div class="shrink-0 text-right">
               <p class="text-[10px] uppercase tracking-widest text-gray-600 mb-1">當前進度</p>
               <span class="status-badge badge-${order.status}">${order.status}</span>
-              <p class="text-neoncyan text-[10px] mt-2">${order.time||'-'}</p>
+              <p class="text-neoncyan text-[10px] mt-2">${cTime}</p>
             </div>
           </div>
           <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
@@ -608,7 +614,7 @@
               </div>
               <div class="text-right">
                 <p class="font-bold text-gray-500 uppercase tracking-widest mb-1">金額</p>
-                <p class="text-goldlight font-tech font-bold">NT$ ${order.total}</p>
+                <p class="text-goldlight font-tech font-bold">NT$ ${cTotal}</p>
               </div>
             </div>
             <div class="flex flex-wrap gap-2 mt-3">
@@ -1671,11 +1677,15 @@
 
       const rowsHtml = members.map(m => {
         const memberOrders = orders.filter(o =>
-          o.customerPhone === m.phone || o.customerEmail === m.email
+          (m.uid && o.userId === m.uid) ||
+          (m.phone && o.shippingInfo?.phone === m.phone) ||
+          (m.email && o.shippingInfo?.phone === m.phone) ||
+          (m.phone && o.customerPhone === m.phone) ||
+          (m.email && o.customerEmail === m.email)
         );
         const totalSpend = memberOrders
           .filter(o => o.status !== '已取消')
-          .reduce((s, o) => s + (o.total || 0), 0);
+          .reduce((s, o) => s + (o.total || o.orderTotal || 0), 0);
         const modelText = m.device || m.model || '';
         return `
         <div class="bg-panelbg border border-slate-700 tech-clip p-4 hover:border-neoncyan transition cursor-pointer"
@@ -1728,11 +1738,15 @@
       detailView.classList.remove('hidden');
 
       const memberOrders = orders.filter(o =>
-        o.customerPhone === m.phone || o.customerEmail === m.email
+        (m.uid && o.userId === m.uid) ||
+        (m.phone && o.shippingInfo?.phone === m.phone) ||
+        (m.email && o.shippingInfo?.phone === m.phone) ||
+        (m.phone && o.customerPhone === m.phone) ||
+        (m.email && o.customerEmail === m.email)
       );
       const totalSpend = memberOrders
         .filter(o => o.status !== '已取消')
-        .reduce((s, o) => s + (o.total || 0), 0);
+        .reduce((s, o) => s + (o.total || o.orderTotal || 0), 0);
 
       const ordersHtml = memberOrders.length === 0
         ? '<p class="text-xs text-gray-600 text-center py-6 tracking-widest">尚無訂單記錄</p>'
@@ -1744,10 +1758,10 @@
               <div class="flex items-center justify-between gap-2 flex-wrap">
                 <div>
                   <p class="text-xs text-gray-300">${(order.items||[]).map(i=>i.name).join('、')||'-'}</p>
-                  <p class="text-[10px] text-gray-600 font-tech tracking-widest mt-0.5">${order.id} · ${order.time||'-'}</p>
+                  <p class="text-[10px] text-gray-600 font-tech tracking-widest mt-0.5">${order.id} · ${order.time ? new Date(order.time).toLocaleString('zh-TW') : '-'}</p>
                 </div>
                 <div class="flex items-center gap-2 shrink-0">
-                  <span class="text-goldlight font-tech font-bold text-sm">NT$ ${order.total}</span>
+                  <span class="text-goldlight font-tech font-bold text-sm">NT$ ${order.total || order.orderTotal || 0}</span>
                   <span class="status-badge badge-${order.status}">${order.status}</span>
                 </div>
               </div>
