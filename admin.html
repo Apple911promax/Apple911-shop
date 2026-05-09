@@ -347,7 +347,7 @@
     let currentPage = 'dashboard';
     let _productsCache = []; 
     window._membersCache = []; // 會員資料快取
-    let _categoriesCache = []; // 分類資料快取（Firestore 同步）
+    let _categoriesCache = null; // 分類資料快取；null=尚未載入，[]=已載入但無品項
 
 
     // ════════════════════════════════════════════════════════════
@@ -1438,7 +1438,10 @@
     let catPath = [];
 
     function loadCategories() {
-      return _categoriesCache.length > 0 ? _categoriesCache : JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
+      if (_categoriesCache === null) {
+        _categoriesCache = JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
+      }
+      return _categoriesCache;
     }
     function saveCategories(cats) {
       _categoriesCache = cats; if (window._fbSaveCategories) window._fbSaveCategories(cats);
