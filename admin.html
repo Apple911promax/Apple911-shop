@@ -1879,9 +1879,7 @@ onSnapshot(_fbMembersCol, (snap) => {
   const list = [];
   snap.forEach(docSnap => list.push(docSnap.data()));
   // 更新 _membersCache（這是在 admin.html 中定義的會員列表變數）
-  if (typeof _membersCache !== 'undefined') {
-    _membersCache = list;
-  }
+  window._membersCache = list;
   // 如果在會員頁面，觸發重新渲染
   if (currentPage === 'members') {
     if (typeof renderMembers === 'function') renderMembers();
