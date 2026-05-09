@@ -32,10 +32,53 @@
     ::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-thumb{background:#00f3ff;border-radius:4px;}.custom-scrollbar::-webkit-scrollbar{width:4px;}.custom-scrollbar::-webkit-scrollbar-thumb{background:#00f3ff;border-radius:10px;}
     input,select,textarea{font-size:16px!important;}
     /* 取貨方式卡片 */
-    .ship-card{min-height:96px;position:relative;}
-    .ship-card.selected{border-color:#00f3ff!important;background:rgba(0,243,255,0.07)!important;box-shadow:0 0 12px rgba(0,243,255,0.18);}
-    .ship-card.selected .ship-card-icon{color:#00f3ff!important;}
-    .ship-card.selected span{color:#e2e8f0!important;}
+    @keyframes neon-pulse{
+      0%,100%{box-shadow:0 0 6px rgba(0,243,255,0.4),0 0 18px rgba(0,243,255,0.15),inset 0 0 8px rgba(0,243,255,0.05);}
+      50%{box-shadow:0 0 14px rgba(0,243,255,0.75),0 0 32px rgba(0,243,255,0.3),inset 0 0 14px rgba(0,243,255,0.1);}
+    }
+    @keyframes icon-glow-pulse{
+      0%,100%{filter:drop-shadow(0 0 4px rgba(0,243,255,0.6));}
+      50%{filter:drop-shadow(0 0 10px rgba(0,243,255,1)) drop-shadow(0 0 20px rgba(0,243,255,0.5));}
+    }
+    .ship-card{
+      min-height:120px;
+      position:relative;
+      border:1px solid rgba(100,116,139,0.4);
+      background:linear-gradient(160deg,#0d1420 0%,#060b12 100%);
+      border-radius:6px;
+      transition:transform .2s cubic-bezier(.34,1.56,.64,1), border-color .2s, box-shadow .2s;
+      cursor:pointer;
+    }
+    .ship-card:hover{
+      transform:translateY(-3px);
+      border-color:rgba(0,243,255,0.35);
+      box-shadow:0 6px 20px rgba(0,243,255,0.1);
+    }
+    .ship-card:hover .ship-card-icon{
+      filter:drop-shadow(0 0 6px rgba(0,243,255,0.5));
+      color:#7af8ff!important;
+    }
+    .ship-card.selected{
+      border-color:#00f3ff!important;
+      background:linear-gradient(160deg,#071a1f 0%,#040d12 100%)!important;
+      transform:scale(1.03);
+      animation:neon-pulse 1.8s ease-in-out infinite;
+    }
+    .ship-card.selected .ship-card-icon{
+      color:#00f3ff!important;
+      animation:icon-glow-pulse 1.8s ease-in-out infinite;
+    }
+    .ship-card.selected .ship-card-title{color:#e2e8f0!important;}
+    .ship-card.selected .ship-card-sub{color:#00f3ff!important;opacity:0.85;}
+    .ship-card.selected .ship-card-fee{color:#00f3ff!important;opacity:0.9;}
+    /* LINE Pay icon 選中時保持品牌綠，不套用 neoncyan */
+    #pay-card-linepay.selected .ship-card-icon,
+    #pay-card-linepay:hover .ship-card-icon{color:#06C755!important;filter:drop-shadow(0 0 6px rgba(6,199,85,0.7));}
+    #pay-card-linepay.selected .ship-card-icon{animation:none;}
+    .ship-card-icon{color:#4a6270;font-size:1.75rem;transition:color .2s,filter .2s;}
+    .ship-card-title{font-size:.8rem;font-weight:700;color:#cbd5e1;letter-spacing:.04em;transition:color .2s;}
+    .ship-card-sub{font-size:.65rem;color:#475569;transition:color .2s;}
+    .ship-card-fee{font-size:.65rem;color:#64748b;letter-spacing:.03em;transition:color .2s;}
   </style>
 </head>
 <body class="font-sans antialiased relative">
@@ -96,37 +139,64 @@
             <!-- 取貨方式卡片 -->
             <div class="grid grid-cols-3 gap-3" id="shipping-cards">
               <!-- 超商取貨 -->
-              <button type="button" onclick="selectShipping('cvs')" id="ship-card-cvs"
-                class="ship-card flex flex-col items-center justify-center gap-2 p-4 border border-slate-600 bg-panelbg rounded text-center transition hover:border-neoncyan/60 focus:outline-none">
-                <i class="fa-solid fa-store text-2xl text-slate-400 ship-card-icon"></i>
-                <span class="text-xs font-bold text-gray-300 leading-tight">超商取貨</span>
-                <span class="text-[10px] text-gray-500 leading-tight">需先付款</span>
+              <button type="button" onclick="selectShipping('cvs')" id="ship-card-cvs" class="ship-card flex flex-col items-center justify-center gap-1.5 p-4 focus:outline-none">
+                <i class="fa-solid fa-store ship-card-icon"></i>
+                <span class="ship-card-title">超商取貨</span>
+                <span class="ship-card-sub">需先付款</span>
+                <span class="ship-card-fee">免運費</span>
               </button>
               <!-- 宅配到府 -->
-              <button type="button" onclick="selectShipping('home')" id="ship-card-home"
-                class="ship-card flex flex-col items-center justify-center gap-2 p-4 border border-slate-600 bg-panelbg rounded text-center transition hover:border-neoncyan/60 focus:outline-none">
-                <i class="fa-solid fa-truck text-2xl text-slate-400 ship-card-icon"></i>
-                <span class="text-xs font-bold text-gray-300 leading-tight">宅配到府</span>
-                <span class="text-[10px] text-gray-500 leading-tight">需先付款</span>
+              <button type="button" onclick="selectShipping('home')" id="ship-card-home" class="ship-card flex flex-col items-center justify-center gap-1.5 p-4 focus:outline-none">
+                <i class="fa-solid fa-truck ship-card-icon"></i>
+                <span class="ship-card-title">宅配到府</span>
+                <span class="ship-card-sub">需先付款</span>
+                <span class="ship-card-fee">$100 起</span>
               </button>
               <!-- 門市自取 -->
-              <button type="button" onclick="selectShipping('store')" id="ship-card-store"
-                class="ship-card flex flex-col items-center justify-center gap-2 p-4 border border-slate-600 bg-panelbg rounded text-center transition hover:border-neoncyan/60 focus:outline-none">
-                <i class="fa-solid fa-shop text-2xl text-slate-400 ship-card-icon"></i>
-                <span class="text-xs font-bold text-gray-300 leading-tight">門市自取</span>
-                <span class="text-[10px] text-gray-500 leading-tight">可現場付款</span>
+              <button type="button" onclick="selectShipping('store')" id="ship-card-store" class="ship-card flex flex-col items-center justify-center gap-1.5 p-4 focus:outline-none">
+                <i class="fa-solid fa-shop ship-card-icon"></i>
+                <span class="ship-card-title">門市自取</span>
+                <span class="ship-card-sub">可現場付款</span>
+                <span class="ship-card-fee">免運費</span>
               </button>
             </div>
             <!-- 運費提示 -->
             <div id="shipping-fee-hint" class="hidden text-xs text-gray-500 bg-darkbg border border-slate-700 px-3 py-2 rounded">
               <i class="fa-solid fa-circle-info text-neoncyan mr-1"></i><span id="shipping-fee-hint-text"></span>
             </div>
-            <!-- 付款方式 -->
+            <!-- 付款方式卡片 -->
             <div>
               <label class="text-xs text-gray-400 block mb-2">付款方式 <span class="text-neonred">*</span></label>
-              <select id="pay-method" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none focus:border-neoncyan transition">
-                <option value="">請先選擇取貨方式</option>
-              </select>
+              <!-- 尚未選取取貨方式時的提示 -->
+              <p id="pay-placeholder" class="text-xs text-gray-500 text-center py-3 border border-dashed border-slate-700 rounded">
+                <i class="fa-solid fa-arrow-up mr-1 text-neoncyan/40"></i>請先選擇取貨方式
+              </p>
+              <!-- 付款卡片容器，依取貨方式動態顯示 -->
+              <div id="pay-cards" class="hidden grid grid-cols-3 gap-3">
+                <!-- 銀行轉帳 -->
+                <button type="button" onclick="selectPayment('transfer')" id="pay-card-transfer"
+                  class="pay-card ship-card flex flex-col items-center justify-center gap-1.5 p-3 focus:outline-none">
+                  <i class="fa-solid fa-building-columns ship-card-icon pay-card-icon"></i>
+                  <span class="ship-card-title pay-card-title">銀行轉帳</span>
+                  <span class="ship-card-sub pay-card-sub">需回傳截圖</span>
+                </button>
+                <!-- LINE Pay -->
+                <button type="button" onclick="selectPayment('linepay')" id="pay-card-linepay"
+                  class="pay-card ship-card flex flex-col items-center justify-center gap-1.5 p-3 focus:outline-none">
+                  <i class="fa-brands fa-line ship-card-icon pay-card-icon" style="color:#06C755"></i>
+                  <span class="ship-card-title pay-card-title">LINE Pay</span>
+                  <span class="ship-card-sub pay-card-sub">需回傳截圖</span>
+                </button>
+                <!-- 到店付款（僅門市自取顯示） -->
+                <button type="button" onclick="selectPayment('onsite')" id="pay-card-onsite"
+                  class="pay-card ship-card flex flex-col items-center justify-center gap-1.5 p-3 focus:outline-none hidden">
+                  <i class="fa-solid fa-hand-holding-dollar ship-card-icon pay-card-icon"></i>
+                  <span class="ship-card-title pay-card-title">到店付款</span>
+                  <span class="ship-card-sub pay-card-sub">現場結帳</span>
+                </button>
+              </div>
+              <!-- 隱藏的實際值，submitOrder 讀取用 -->
+              <input type="hidden" id="pay-method" value="">
             </div>
           </div>
           <!-- 顧客資料 -->
@@ -388,9 +458,14 @@
       if(placeholder) placeholder.classList.remove('hidden');
       const hintBox=document.getElementById('shipping-fee-hint');
       if(hintBox) hintBox.classList.add('hidden');
-      // 付款方式重置
-      const payEl=document.getElementById('pay-method');
-      if(payEl) payEl.innerHTML='<option value="">請先選擇取貨方式</option>';
+      // 付款卡片重置
+      document.querySelectorAll('.pay-card').forEach(c=>c.classList.remove('selected'));
+      const payInput=document.getElementById('pay-method');
+      if(payInput) payInput.value='';
+      const payPlaceholder=document.getElementById('pay-placeholder');
+      if(payPlaceholder) payPlaceholder.classList.remove('hidden');
+      const payCards=document.getElementById('pay-cards');
+      if(payCards) payCards.classList.add('hidden');
       // 金額更新
       updateCheckoutTotal();
       initCities();
@@ -448,14 +523,17 @@
       }
       if(totEl) totEl.textContent='NT$ '+total;
     }
-    /* 卡片點選：更新狀態、切換付款選項、切換欄位 */
+    /* 卡片點選：更新取貨狀態、切換欄位、切換付款卡片 */
     function selectShipping(method){
       currentShipping=method;
-      // 卡片視覺
-      document.querySelectorAll('.ship-card').forEach(c=>c.classList.remove('selected'));
+      // ── 取貨卡片視覺（只對 ship-card-* 三張）
+      ['cvs','home','store'].forEach(m=>{
+        const c=document.getElementById('ship-card-'+m);
+        if(c) c.classList.remove('selected');
+      });
       const card=document.getElementById('ship-card-'+method);
       if(card) card.classList.add('selected');
-      // 欄位切換
+      // ── 顧客資料欄位切換
       ['cvs','home','store'].forEach(m=>{
         const el=document.getElementById('ship-'+m+'-fields');
         if(el) el.classList.add('hidden');
@@ -464,21 +542,21 @@
       if(placeholder) placeholder.classList.add('hidden');
       const target=document.getElementById('ship-'+method+'-fields');
       if(target) target.classList.remove('hidden');
-      // 付款方式
-      const payEl=document.getElementById('pay-method');
-      if(payEl){
-        if(method==='store'){
-          payEl.innerHTML=`<option value="">請選擇付款方式</option>
-            <option value="transfer">銀行轉帳</option>
-            <option value="linepay">LINE Pay</option>
-            <option value="onsite">到店付款</option>`;
-        } else {
-          payEl.innerHTML=`<option value="">請選擇付款方式</option>
-            <option value="transfer">銀行轉帳</option>
-            <option value="linepay">LINE Pay</option>`;
-        }
+      // ── 付款卡片：重置選取狀態、清空隱藏值
+      document.querySelectorAll('.pay-card').forEach(c=>c.classList.remove('selected'));
+      const payInput=document.getElementById('pay-method');
+      if(payInput) payInput.value='';
+      // ── 顯示付款卡片組，控制「到店付款」是否出現
+      const payPlaceholder=document.getElementById('pay-placeholder');
+      const payCards=document.getElementById('pay-cards');
+      const onsiteCard=document.getElementById('pay-card-onsite');
+      if(payPlaceholder) payPlaceholder.classList.add('hidden');
+      if(payCards) payCards.classList.remove('hidden');
+      if(onsiteCard){
+        if(method==='store') onsiteCard.classList.remove('hidden');
+        else onsiteCard.classList.add('hidden');
       }
-      // 運費提示
+      // ── 運費提示
       const hintBox=document.getElementById('shipping-fee-hint');
       const hintText=document.getElementById('shipping-fee-hint-text');
       if(hintBox && hintText){
@@ -499,7 +577,15 @@
       }
       updateCheckoutTotal();
     }
-    /* 舊名相容（HTML 中 onchange="handleShippingChange()" 的 select 已移除，保留不讓呼叫出錯） */
+    /* 付款卡片點選 */
+    function selectPayment(method){
+      document.querySelectorAll('.pay-card').forEach(c=>c.classList.remove('selected'));
+      const card=document.getElementById('pay-card-'+method);
+      if(card) card.classList.add('selected');
+      const payInput=document.getElementById('pay-method');
+      if(payInput) payInput.value=method;
+    }
+    /* 舊名相容 */
     function handleShippingChange(){ /* 已由 selectShipping() 取代 */ }
     function setFieldError(el){el.classList.add('border-red-500','ring-1','ring-red-500');const ev=el.tagName==='SELECT'||el.tagName==='TEXTAREA'?'change':'input';el.addEventListener(ev,()=>clearFieldError(el),{once:true});}
     function clearFieldError(el){el.classList.remove('border-red-500','ring-1','ring-red-500');}
