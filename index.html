@@ -489,6 +489,7 @@
       if(!d)return;
       document.getElementById('modal-title').innerHTML=d.title;
       document.getElementById('modal-content').innerHTML=d.content;
+      document.getElementById('modal-content').scrollTop=0;
       document.body.style.overflow='hidden';
       const modal=document.getElementById('terms-modal');
       modal.classList.replace('hidden','flex');
