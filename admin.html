@@ -347,7 +347,7 @@
     let currentPage = 'dashboard';
     let _productsCache = []; 
     window._membersCache = []; // 會員資料快取
-    let _categoriesCache = null; // 分類資料快取；null=尚未從Firestore載入，[]=已載入但無品項
+    let _categoriesCache = null; // 分類資料快取；null=尚未載入，[]=已載入但無品項
 
 
     // ════════════════════════════════════════════════════════════
@@ -1438,12 +1438,10 @@
     let catPath = [];
 
     function loadCategories() {
-      // null = Firestore 尚未載入 → 補預設值（深拷貝並存入 cache，只發生一次）
-      // []   = 已載入但使用者刪光了 → 回傳空陣列，絕不 fallback
       if (_categoriesCache === null) {
         _categoriesCache = JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
       }
-      return _categoriesCache; // 回傳參照，讓 splice/filter 直接作用在 cache 上
+      return _categoriesCache;
     }
     function saveCategories(cats) {
       _categoriesCache = cats; if (window._fbSaveCategories) window._fbSaveCategories(cats);
@@ -1942,7 +1940,6 @@ onSnapshot(_fbProdsRef, (snap) => {
 onSnapshot(_fbCatRef, (snap) => {
   if (snap.exists()) {
     const cats = snap.data().list || [];
-    // 空陣列也必須更新，否則刪到最後一個時 Firestore 回傳 [] 會被忽略
     _categoriesCache = cats;
     if (typeof renderProdDrill === 'function') renderProdDrill();
   }
