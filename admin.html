@@ -347,7 +347,7 @@
     let currentPage = 'dashboard';
     let _productsCache = []; 
     window._membersCache = []; // 會員資料快取
-    let _categoriesCache = null; // 分類資料快取（Firestore 同步）；null 表示尚未從 Firestore 載入，[] 表示已載入但無品項
+    let _categoriesCache = null; // 分類資料快取；null=尚未從Firestore載入，[]=已載入但無品項
 
 
     // ════════════════════════════════════════════════════════════
@@ -1438,9 +1438,12 @@
     let catPath = [];
 
     function loadCategories() {
-      // 只有在 _categoriesCache 尚未被 Firestore 初始化（null）時才補預設值。
-      // 若已初始化為空陣列（代表使用者刪光了），應回傳空陣列，不可 fallback。
-      return _categoriesCache !== null ? _categoriesCache : JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
+      // null = Firestore 尚未載入 → 補預設值（深拷貝並存入 cache，只發生一次）
+      // []   = 已載入但使用者刪光了 → 回傳空陣列，絕不 fallback
+      if (_categoriesCache === null) {
+        _categoriesCache = JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
+      }
+      return _categoriesCache; // 回傳參照，讓 splice/filter 直接作用在 cache 上
     }
     function saveCategories(cats) {
       _categoriesCache = cats; if (window._fbSaveCategories) window._fbSaveCategories(cats);
@@ -1939,8 +1942,7 @@ onSnapshot(_fbProdsRef, (snap) => {
 onSnapshot(_fbCatRef, (snap) => {
   if (snap.exists()) {
     const cats = snap.data().list || [];
-    // 無論 cats 是否為空陣列，都必須更新 cache，
-    // 否則刪到最後一個品項時 Firestore 回傳 [] 卻不被採用，造成舊資料復活。
+    // 空陣列也必須更新，否則刪到最後一個時 Firestore 回傳 [] 會被忽略
     _categoriesCache = cats;
     if (typeof renderProdDrill === 'function') renderProdDrill();
   }
