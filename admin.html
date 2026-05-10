@@ -336,10 +336,76 @@
           <h2 class="text-sm font-bold text-white tracking-widest border-l-4 border-neoncyan pl-2">
             系統設定 <span class="text-gray-500 font-sans font-normal text-xs ml-1">SETTINGS</span>
           </h2>
-          <div class="bg-panelbg border border-slate-700 tech-clip p-16 text-center">
-            <i class="fa-solid fa-gear text-4xl text-slate-700 mb-4 block"></i>
-            <p class="text-gray-600 font-bold tracking-widest text-sm">目前尚無系統設定</p>
-            <p class="text-gray-700 text-xs mt-1 tracking-widest">COMING SOON</p>
+
+          <!-- 跑馬燈 -->
+          <div class="bg-panelbg border border-slate-700 tech-clip p-5 space-y-3">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+              <p class="text-xs font-bold text-neoncyan tracking-widest"><i class="fa-solid fa-scroll mr-1"></i>跑馬燈</p>
+              <label class="flex items-center gap-2 cursor-pointer"><span class="text-[10px] text-gray-500">啟用</span><input type="checkbox" id="set-marquee-enabled" class="w-4 h-4 accent-neoncyan"></label>
+            </div>
+            <textarea id="set-marquee-text" rows="2" placeholder="跑馬燈文字內容（可用空格分隔多段）" class="w-full bg-darkbg border border-slate-600 text-white p-2 text-xs rounded outline-none focus:border-neoncyan transition"></textarea>
+          </div>
+
+          <!-- 首頁公告 -->
+          <div class="bg-panelbg border border-slate-700 tech-clip p-5 space-y-3">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+              <p class="text-xs font-bold text-neoncyan tracking-widest"><i class="fa-solid fa-bullhorn mr-1"></i>首頁公告</p>
+              <label class="flex items-center gap-2 cursor-pointer"><span class="text-[10px] text-gray-500">啟用</span><input type="checkbox" id="set-announce-enabled" class="w-4 h-4 accent-neoncyan"></label>
+            </div>
+            <select id="set-announce-type" class="bg-darkbg border border-slate-600 text-white p-2 text-xs rounded outline-none focus:border-neoncyan transition w-full md:w-48">
+              <option value="info">一般公告</option>
+              <option value="maintenance">維修公告</option>
+              <option value="warning">臨時休息</option>
+              <option value="hours">營業時間</option>
+            </select>
+            <textarea id="set-announce-text" rows="2" placeholder="公告內容" class="w-full bg-darkbg border border-slate-600 text-white p-2 text-xs rounded outline-none focus:border-neoncyan transition"></textarea>
+          </div>
+
+          <!-- Popup 彈窗 -->
+          <div class="bg-panelbg border border-slate-700 tech-clip p-5 space-y-3">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+              <p class="text-xs font-bold text-neoncyan tracking-widest"><i class="fa-solid fa-window-restore mr-1"></i>Popup 彈窗</p>
+              <label class="flex items-center gap-2 cursor-pointer"><span class="text-[10px] text-gray-500">啟用</span><input type="checkbox" id="set-popup-enabled" class="w-4 h-4 accent-neoncyan"></label>
+            </div>
+            <input id="set-popup-title" type="text" placeholder="彈窗標題" class="w-full bg-darkbg border border-slate-600 text-white p-2 text-xs rounded outline-none focus:border-neoncyan transition">
+            <textarea id="set-popup-content" rows="3" placeholder="彈窗內容（支援換行）" class="w-full bg-darkbg border border-slate-600 text-white p-2 text-xs rounded outline-none focus:border-neoncyan transition"></textarea>
+            <label class="flex items-center gap-2 cursor-pointer text-[10px] text-gray-400"><input type="checkbox" id="set-popup-every" class="w-4 h-4 accent-neoncyan">每次進站都顯示（不勾 = 同一 session 只顯示一次）</label>
+          </div>
+
+          <!-- 付款資訊 -->
+          <div class="bg-panelbg border border-slate-700 tech-clip p-5 space-y-3">
+            <p class="text-xs font-bold text-neoncyan tracking-widest border-b border-slate-800 pb-2"><i class="fa-solid fa-building-columns mr-1"></i>付款資訊設定</p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div><p class="text-[10px] text-gray-500 mb-1">銀行名稱</p><input id="set-pay-bank" type="text" placeholder="玉山銀行" class="w-full bg-darkbg border border-slate-600 text-white p-2 text-xs rounded outline-none focus:border-neoncyan transition"></div>
+              <div><p class="text-[10px] text-gray-500 mb-1">分行</p><input id="set-pay-branch" type="text" placeholder="某某分行" class="w-full bg-darkbg border border-slate-600 text-white p-2 text-xs rounded outline-none focus:border-neoncyan transition"></div>
+              <div><p class="text-[10px] text-gray-500 mb-1">帳號</p><input id="set-pay-account" type="text" placeholder="123-456-789012" class="w-full bg-darkbg border border-slate-600 text-white p-2 text-xs rounded outline-none focus:border-neoncyan transition"></div>
+            </div>
+            <div><p class="text-[10px] text-gray-500 mb-1">付款補充說明（顯示於訂單成功頁）</p><textarea id="set-pay-note" rows="2" placeholder="請於 24 小時內完成轉帳，並回傳末 5 碼..." class="w-full bg-darkbg border border-slate-600 text-white p-2 text-xs rounded outline-none focus:border-neoncyan transition"></textarea></div>
+          </div>
+
+          <!-- 運費設定 -->
+          <div class="bg-panelbg border border-slate-700 tech-clip p-5 space-y-3">
+            <p class="text-xs font-bold text-neoncyan tracking-widest border-b border-slate-800 pb-2"><i class="fa-solid fa-truck mr-1"></i>運費設定</p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div><p class="text-[10px] text-gray-500 mb-1">免運門檻（NT$）</p><input id="set-ship-threshold" type="number" min="0" placeholder="699" class="w-full bg-darkbg border border-slate-600 text-white p-2 text-xs rounded outline-none focus:border-neoncyan transition"></div>
+              <div><p class="text-[10px] text-gray-500 mb-1">宅配本島（NT$）</p><input id="set-ship-home" type="number" min="0" placeholder="100" class="w-full bg-darkbg border border-slate-600 text-white p-2 text-xs rounded outline-none focus:border-neoncyan transition"></div>
+              <div><p class="text-[10px] text-gray-500 mb-1">宅配離島（NT$）</p><input id="set-ship-island" type="number" min="0" placeholder="200" class="w-full bg-darkbg border border-slate-600 text-white p-2 text-xs rounded outline-none focus:border-neoncyan transition"></div>
+            </div>
+          </div>
+
+          <!-- 店家資訊 -->
+          <div class="bg-panelbg border border-slate-700 tech-clip p-5 space-y-3">
+            <p class="text-xs font-bold text-neoncyan tracking-widest border-b border-slate-800 pb-2"><i class="fa-solid fa-shop mr-1"></i>店家資訊</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div><p class="text-[10px] text-gray-500 mb-1">店名</p><input id="set-store-name" type="text" placeholder="Apple 911" class="w-full bg-darkbg border border-slate-600 text-white p-2 text-xs rounded outline-none focus:border-neoncyan transition"></div>
+              <div><p class="text-[10px] text-gray-500 mb-1">電話</p><input id="set-store-phone" type="text" placeholder="02-XXXX-XXXX" class="w-full bg-darkbg border border-slate-600 text-white p-2 text-xs rounded outline-none focus:border-neoncyan transition"></div>
+              <div><p class="text-[10px] text-gray-500 mb-1">地址</p><input id="set-store-addr" type="text" placeholder="台北市..." class="w-full bg-darkbg border border-slate-600 text-white p-2 text-xs rounded outline-none focus:border-neoncyan transition"></div>
+              <div><p class="text-[10px] text-gray-500 mb-1">營業時間</p><input id="set-store-hours" type="text" placeholder="週一至週六 11:00-20:00" class="w-full bg-darkbg border border-slate-600 text-white p-2 text-xs rounded outline-none focus:border-neoncyan transition"></div>
+            </div>
+          </div>
+
+          <div class="flex justify-end">
+            <button onclick="saveSettings()" class="px-8 py-3 bg-neoncyan text-black font-bold tech-btn text-xs hover:bg-white transition"><i class="fa-solid fa-floppy-disk mr-1"></i>儲存設定</button>
           </div>
         </div>
 
@@ -441,6 +507,7 @@
       if (page === 'members-orders') { switchMoTab('orders'); }
       if (page === 'overview') renderOverview();
       if (page === 'products') renderProducts();
+      if (page === 'settings') renderSettings();
       if (page === 'coupons') renderCoupons();
       if (window.matchMedia('(max-width: 767px)').matches) {
         const sbMobile = document.getElementById('sidebar-mobile');
@@ -675,6 +742,49 @@
         renderCoupons();
         renderStats();
       });
+    }
+
+    // ════════════════════════════════════════════════════════════
+    // 系統設定
+    // ════════════════════════════════════════════════════════════
+    let _settingsCache = {};
+    function renderSettings() {
+      const s = _settingsCache;
+      const v = (id, val) => { const el = document.getElementById(id); if(el) { if(el.type==='checkbox') el.checked=!!val; else el.value=val||''; }};
+      v('set-marquee-enabled',  s.marquee?.enabled);
+      v('set-marquee-text',     s.marquee?.text);
+      v('set-announce-enabled', s.announcement?.enabled);
+      v('set-announce-type',    s.announcement?.type||'info');
+      v('set-announce-text',    s.announcement?.text);
+      v('set-popup-enabled',    s.popup?.enabled);
+      v('set-popup-title',      s.popup?.title);
+      v('set-popup-content',    s.popup?.content);
+      v('set-popup-every',      s.popup?.everyTime);
+      v('set-pay-bank',         s.payment?.bank);
+      v('set-pay-branch',       s.payment?.branch);
+      v('set-pay-account',      s.payment?.account);
+      v('set-pay-note',         s.payment?.note);
+      v('set-ship-threshold',   s.shipping?.freeThreshold ?? 699);
+      v('set-ship-home',        s.shipping?.homeFee ?? 100);
+      v('set-ship-island',      s.shipping?.islandFee ?? 200);
+      v('set-store-name',       s.store?.name);
+      v('set-store-phone',      s.store?.phone);
+      v('set-store-addr',       s.store?.address);
+      v('set-store-hours',      s.store?.hours);
+    }
+    function saveSettings() {
+      const g = id => document.getElementById(id);
+      const settings = {
+        marquee:      { enabled: g('set-marquee-enabled')?.checked||false,  text: g('set-marquee-text')?.value.trim()||'' },
+        announcement: { enabled: g('set-announce-enabled')?.checked||false, type: g('set-announce-type')?.value||'info', text: g('set-announce-text')?.value.trim()||'' },
+        popup:        { enabled: g('set-popup-enabled')?.checked||false,    title: g('set-popup-title')?.value.trim()||'', content: g('set-popup-content')?.value.trim()||'', everyTime: g('set-popup-every')?.checked||false },
+        payment:      { bank: g('set-pay-bank')?.value.trim()||'', branch: g('set-pay-branch')?.value.trim()||'', account: g('set-pay-account')?.value.trim()||'', note: g('set-pay-note')?.value.trim()||'' },
+        shipping:     { freeThreshold: parseInt(g('set-ship-threshold')?.value)||699, homeFee: parseInt(g('set-ship-home')?.value)||100, islandFee: parseInt(g('set-ship-island')?.value)||200 },
+        store:        { name: g('set-store-name')?.value.trim()||'', phone: g('set-store-phone')?.value.trim()||'', address: g('set-store-addr')?.value.trim()||'', hours: g('set-store-hours')?.value.trim()||'' },
+        updatedAt: Date.now()
+      };
+      _settingsCache = settings;
+      if(window._fbSaveSettings){ window._fbSaveSettings(settings); } else { showToast('Firebase 尚未就緒'); }
     }
 
     // ════════════════════════════════════════════════════════════
@@ -2154,6 +2264,7 @@ const _fbAuth     = getAuth(_fbApp);
 const _fbProdsRef    = doc(_fbDb, 'store', 'products');
 const _fbCatRef      = doc(_fbDb, 'store', 'categories');
 const _fbMembersRef  = doc(_fbDb, 'store', 'members');
+const _fbSettingsRef = doc(_fbDb, 'store', 'settings');
 
 // ── 後台管理員 Email 登入 ──
 window._fbAdminLogin = async function() {
@@ -2272,6 +2383,20 @@ onSnapshot(_fbCatRef, (snap) => {
   console.log('[Firebase] 後台分類即時同步');
 }, (e) => { console.error('[Firebase] 後台分類監聽失敗:', e.message); });
 
+window._fbSaveSettings = async function(settings) {
+  try {
+    await setDoc(_fbSettingsRef, settings);
+    console.log('[Firebase] 設定儲存成功');
+    if (typeof showToast === 'function') showToast('設定已儲存');
+  } catch(e) { console.error('[Firebase] 設定儲存失敗:', e.message); if (typeof showToast === 'function') showToast('設定儲存失敗'); }
+};
+onSnapshot(_fbSettingsRef, (snap) => {
+  if (snap.exists()) {
+    _settingsCache = snap.data();
+    if (currentPage === 'settings' && typeof renderSettings === 'function') renderSettings();
+  }
+  console.log('[Firebase] 後台設定即時同步');
+}, (e) => { console.error('[Firebase] 後台設定監聽失敗:', e.message); });
 onSnapshot(_fbCouponsRef, (snap) => {
   if (snap.exists()) {
     _couponsCache = snap.data().list || [];

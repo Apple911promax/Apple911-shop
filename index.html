@@ -102,10 +102,21 @@
     </div>
   </div>
 
+  <!-- 跑馬燈 -->
+  <div id="marquee-bar" class="hidden overflow-hidden bg-neoncyan/5 border-b border-neoncyan/20 py-1.5">
+    <div id="marquee-track" class="flex whitespace-nowrap text-xs text-neoncyan font-bold tracking-widest" style="animation:marquee-scroll 25s linear infinite;width:max-content"></div>
+  </div>
+  <style>@keyframes marquee-scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}</style>
+
   <header class="relative py-8 text-center border-b border-neoncyan/30 flex-shrink-0"><h1 class="text-3xl font-black mb-2 text-white uppercase font-esport">APPLE<span class="text-gold-gradient">911</span></h1><p class="text-neoncyan font-bold tracking-widest text-sm">配件怪獸 X 專業維修</p><p class="en-sub text-neoncyan mt-1">ASSETS MONSTER & PROFESSIONAL REPAIR</p></header>
 
   <main class="flex-grow flex flex-col max-w-7xl mx-auto w-full pb-20">
-    <div id="home-view" class="px-4 py-8"><h2 class="text-sm font-bold flex items-center text-white tracking-widest border-l-4 border-neoncyan pl-2 mb-4">服務選單 <span class="en-sub ml-2">SELECT SERVICE</span></h2>
+    <div id="home-view" class="px-4 py-8">
+    <!-- 首頁公告 -->
+    <div id="announcement-bar" class="hidden mb-4 px-4 py-3 rounded flex items-center gap-2 text-xs font-bold">
+      <i id="announcement-icon" class="fa-solid fa-circle-info shrink-0"></i><span id="announcement-text"></span>
+    </div>
+    <h2 class="text-sm font-bold flex items-center text-white tracking-widest border-l-4 border-neoncyan pl-2 mb-4">服務選單 <span class="en-sub ml-2">SELECT SERVICE</span></h2>
     <div class="grid grid-cols-2 gap-4" id="home-cat-grid"></div></div>
     <div id="product-view" class="px-4 py-8 hidden"><div class="flex justify-between items-end mb-6 border-b border-slate-800 pb-2"><h2 class="text-lg font-bold text-white tracking-widest" id="current-view-title">全部商品與服務</h2><button onclick="navFrontBack()" class="text-xs text-gray-500 font-bold hover:text-white transition"><i class="fa-solid fa-arrow-left"></i> 返回</button></div><div class="grid grid-cols-2 lg:grid-cols-4 gap-4" id="product-list"></div></div>
     <div id="checkout-view" class="px-4 py-8 hidden">
@@ -124,6 +135,13 @@
             </div>
             <div class="flex justify-between text-sm text-gray-400">
               <span>運費</span><span id="checkout-shipping-fee" class="font-tech">—</span>
+            </div>
+            <div id="checkout-discount-row" class="hidden flex justify-between text-sm text-neoncyan">
+              <span id="checkout-discount-label">優惠折抵</span><span id="checkout-discount" class="font-tech">-NT$ 0</span>
+            </div>
+            <div class="flex gap-2 pt-1">
+              <input id="coupon-code-input" type="text" placeholder="輸入優惠碼" class="flex-1 bg-panelbg border border-slate-600 text-white text-xs p-2 rounded outline-none focus:border-neoncyan transition uppercase" style="text-transform:uppercase">
+              <button onclick="applyCoupon()" class="px-3 py-2 bg-slate-700 text-neoncyan text-xs font-bold rounded hover:bg-neoncyan hover:text-black transition">套用</button>
             </div>
             <div class="flex justify-between text-white font-bold pt-2 border-t border-slate-700">
               <span>總計金額</span><span id="checkout-total" class="text-goldlight font-tech text-lg">NT$ 0</span>
@@ -353,15 +371,18 @@
     let categories=[];
     const twData={'台北市':['中正區','大同區','中山區','松山區','大安區','萬華區','信義區','士林區','北投區','內湖區','南港區','文山區'],'新北市':['板橋區','三重區','中和區','永和區','新莊區','新店區','樹林區','鶯歌區','三峽區','淡水區','汐止區','瑞芳區','土城區','蘆洲區','五股區','泰山區','林口區','深坑區','石碇區','坪林區','三芝區','石門區','八里區','平溪區','雙溪區','貢寮區','金山區','萬里區','烏來區'],'台中市':['中區','東區','南區','西區','北區','北屯區','西屯區','南屯區','太平區','大里區','霧峰區','烏日區','豐原區','後里區','石岡區','東勢區','和平區','新社區','潭子區','大雅區','神岡區','大肚區','沙鹿區','龍井區','梧棲區','清水區','大甲區','外埔區','大安區'],'高雄市':['新興區','前金區','苓雅區','鹽埕區','鼓山區','旗津區','前鎮區','三民區','楠梓區','小港區','左營區','仁武區','大社區','岡山區','路竹區','阿蓮區','田寮區','燕巢區','橋頭區','梓官區','彌陀區','永安區','湖內區','鳳山區','大寮區','林園區','鳥松區','大樹區','旗山區','美濃區','六龜區','內門區','杉林區','甲仙區','桃源區','那瑪夏區','茂林區','茄萣區'],'台南市':['中西區','東區','南區','北區','安平區','安南區','永康區','歸仁區','新化區','left鎮區','玉井區','楠西區','南化區','仁德區','關廟區','龍崎區','官田區','麻豆區','佳里區','西港區','七股區','將軍區','學甲區','北門區','新營區','後壁區','白河區','東山區','六甲區','下營區','柳營區','鹽水區','善化區','大內區','山上區','新市區','安定區'],'桃園市':['中壢區','平鎮區','龍潭區','楊梅區','新屋區','觀音區','桃園區','龜山區','八德區','大溪區','復興區','大園區','蘆竹區'],'基隆市':['仁愛區','信義區','中正區','中山區','安樂區','暖暖區','七堵區'],'新竹市':['東區','北區','香山區'],'新竹縣':['竹北市','竹東鎮','新埔鎮','關西鎮','湖口鄉','新豐鄉','芎林鄉','橫山鄉','北埔鄉','寶山鄉','峨眉鄉','尖石鄉','五峰鄉'],'苗栗縣':['苗栗市','通霄鎮','苑裡鎮','竹南鎮','頭份市','後龍鎮','卓蘭鎮','大湖鄉','公館鄉','銅鑼鄉','南庄鄉','頭屋鄉','三義鄉','西湖鄉','造橋鄉','三灣鄉','獅潭鄉','泰安鄉'],'彰化縣':['彰化市','鹿港鎮','和美鎮','線西鄉','伸港鄉','福興鄉','秀水鄉','花壇鄉','芬園鄉','員林市','溪湖鎮','田中鎮','大村鄉','埔鹽鄉','埔心鄉','永靖鄉','社頭鄉','二水鄉','北斗鎮','二林鎮','田尾鄉','埤頭鄉','芳苑鄉','大城鄉','竹塘鄉','溪州鄉'],'屏東縣':['屏東市','東港鎮','潮州鎮','恆春鎮','萬丹鄉','長治鄉','麟洛鄉','九如鄉','里港鄉','高樹鄉','鹽埔鄉','內埔鄉','竹田鄉','新園鄉','枋寮鄉','琉球鄉'],'宜蘭縣':['宜蘭市','羅東鎮','蘇澳鎮','頭城鎮','礁溪鄉','壯圍鄉','員山鄉','冬山鄉','五結鄉','三星鄉','大同鄉','南澳鄉'],'花蓮縣':['花蓮市','新城鄉','秀林鄉','吉安鄉','壽豐鄉','鳳林鎮','光復鄉','豐濱鄉','瑞穗鄉','萬榮鄉','玉里鎮','卓溪鄉','富里鄉'],'台東縣':['台東市','綠島鄉','蘭嶼鄉','延平鄉','卑南鄉','鹿野鄉','關山鎮','海端鄉','池上鄉','東河鄉','成功鎮','長濱鄉','太麻里鄉','金峰鄉','大武鄉','達仁鄉'],'南投縣':['南投市','埔里鎮','草屯鎮','竹山鎮','集集鎮','名間鄉','鹿谷鄉','中寮鄉','魚池鄉','國姓鄉','信義鄉','仁愛鄉','水里鄉'],'雲林縣':['斗六市','斗南鎮','虎尾鎮','西螺鎮','土庫鎮','北港鎮','古坑鄉','大埤鄉','莿桐鄉','林內鄉','二崙鄉','崙背鄉','麥寮鄉','東勢鄉','褒忠鄉','台西鄉','元長鄉','四湖鄉','口湖鄉','水林鄉'],'嘉義市':['東區','西區'],'嘉義縣':['太保市','朴子市','布袋鎮','大林鎮','民雄鄉','溪口鄉','新港鄉','六腳鄉','東石鄉','義竹鄉','鹿草鄉','水上鄉','中埔鄉','竹崎鄉','梅山鄉','番路鄉','大埔鄉','阿里山鄉'],'澎湖縣':['馬公市','湖西鄉','白沙鄉','西嶼鄉','望安鄉','七美鄉'],'金門縣':['金城鎮','金湖鎮','金沙鎮','金寧鄉','烈嶼鄉','烏坵鄉'],'連江縣':['南竿鄉','北竿鄉','莒光鄉','東引鄉']};
     const termsData={payment:{title:'付款資訊',content:'...'},shipping:{title:'配送取件',content:'...'},tracking:{title:'進度查詢',content:'...'},returns:{title:'退換貨政策',content:'...'},warranty:{title:'維修保固',content:'...'},terms:{title:'服務條款',content:'...'},member:{title:'會員條款',content:'...'}};
-    /* ── 運費設定（集中管理，不要寫死在多處）── */
-    const SHIPPING_CONFIG = {
-      freeThreshold: 699,       // 滿額免運門檻
-      cvs:   { fee: 0,   label: '超商取貨' },   // 超商統一為 0（需先付款）
+    /* ── 運費設定（預設值，Firebase store/settings 載入後會覆蓋）── */
+    let SHIPPING_CONFIG = {
+      freeThreshold: 699,
+      cvs:   { fee: 0,   label: '超商取貨' },
       home:  { mainlandFee: 100, islandFee: 200, label: '宅配到府' },
       store: { fee: 0,   label: '門市自取' }
     };
+    let siteSettings = {};
     // 目前取貨方式（'cvs' | 'home' | 'store' | ''）
     let currentShipping = '';
+    let coupons = [];
+    let appliedCoupon = null;
 
     let cart=[];
     let orders=[];
@@ -514,6 +535,12 @@
       if(payPlaceholder) payPlaceholder.classList.remove('hidden');
       const payCards=document.getElementById('pay-cards');
       if(payCards) payCards.classList.add('hidden');
+      // 重置優惠碼
+      appliedCoupon=null;
+      const cpInput=document.getElementById('coupon-code-input');
+      if(cpInput) cpInput.value='';
+      const discRow=document.getElementById('checkout-discount-row');
+      if(discRow) discRow.classList.add('hidden');
       // 金額更新
       updateCheckoutTotal();
       initCities();
@@ -555,13 +582,21 @@
       }
       return 0;
     }
-    /* 更新結帳頁小計 / 運費 / 總計 */
+    /* 更新結帳頁小計 / 運費 / 折扣 / 總計 */
     function updateCheckoutTotal(){
       const subtotal = cart.reduce((s,i)=>s+(i.price||0)*i.qty,0);
       const fee = calcShippingFee(currentShipping, subtotal);
-      const total = subtotal + fee;
+      let discount = 0;
+      if(appliedCoupon){
+        if(appliedCoupon.type==='fixed'){ discount=Math.min(appliedCoupon.value,subtotal); }
+        else if(appliedCoupon.type==='percent'){ discount=Math.floor(subtotal*appliedCoupon.value/100); }
+      }
+      const total = Math.max(0, subtotal + fee - discount);
       const subEl=document.getElementById('checkout-subtotal');
       const feeEl=document.getElementById('checkout-shipping-fee');
+      const discRow=document.getElementById('checkout-discount-row');
+      const discEl=document.getElementById('checkout-discount');
+      const discLabel=document.getElementById('checkout-discount-label');
       const totEl=document.getElementById('checkout-total');
       if(subEl) subEl.textContent='NT$ '+subtotal;
       if(feeEl){
@@ -569,7 +604,30 @@
         else if(fee===0){ feeEl.textContent='免運費'; }
         else{ feeEl.textContent='NT$ '+fee; }
       }
+      if(discRow && discEl){
+        if(appliedCoupon && discount>0){
+          discRow.classList.remove('hidden');
+          if(discLabel) discLabel.textContent=`優惠折抵（${appliedCoupon.code}）`;
+          discEl.textContent='-NT$ '+discount;
+        } else {
+          discRow.classList.add('hidden');
+        }
+      }
       if(totEl) totEl.textContent='NT$ '+total;
+    }
+    function applyCoupon(){
+      const code=document.getElementById('coupon-code-input')?.value.trim().toUpperCase();
+      if(!code){ showToast('請輸入優惠碼'); return; }
+      const subtotal=cart.reduce((s,i)=>s+(i.price||0)*i.qty,0);
+      const coupon=coupons.find(c=>c.code===code);
+      if(!coupon){ showToast('優惠碼無效'); return; }
+      if(!coupon.active){ showToast('此優惠碼已停用'); return; }
+      if(coupon.expiry && Date.now()>coupon.expiry){ showToast('此優惠碼已過期'); return; }
+      if(coupon.usageLimit>0 && (coupon.usedCount||0)>=coupon.usageLimit){ showToast('此優惠碼已達使用上限'); return; }
+      if(coupon.minOrder>0 && subtotal<coupon.minOrder){ showToast(`須消費滿 NT$${coupon.minOrder} 才可使用`); return; }
+      appliedCoupon=coupon;
+      showToast('優惠碼套用成功');
+      updateCheckoutTotal();
     }
     /* 卡片點選：更新取貨狀態、切換欄位、切換付款卡片 */
     function selectShipping(method){
@@ -689,7 +747,12 @@
       if(!validateCartItemsBeforeSubmit()) return;
       const subtotal=cart.reduce((s,i)=>s+(i.price||0)*i.qty,0);
       const shippingFee=calcShippingFee(currentShipping,subtotal);
-      const orderTotal=subtotal+shippingFee;
+      let discount=0;
+      if(appliedCoupon){
+        if(appliedCoupon.type==='fixed'){ discount=Math.min(appliedCoupon.value,subtotal); }
+        else if(appliedCoupon.type==='percent'){ discount=Math.floor(subtotal*appliedCoupon.value/100); }
+      }
+      const orderTotal=Math.max(0,subtotal+shippingFee-discount);
       const paymentMethod=document.getElementById('pay-method')?.value||'';
       // 組合 shippingInfo
       let shippingInfo={};
@@ -727,6 +790,8 @@
         items: cart.map(i=>({id:i.id,name:i.name,price:i.price,qty:i.qty})),
         subtotal,
         shippingFee,
+        discount,
+        couponCode: appliedCoupon?.code||'',
         orderTotal,
         total: orderTotal,
         shippingMethod: currentShipping,
@@ -757,7 +822,10 @@
       if(payBox && payText){
         if(paymentMethod==='transfer'){
           payBox.classList.remove('hidden');
-          payText.innerHTML=`<p>請轉帳至以下帳號後，回報帳號末 5 碼：</p><p class="mt-2 text-neoncyan font-bold">（請洽客服取得轉帳帳號）</p><p class="mt-2">訂單金額：<span class="text-goldlight font-tech font-bold">NT$ ${orderTotal}</span></p>`;
+          const _pay=siteSettings.payment||{};
+          const _bankInfo=_pay.bank?`${_pay.bank}${_pay.branch?' '+_pay.branch:''} ${_pay.account}`:'（請洽客服取得轉帳帳號）';
+          const _payNote=_pay.note||'請於 24 小時內完成付款，並回傳末 5 碼截圖';
+          payText.innerHTML=`<p>${_payNote}</p><p class="mt-2 text-neoncyan font-bold font-tech">${_bankInfo}</p><p class="mt-2">訂單金額：<span class="text-goldlight font-tech font-bold">NT$ ${orderTotal}</span></p>`;
         } else if(paymentMethod==='linepay'){
           payBox.classList.remove('hidden');
           payText.innerHTML=`<p>請透過 LINE Pay 付款後，截圖回傳給客服確認。</p><p class="mt-2">訂單金額：<span class="text-goldlight font-tech font-bold">NT$ ${orderTotal}</span></p>`;
@@ -765,9 +833,14 @@
           payBox.classList.add('hidden');
         }
       }
+      // 累計優惠碼使用次數
+      if(appliedCoupon && window._fbIncrementCouponUsage){
+        window._fbIncrementCouponUsage(appliedCoupon.id);
+      }
       // 清空購物車與結帳狀態
       cart=[];
       currentShipping='';
+      appliedCoupon=null;
       try{localStorage.removeItem('apple911_cart');}catch(e){}
       renderCart();
     }
@@ -909,7 +982,68 @@
       if(!container)return;
       container.innerHTML='<div class="text-center py-10 text-gray-500 text-xs tracking-widest">目前尚無優惠券</div>';
     }
-
+    function applySettings(s){
+      siteSettings=s||{};
+      // 更新運費設定
+      if(s.shipping){
+        SHIPPING_CONFIG.freeThreshold=s.shipping.freeThreshold||699;
+        SHIPPING_CONFIG.home.mainlandFee=s.shipping.homeFee||100;
+        SHIPPING_CONFIG.home.islandFee=s.shipping.islandFee||200;
+      }
+      // 跑馬燈
+      const bar=document.getElementById('marquee-bar');
+      const track=document.getElementById('marquee-track');
+      if(bar&&track){
+        if(s.marquee?.enabled&&s.marquee?.text){
+          const t=s.marquee.text+' ✦ ';
+          track.textContent=t.repeat(6);
+          bar.classList.remove('hidden');
+        } else { bar.classList.add('hidden'); }
+      }
+      // 首頁公告
+      const annoBar=document.getElementById('announcement-bar');
+      const annoText=document.getElementById('announcement-text');
+      const annoIcon=document.getElementById('announcement-icon');
+      if(annoBar&&annoText){
+        if(s.announcement?.enabled&&s.announcement?.text){
+          annoText.textContent=s.announcement.text;
+          const typeMap={
+            info:        {cls:'bg-neoncyan/10 text-neoncyan border border-neoncyan/30',   icon:'fa-circle-info'},
+            maintenance: {cls:'bg-blue-900/30 text-blue-300 border border-blue-500/30',   icon:'fa-wrench'},
+            warning:     {cls:'bg-orange-900/30 text-orange-300 border border-orange-500/30', icon:'fa-triangle-exclamation'},
+            hours:       {cls:'bg-goldlight/10 text-goldlight border border-goldlight/30', icon:'fa-clock'}
+          };
+          const t=typeMap[s.announcement.type]||typeMap.info;
+          annoBar.className=`mb-4 px-4 py-3 rounded flex items-center gap-2 text-xs font-bold ${t.cls}`;
+          if(annoIcon) annoIcon.className=`fa-solid ${t.icon} shrink-0`;
+          annoBar.classList.remove('hidden');
+        } else { annoBar.classList.add('hidden'); }
+      }
+      // Popup
+      if(s.popup?.enabled&&s.popup?.content){
+        const key='apple911_popup_'+(s.updatedAt||0);
+        if(s.popup.everyTime||!sessionStorage.getItem(key)){
+          sessionStorage.setItem(key,'1');
+          showSitePopup(s.popup);
+        }
+      }
+    }
+    function showSitePopup(p){
+      const modal=document.getElementById('site-popup-modal');
+      if(!modal)return;
+      const t=document.getElementById('site-popup-title');
+      const c=document.getElementById('site-popup-content');
+      if(t)t.textContent=p.title||'';
+      if(c)c.textContent=p.content||'';
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+    function closeSitePopup(){
+      const modal=document.getElementById('site-popup-modal');
+      if(modal){modal.classList.add('hidden');modal.classList.remove('flex');}
+    }
+    function toggleCoupons(){/* ... */}
+    function openPaymentInfo(){/* ... */}
     function openTerms(type){
       const data={
         payment:{
@@ -1276,8 +1410,10 @@ const _fbCfg = { apiKey: "AIzaSyDpasiFnj0UQpNKndmya4__C1J8bJxGN4g", authDomain: 
 const _fbApp      = initializeApp(_fbCfg);
 const _fbDb       = getFirestore(_fbApp);
 const _fbAuth     = getAuth(_fbApp);
-const _fbProdsRef = doc(_fbDb, 'store', 'products');
-const _fbCatRef   = doc(_fbDb, 'store', 'categories');
+const _fbProdsRef    = doc(_fbDb, 'store', 'products');
+const _fbCatRef      = doc(_fbDb, 'store', 'categories');
+const _fbCouponsRef  = doc(_fbDb, 'store', 'coupons');
+const _fbSettingsRef = doc(_fbDb, 'store', 'settings');
 onAuthStateChanged(_fbAuth, async (user) => {
   if (user) {
     window._fbCurrentUser = { uid: user.uid, email: user.email };
@@ -1414,7 +1550,34 @@ onSnapshot(_fbCatRef, (snap) => {
   if (snap.exists()) { categories = snap.data().list || []; }
   if (typeof renderFrontCategories === 'function') renderFrontCategories();
 });
+onSnapshot(_fbCouponsRef, (snap) => {
+  if (snap.exists()) { coupons = snap.data().list || []; }
+});
+onSnapshot(_fbSettingsRef, (snap) => {
+  if (snap.exists() && typeof applySettings === 'function') applySettings(snap.data());
+});
+window._fbIncrementCouponUsage = async function(couponId) {
+  try {
+    const snap = await getDoc(_fbCouponsRef);
+    if(snap.exists()){
+      const list = snap.data().list || [];
+      const updated = list.map(c=>c.id===couponId?{...c,usedCount:(c.usedCount||0)+1}:c);
+      await setDoc(_fbCouponsRef, {list:updated, updatedAt:Date.now()});
+    }
+  } catch(e){ console.error('[Firebase] 優惠券使用次數更新失敗:', e.message); }
+};
 setTimeout(()=>{if(categories.length===0){categories=_getFrontCats();renderFrontCategories();}},5000);
 </script>
+<!-- Popup 彈窗 -->
+<div id="site-popup-modal" class="hidden fixed inset-0 bg-black/80 z-[120] flex items-center justify-center p-4 backdrop-blur-sm">
+  <div class="bg-panelbg border border-neoncyan/50 tech-clip w-full max-w-sm shadow-[0_0_30px_rgba(0,243,255,0.15)] p-6 space-y-4">
+    <div class="flex items-center justify-between">
+      <h3 id="site-popup-title" class="font-bold text-neoncyan tracking-widest text-sm"></h3>
+      <button onclick="closeSitePopup()" class="text-gray-400 hover:text-white transition"><i class="fa-solid fa-xmark text-lg"></i></button>
+    </div>
+    <div id="site-popup-content" class="text-sm text-gray-300 leading-relaxed whitespace-pre-line"></div>
+    <button onclick="closeSitePopup()" class="w-full py-3 bg-neoncyan text-black font-bold tech-clip text-xs hover:bg-white transition tracking-widest">了解了 OK</button>
+  </div>
+</div>
 </body>
 </html>
