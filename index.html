@@ -125,6 +125,13 @@
             <div class="flex justify-between text-sm text-gray-400">
               <span>運費</span><span id="checkout-shipping-fee" class="font-tech">—</span>
             </div>
+            <div id="checkout-discount-row" class="hidden flex justify-between text-sm text-neoncyan">
+              <span id="checkout-discount-label">優惠折抵</span><span id="checkout-discount" class="font-tech">-NT$ 0</span>
+            </div>
+            <div class="flex gap-2 pt-1">
+              <input id="coupon-code-input" type="text" placeholder="輸入優惠碼" class="flex-1 bg-panelbg border border-slate-600 text-white text-xs p-2 rounded outline-none focus:border-neoncyan transition uppercase" style="text-transform:uppercase">
+              <button onclick="applyCoupon()" class="px-3 py-2 bg-slate-700 text-neoncyan text-xs font-bold rounded hover:bg-neoncyan hover:text-black transition">套用</button>
+            </div>
             <div class="flex justify-between text-white font-bold pt-2 border-t border-slate-700">
               <span>總計金額</span><span id="checkout-total" class="text-goldlight font-tech text-lg">NT$ 0</span>
             </div>
@@ -362,6 +369,8 @@
     };
     // 目前取貨方式（'cvs' | 'home' | 'store' | ''）
     let currentShipping = '';
+    let coupons = [];
+    let appliedCoupon = null;
 
     let cart=[];
     let orders=[];
@@ -514,6 +523,12 @@
       if(payPlaceholder) payPlaceholder.classList.remove('hidden');
       const payCards=document.getElementById('pay-cards');
       if(payCards) payCards.classList.add('hidden');
+      // 重置優惠碼
+      appliedCoupon=null;
+      const cpInput=document.getElementById('coupon-code-input');
+      if(cpInput) cpInput.value='';
+      const discRow=document.getElementById('checkout-discount-row');
+      if(discRow) discRow.classList.add('hidden');
       // 金額更新
       updateCheckoutTotal();
       initCities();
@@ -555,13 +570,21 @@
       }
       return 0;
     }
-    /* 更新結帳頁小計 / 運費 / 總計 */
+    /* 更新結帳頁小計 / 運費 / 折扣 / 總計 */
     function updateCheckoutTotal(){
       const subtotal = cart.reduce((s,i)=>s+(i.price||0)*i.qty,0);
       const fee = calcShippingFee(currentShipping, subtotal);
-      const total = subtotal + fee;
+      let discount = 0;
+      if(appliedCoupon){
+        if(appliedCoupon.type==='fixed'){ discount=Math.min(appliedCoupon.value,subtotal); }
+        else if(appliedCoupon.type==='percent'){ discount=Math.floor(subtotal*appliedCoupon.value/100); }
+      }
+      const total = Math.max(0, subtotal + fee - discount);
       const subEl=document.getElementById('checkout-subtotal');
       const feeEl=document.getElementById('checkout-shipping-fee');
+      const discRow=document.getElementById('checkout-discount-row');
+      const discEl=document.getElementById('checkout-discount');
+      const discLabel=document.getElementById('checkout-discount-label');
       const totEl=document.getElementById('checkout-total');
       if(subEl) subEl.textContent='NT$ '+subtotal;
       if(feeEl){
@@ -569,7 +592,30 @@
         else if(fee===0){ feeEl.textContent='免運費'; }
         else{ feeEl.textContent='NT$ '+fee; }
       }
+      if(discRow && discEl){
+        if(appliedCoupon && discount>0){
+          discRow.classList.remove('hidden');
+          if(discLabel) discLabel.textContent=`優惠折抵（${appliedCoupon.code}）`;
+          discEl.textContent='-NT$ '+discount;
+        } else {
+          discRow.classList.add('hidden');
+        }
+      }
       if(totEl) totEl.textContent='NT$ '+total;
+    }
+    function applyCoupon(){
+      const code=document.getElementById('coupon-code-input')?.value.trim().toUpperCase();
+      if(!code){ showToast('請輸入優惠碼'); return; }
+      const subtotal=cart.reduce((s,i)=>s+(i.price||0)*i.qty,0);
+      const coupon=coupons.find(c=>c.code===code);
+      if(!coupon){ showToast('優惠碼無效'); return; }
+      if(!coupon.active){ showToast('此優惠碼已停用'); return; }
+      if(coupon.expiry && Date.now()>coupon.expiry){ showToast('此優惠碼已過期'); return; }
+      if(coupon.usageLimit>0 && (coupon.usedCount||0)>=coupon.usageLimit){ showToast('此優惠碼已達使用上限'); return; }
+      if(coupon.minOrder>0 && subtotal<coupon.minOrder){ showToast(`須消費滿 NT$${coupon.minOrder} 才可使用`); return; }
+      appliedCoupon=coupon;
+      showToast('優惠碼套用成功');
+      updateCheckoutTotal();
     }
     /* 卡片點選：更新取貨狀態、切換欄位、切換付款卡片 */
     function selectShipping(method){
@@ -687,7 +733,12 @@
       if(!validateCheckoutFields()) return;
       const subtotal=cart.reduce((s,i)=>s+(i.price||0)*i.qty,0);
       const shippingFee=calcShippingFee(currentShipping,subtotal);
-      const orderTotal=subtotal+shippingFee;
+      let discount=0;
+      if(appliedCoupon){
+        if(appliedCoupon.type==='fixed'){ discount=Math.min(appliedCoupon.value,subtotal); }
+        else if(appliedCoupon.type==='percent'){ discount=Math.floor(subtotal*appliedCoupon.value/100); }
+      }
+      const orderTotal=Math.max(0,subtotal+shippingFee-discount);
       const paymentMethod=document.getElementById('pay-method')?.value||'';
       // 組合 shippingInfo
       let shippingInfo={};
@@ -725,6 +776,8 @@
         items: cart.map(i=>({id:i.id,name:i.name,price:i.price,qty:i.qty})),
         subtotal,
         shippingFee,
+        discount,
+        couponCode: appliedCoupon?.code||'',
         orderTotal,
         shippingMethod: currentShipping,
         paymentMethod,
@@ -762,9 +815,14 @@
           payBox.classList.add('hidden');
         }
       }
+      // 累計優惠碼使用次數
+      if(appliedCoupon && window._fbIncrementCouponUsage){
+        window._fbIncrementCouponUsage(appliedCoupon.id);
+      }
       // 清空購物車與結帳狀態
       cart=[];
       currentShipping='';
+      appliedCoupon=null;
       try{localStorage.removeItem('apple911_cart');}catch(e){}
       renderCart();
     }
@@ -1274,8 +1332,9 @@ const _fbCfg = { apiKey: "AIzaSyDpasiFnj0UQpNKndmya4__C1J8bJxGN4g", authDomain: 
 const _fbApp      = initializeApp(_fbCfg);
 const _fbDb       = getFirestore(_fbApp);
 const _fbAuth     = getAuth(_fbApp);
-const _fbProdsRef = doc(_fbDb, 'store', 'products');
-const _fbCatRef   = doc(_fbDb, 'store', 'categories');
+const _fbProdsRef    = doc(_fbDb, 'store', 'products');
+const _fbCatRef      = doc(_fbDb, 'store', 'categories');
+const _fbCouponsRef  = doc(_fbDb, 'store', 'coupons');
 onAuthStateChanged(_fbAuth, async (user) => {
   if (user) {
     window._fbCurrentUser = { uid: user.uid, email: user.email };
@@ -1412,6 +1471,20 @@ onSnapshot(_fbCatRef, (snap) => {
   if (snap.exists()) { categories = snap.data().list || []; }
   if (typeof renderFrontCategories === 'function') renderFrontCategories();
 });
+onSnapshot(_fbCouponsRef, (snap) => {
+  if (snap.exists()) { coupons = snap.data().list || []; }
+});
+window._fbIncrementCouponUsage = async function(couponId) {
+  try {
+    const snap = await getDoc(_fbCouponsRef);
+    if(snap.exists()){
+      const list = snap.data().list || [];
+      const updated = list.map(c=>c.id===couponId?{...c,usedCount:(c.usedCount||0)+1}:c);
+      await setDoc(_fbCouponsRef, {list:updated, updatedAt:Date.now()});
+    }
+  } catch(e){ console.error('[Firebase] 優惠券使用次數更新失敗:', e.message); }
+};
+setTimeout(()=>{if(categories.length===0){categories=_getFrontCats();renderFrontCategories();}},5000);
 </script>
 </body>
 </html>
