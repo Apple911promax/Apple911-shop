@@ -151,6 +151,10 @@
             class="nav-item active w-full text-left px-4 py-3 text-sm font-bold text-gray-400 flex items-center gap-3 border-l-2 border-transparent">
             <i class="fa-solid fa-gauge-high w-4 text-center"></i>控制台
           </button>
+          <button onclick="switchPage('overview')" id="nav-overview"
+            class="nav-item w-full text-left px-4 py-3 text-sm font-bold text-gray-400 flex items-center gap-3 border-l-2 border-transparent hover:text-white hover:bg-white/5">
+            <i class="fa-solid fa-chart-line w-4 text-center"></i>營運總覽
+          </button>
           <button onclick="switchPage('members-orders')" id="nav-members-orders"
             class="nav-item w-full text-left px-4 py-3 text-sm font-bold text-gray-400 flex items-center gap-3 border-l-2 border-transparent hover:text-white hover:bg-white/5">
             <i class="fa-solid fa-users-gear w-4 text-center"></i>會員訂單管理
@@ -182,6 +186,10 @@
           <button onclick="switchPage('dashboard');toggleSidebar()" id="nav-m-dashboard"
             class="nav-item active w-full text-left px-4 py-3 text-sm font-bold text-gray-400 flex items-center gap-3 border-l-2 border-transparent">
             <i class="fa-solid fa-gauge-high w-4 text-center"></i>控制台
+          </button>
+          <button onclick="switchPage('overview');toggleSidebar()" id="nav-m-overview"
+            class="nav-item w-full text-left px-4 py-3 text-sm font-bold text-gray-400 flex items-center gap-3 border-l-2 border-transparent hover:text-white hover:bg-white/5">
+            <i class="fa-solid fa-chart-line w-4 text-center"></i>營運總覽
           </button>
           <button onclick="switchPage('members-orders');toggleSidebar()" id="nav-m-members-orders"
             class="nav-item w-full text-left px-4 py-3 text-sm font-bold text-gray-400 flex items-center gap-3 border-l-2 border-transparent hover:text-white hover:bg-white/5">
@@ -215,6 +223,9 @@
 
 
         </div>
+
+        <!-- ── 營運總覽 ── -->
+        <div id="page-overview" class="page space-y-6"></div>
 
         <!-- ── 會員訂單管理 ── -->
         <div id="page-members-orders" class="page space-y-4">
@@ -397,6 +408,7 @@
       if (navM) navM.classList.add('active');
       currentPage = page;
       if (page === 'members-orders') { switchMoTab('orders'); }
+      if (page === 'overview') renderOverview();
       if (page === 'products') renderProducts();
       if (window.matchMedia('(max-width: 767px)').matches) {
         const sbMobile = document.getElementById('sidebar-mobile');
@@ -461,8 +473,87 @@
     // ════════════════════════════════════════════════════════════
     // 訂單資料
     // ════════════════════════════════════════════════════════════
+    function renderOverview() {
+      const el = document.getElementById('page-overview');
+      if (!el) return;
+      const _now=new Date(),_yr=_now.getFullYear(),_mo=_now.getMonth(),_todayStr=_now.toDateString();
+      const _valid=orders.filter(o=>o.status!=='已取消');
+      const _moOrds=orders.filter(o=>{const d=new Date(o.time);return d.getFullYear()===_yr&&d.getMonth()===_mo;});
+      const totalRev=_valid.reduce((s,o)=>s+(o.total||o.orderTotal||0),0);
+      const moRev=_moOrds.filter(o=>o.status!=='已取消').reduce((s,o)=>s+(o.total||o.orderTotal||0),0);
+      const todayRev=_valid.filter(o=>new Date(o.time).toDateString()===_todayStr).reduce((s,o)=>s+(o.total||o.orderTotal||0),0);
+      const pendingRev=orders.filter(o=>o.status==='已付款待確認').reduce((s,o)=>s+(o.total||o.orderTotal||0),0);
+      const moCnt=_moOrds.length;
+      const todayCnt=orders.filter(o=>new Date(o.time).toDateString()===_todayStr).length;
+      const revCards=[
+        {label:'總營業額',  value:'NT$'+totalRev.toLocaleString(),  color:'text-goldlight', icon:'fa-coins',          status:''},
+        {label:'本月營業額',value:'NT$'+moRev.toLocaleString(),     color:'text-neoncyan',  icon:'fa-calendar-check', status:''},
+        {label:'今日營業額',value:'NT$'+todayRev.toLocaleString(),  color:'text-green-400', icon:'fa-sun',            status:''},
+        {label:'待確認金額',value:'NT$'+pendingRev.toLocaleString(),color:'text-yellow-400',icon:'fa-hourglass-half', status:'已付款待確認'},
+        {label:'本月訂單數',value:moCnt+'筆',                       color:'text-blue-400',  icon:'fa-calendar',       status:''},
+        {label:'今日訂單數',value:todayCnt+'筆',                    color:'text-purple-400',icon:'fa-bolt',           status:''},
+      ];
+      const todoItems=[
+        {label:'已付款待確認',desc:'需確認付款',status:'已付款待確認',color:'text-yellow-400',bar:'#facc15'},
+        {label:'已付款',      desc:'待安排出貨',status:'已付款',      color:'text-neoncyan', bar:'#00f3ff'},
+        {label:'未付款',      desc:'待付款',    status:'未付款',      color:'text-neonred',  bar:'#ff003c'},
+        {label:'待取貨',      desc:'備貨中',    status:'待取貨',      color:'text-yellow-400',bar:'#facc15'},
+      ].map(t=>({...t,count:orders.filter(o=>o.status===t.label).length})).filter(t=>t.count>0);
+      const statusRows=['未付款','待取貨','已付款待確認','已付款','處理中','已出貨','已完成','已取消'];
+      const sColor={'未付款':'text-neonred','已付款待確認':'text-yellow-400','待取貨':'text-yellow-400','已付款':'text-neoncyan','處理中':'text-yellow-400','已出貨':'text-blue-400','已完成':'text-green-400','已取消':'text-gray-500'};
+      const sBar={'未付款':'#ff003c','已付款待確認':'#facc15','待取貨':'#facc15','已付款':'#00f3ff','處理中':'#facc15','已出貨':'#60a5fa','已完成':'#4ade80','已取消':'#64748b'};
+      el.innerHTML=`
+        <h2 class="text-sm font-bold text-white tracking-widest border-l-4 border-neoncyan pl-2">營運總覽 <span class="text-gray-500 font-sans font-normal text-xs ml-1">OVERVIEW</span></h2>
+        <div>
+          <p class="text-[10px] text-gray-600 uppercase tracking-widest font-bold mb-3">營業額</p>
+          <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+            ${revCards.map(c=>`
+              <div class="bg-panelbg border border-slate-700 tech-clip p-4 flex items-center gap-3 hover:border-cyan-500 transition cursor-pointer" onclick="goToOrders('${c.status}')">
+                <i class="fa-solid ${c.icon} text-xl text-slate-600 shrink-0"></i>
+                <div><div class="text-xl font-bold font-tech ${c.color}">${c.value}</div><div class="text-[10px] text-gray-500">${c.label}</div></div>
+              </div>`).join('')}
+          </div>
+        </div>
+        <div>
+          <p class="text-[10px] text-gray-600 uppercase tracking-widest font-bold mb-3">待辦事項</p>
+          ${todoItems.length===0
+            ?'<div class="bg-panelbg border border-slate-700 tech-clip px-4 py-3 text-center text-xs text-gray-600 tracking-widest">目前無待辦事項 ✓</div>'
+            :`<div class="space-y-2">${todoItems.map(u=>`
+              <div class="bg-panelbg border border-slate-700 tech-clip px-4 py-3 flex items-center justify-between hover:border-neoncyan transition cursor-pointer" onclick="goToOrders('${u.status}')">
+                <div class="flex items-center gap-3">
+                  <span class="w-2 h-2 rounded-full shrink-0" style="background:${u.bar};box-shadow:0 0 6px ${u.bar}"></span>
+                  <span class="text-sm font-bold text-white">${u.label}</span>
+                  <span class="text-xs text-gray-500">${u.desc}</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="font-tech font-bold ${u.color} text-lg">${u.count}</span>
+                  <span class="text-gray-600 text-xs">筆</span>
+                  <i class="fa-solid fa-chevron-right text-gray-600 text-xs ml-1"></i>
+                </div>
+              </div>`).join('')}</div>`}
+        </div>
+        <div>
+          <p class="text-[10px] text-gray-600 uppercase tracking-widest font-bold mb-3">訂單狀態分佈</p>
+          <div class="bg-panelbg border border-slate-700 tech-clip overflow-hidden">
+            ${statusRows.map(s=>{
+              const cnt=orders.filter(o=>o.status===s).length;
+              const pct=orders.length>0?Math.round(cnt/orders.length*100):0;
+              return`<div class="px-4 py-3 border-b border-slate-800 last:border-0 flex items-center gap-3 hover:bg-white/5 transition cursor-pointer" onclick="goToOrders('${s}')">
+                <span class="status-badge badge-${s} shrink-0">${s}</span>
+                <div class="flex-1 bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                  <div class="h-full rounded-full" style="width:${pct}%;background:${sBar[s]||'#64748b'}"></div>
+                </div>
+                <span class="font-tech text-sm font-bold ${sColor[s]||'text-gray-500'} w-6 text-right">${cnt}</span>
+                <i class="fa-solid fa-chevron-right text-gray-700 text-xs"></i>
+              </div>`;
+            }).join('')}
+          </div>
+        </div>`;
+    }
+
     function loadOrders() {
       renderStats();
+      if (currentPage === 'overview') renderOverview();
       if (currentPage === 'members-orders' && currentMoTab === 'orders') renderTable();
     }
 
