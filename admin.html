@@ -464,9 +464,6 @@
       if (currentPage === 'members-orders' && currentMoTab === 'orders') renderTable();
     }
 
-    function saveOrders() {
-      // 廢棄：改為直接更新 Firestore 單筆文件
-    }
 
     // ════════════════════════════════════════════════════════════
     // 控制台統計
@@ -1950,7 +1947,7 @@ onSnapshot(_fbProdsRef, (snap) => {
     _productsCache = prods;
     if (typeof renderStats     === 'function') renderStats();
     if (typeof renderProdDrill === 'function') renderProdDrill();
-    if (typeof _dbgAdminRun    === 'function') _dbgAdminRun();
+
   }
   console.log('[Firebase] 後台商品即時同步，共', _productsCache.length, '筆');
 }, (e) => { console.error('[Firebase] 後台商品監聽失敗:', e.message); });
