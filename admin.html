@@ -439,7 +439,15 @@
         <p id="send-coupon-code" class="text-neoncyan font-tech font-bold text-sm"></p>
         <button onclick="toggleSelectAllMembers()" class="text-[10px] font-bold text-gray-400 hover:text-neoncyan transition tracking-widest">全選 / 取消全選</button>
       </div>
+      <div class="px-3 py-2 border-b border-slate-800 shrink-0">
+        <input id="send-member-search" type="text" oninput="filterSendMemberList()" placeholder="搜尋姓名 / 電話 / Email" class="w-full bg-slate-900 border border-slate-700 text-white text-xs px-3 py-2 focus:outline-none focus:border-neoncyan transition placeholder-gray-600">
+      </div>
       <div id="send-member-list" class="overflow-y-auto flex-1 divide-y divide-slate-800"></div>
+      <div class="px-4 py-2 border-t border-slate-800 shrink-0 flex gap-4 text-[10px] font-bold tracking-widest">
+        <span class="text-gray-500">已選 <span id="stat-selected" class="text-neoncyan">0</span></span>
+        <span class="text-gray-500">可發送 <span id="stat-sendable" class="text-neoncyan">0</span></span>
+        <span class="text-gray-500">跳過 <span id="stat-skipped" class="text-gray-600">0</span></span>
+      </div>
       <div class="p-4 border-t border-slate-700 flex justify-end gap-3 shrink-0">
         <button onclick="closeSendCouponModal()" class="px-5 py-2 bg-slate-800 text-gray-400 font-bold tech-btn text-xs hover:bg-slate-600 hover:text-white transition">取消</button>
         <button onclick="confirmSendCoupon()" class="px-5 py-2 bg-neoncyan text-black font-bold tech-btn text-xs hover:bg-white transition">確認發送</button>
@@ -770,6 +778,7 @@
       if (!coupon) return;
       _sendCouponTargetId = id;
       document.getElementById('send-coupon-code').textContent = coupon.code;
+      document.getElementById('send-member-search').value = '';
       const members = window._membersCache || [];
       const listEl = document.getElementById('send-member-list');
       if (members.length === 0) {
@@ -778,17 +787,21 @@
         const sentTo = coupon.sentTo || [];
         listEl.innerHTML = members.map(m => {
           const alreadySent = sentTo.includes(m.id || m.phone);
-          return `<label class="flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition cursor-pointer">
-            <input type="checkbox" class="send-member-cb accent-neoncyan" value="${m.id || m.phone}" ${alreadySent ? 'checked' : ''}>
+          const name = (m.name || '-').replace(/</g, '&lt;');
+          const phone = (m.phone || '').replace(/</g, '&lt;');
+          const email = (m.email || '').replace(/</g, '&lt;');
+          return `<label class="flex items-center gap-3 px-4 py-3 transition send-member-row ${alreadySent ? 'opacity-50 cursor-default' : 'hover:bg-white/5 cursor-pointer'}" data-name="${name.toLowerCase()}" data-phone="${phone}" data-email="${email.toLowerCase()}">
+            <input type="checkbox" class="send-member-cb accent-neoncyan" value="${m.id || m.phone}" ${alreadySent ? 'disabled' : ''} onchange="updateSendStats()">
             <div class="flex-1 min-w-0">
-              <p class="text-sm font-bold text-white truncate">${m.name || '-'}</p>
-              <p class="text-[10px] text-gray-500">${m.phone || ''} ${m.email ? '· '+m.email : ''}</p>
+              <p class="text-sm font-bold text-white truncate">${name}</p>
+              <p class="text-[10px] text-gray-500">${phone}${email ? ' · '+email : ''}</p>
             </div>
-            ${alreadySent ? '<span class="text-[9px] text-purple-400 font-bold tracking-widest shrink-0">已發送</span>' : ''}
+            ${alreadySent ? '<span class="text-[9px] text-purple-400 font-bold tracking-widest shrink-0">已領取</span>' : ''}
           </label>`;
         }).join('');
       }
       document.getElementById('coupon-send-modal').classList.remove('hidden');
+      updateSendStats();
     }
 
     function closeSendCouponModal() {
@@ -797,24 +810,55 @@
     }
 
     function toggleSelectAllMembers() {
-      const cbs = document.querySelectorAll('.send-member-cb');
-      const allChecked = [...cbs].every(cb => cb.checked);
-      cbs.forEach(cb => cb.checked = !allChecked);
+      const cbs = [...document.querySelectorAll('.send-member-cb:not([disabled])')].filter(cb => {
+        const row = cb.closest('.send-member-row');
+        return !row || row.style.display !== 'none';
+      });
+      const allChecked = cbs.length > 0 && cbs.every(cb => cb.checked);
+      cbs.forEach(cb => { cb.checked = !allChecked; });
+      updateSendStats();
+    }
+
+    function filterSendMemberList() {
+      const q = (document.getElementById('send-member-search').value || '').toLowerCase().trim();
+      document.querySelectorAll('.send-member-row').forEach(row => {
+        if (!q) { row.style.display = ''; return; }
+        const match = row.dataset.name.includes(q) || row.dataset.phone.includes(q) || row.dataset.email.includes(q);
+        row.style.display = match ? '' : 'none';
+      });
+      updateSendStats();
+    }
+
+    function updateSendStats() {
+      const allCbs = document.querySelectorAll('.send-member-cb');
+      const skipped = [...allCbs].filter(cb => cb.disabled).length;
+      const checkedEnabled = [...allCbs].filter(cb => cb.checked && !cb.disabled).length;
+      document.getElementById('stat-selected').textContent = checkedEnabled;
+      document.getElementById('stat-sendable').textContent = checkedEnabled;
+      document.getElementById('stat-skipped').textContent = skipped;
     }
 
     function confirmSendCoupon() {
       if (!_sendCouponTargetId) return;
-      const checked = [...document.querySelectorAll('.send-member-cb:checked')].map(cb => cb.value);
-      if (checked.length === 0) { showToast('請至少選擇一位會員'); return; }
+      const coupon = _couponsCache.find(c => c.id === _sendCouponTargetId);
+      if (!coupon) return;
+      const existing = coupon.sentTo || [];
+      const checkedAll = [...document.querySelectorAll('.send-member-cb:checked:not([disabled])')].map(cb => cb.value);
+      const willSend = checkedAll.filter(v => !existing.includes(v));
+      const willSkip = checkedAll.length - willSend.length;
+      if (willSend.length === 0 && willSkip === 0) { showToast('請至少選擇一位會員'); return; }
+      if (willSend.length === 0) { showToast(`已全部領取，無可發送的會員`); return; }
       _couponsCache = _couponsCache.map(c => {
         if (c.id !== _sendCouponTargetId) return c;
-        const existing = c.sentTo || [];
-        const merged = [...new Set([...existing, ...checked])];
+        const merged = [...new Set([...existing, ...willSend])];
         return { ...c, sentTo: merged };
       });
       if (window._fbSaveCoupons) window._fbSaveCoupons(_couponsCache);
       closeSendCouponModal();
-      showToast(`已發送給 ${checked.length} 位會員`);
+      const msg = willSkip > 0
+        ? `成功發送 ${willSend.length} 位，跳過 ${willSkip} 位已領取會員`
+        : `成功發送 ${willSend.length} 位會員`;
+      showToast(msg);
       renderCoupons();
     }
 
