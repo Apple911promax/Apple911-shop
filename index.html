@@ -1498,7 +1498,9 @@ onAuthStateChanged(_fbAuth, async (user) => {
         window._memberProfile = { email: user.email, uid: user.uid };
       }
     } catch(e) { console.error('[Firebase] 同步個人資料失敗:', e.message); }
-    if (typeof simLogin === 'function') simLogin();
+    isLoggedIn = true;
+    document.getElementById('user-status-dot')?.classList.replace('bg-slate-600','bg-neoncyan');
+    if (typeof closeAuth === 'function') closeAuth();
     if (typeof loadProfile === 'function') loadProfile();
   } else {
     window._fbCurrentUser = null; window._memberProfile = null;
