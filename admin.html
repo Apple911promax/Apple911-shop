@@ -1884,44 +1884,34 @@ window._fbAdminSignOut = async function() {
 };
 
 // ── Auth 狀態監聽 ──
+let _ordersUnsub = null;
+let _membersUnsub = null;
 onAuthStateChanged(_fbAuth, (user) => {
   if (user) {
     console.log('[Firebase Auth] 後台已登入:', user.email);
     if (typeof _doShowAdmin === 'function') _doShowAdmin();
+    // 確認登入後才啟動監聽，避免初始化競態
+    if (_ordersUnsub) _ordersUnsub();
+    _ordersUnsub = onSnapshot(query(collection(_fbDb, 'orders'), orderBy('time', 'desc')), (snap) => {
+      const realList = [];
+      snap.forEach(docSnap => realList.push(docSnap.data()));
+      orders = realList;
+      console.log('[Firebase] 訂單即時更新，共', orders.length, '筆');
+      if (typeof loadOrders === 'function') loadOrders();
+    }, (err) => { console.error('[Firebase] 監聽訂單失敗:', err.message); });
+    if (_membersUnsub) _membersUnsub();
+    _membersUnsub = onSnapshot(collection(_fbDb, 'members'), (snap) => {
+      const list = [];
+      snap.forEach(docSnap => list.push(docSnap.data()));
+      if (typeof _membersCache !== 'undefined') window._membersCache = list;
+      if (currentPage === 'members' && typeof renderMembers === 'function') renderMembers();
+      console.log('[Firebase] 會員即時更新，共', list.length, '筆');
+    }, (err) => { console.error('[Firebase] 監聽會員失敗:', err.message); });
   } else {
     console.log('[Firebase Auth] 後台未登入');
+    if (_ordersUnsub) { _ordersUnsub(); _ordersUnsub = null; }
+    if (_membersUnsub) { _membersUnsub(); _membersUnsub = null; }
   }
-});
-
-// ── 即時監聽訂單 ──
-const _fbOrdersCol = collection(_fbDb, 'orders');
-const _fbOrdersQuery = query(_fbOrdersCol, orderBy('time', 'desc'));
-onSnapshot(_fbOrdersQuery, (snap) => {
-  const realList = [];
-  snap.forEach(docSnap => realList.push(docSnap.data()));
-  orders = realList;
-  console.log('[Firebase] 訂單即時更新，共', orders.length, '筆');
-  if (typeof loadOrders === 'function') loadOrders();
-}, (err) => {
-  console.error('[Firebase] 監聽訂單失敗:', err.message);
-});
-
-// ── 即時監聽會員 ──
-const _fbMembersCol = collection(_fbDb, 'members');
-onSnapshot(_fbMembersCol, (snap) => {
-  const list = [];
-  snap.forEach(docSnap => list.push(docSnap.data()));
-  // 更新 _membersCache（這是在 admin.html 中定義的會員列表變數）
-  if (typeof _membersCache !== 'undefined') {
-    window._membersCache = list;
-  }
-  // 如果在會員頁面，觸發重新渲染
-  if (currentPage === 'members') {
-    if (typeof renderMembers === 'function') renderMembers();
-  }
-  console.log('[Firebase] 會員即時更新，共', list.length, '筆');
-}, (err) => {
-  console.error('[Firebase] 監聽會員失敗:', err.message);
 });
 
 window._fbUpdateOrder = async function(orderId, data) {
