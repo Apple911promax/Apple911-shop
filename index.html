@@ -943,7 +943,8 @@
       const payMap={'transfer':'銀行轉帳','linepay':'LINE Pay','onsite':'到店付款'};
       function _doRender(list){
         if(!list||list.length===0){
-          container.innerHTML='<div class="text-center py-10 text-gray-500 text-xs tracking-widest">尚無訂單記錄</div>';
+          const _msg=window._fbCurrentUser?'尚無訂單記錄':'請先登入以查看訂單';
+          container.innerHTML=`<div class="text-center py-10 text-gray-500 text-xs tracking-widest">${_msg}</div>`;
           return;
         }
         container.innerHTML=list.map(o=>{
@@ -999,7 +1000,7 @@
       }
       _doRender(orders);
     }
-    function switchMemberTab(tab){document.getElementById('member-tab-orders').classList.add('hidden');document.getElementById('member-tab-profile').classList.add('hidden');document.getElementById('member-tab-coupons').classList.add('hidden');document.getElementById('tab-btn-orders').classList.remove('member-tab-active');document.getElementById('tab-btn-profile').classList.remove('member-tab-active');document.getElementById('tab-btn-coupons').classList.remove('member-tab-active');document.getElementById('member-tab-'+tab).classList.remove('hidden');document.getElementById('tab-btn-'+tab).classList.add('member-tab-active');if(tab==='profile')loadProfile();if(tab==='orders'){if(window._fbWatchOrders){window._fbWatchOrders(list=>{orders=list;renderOrders();});}else{renderOrders();}}else{if(window._fbUnwatchOrders)window._fbUnwatchOrders();if(tab==='profile'){if(window._fbGetOrders){window._fbGetOrders().then(list=>{orders=list;renderProfileRecentOrders();},()=>renderProfileRecentOrders());}else{renderProfileRecentOrders();}}}if(tab==='coupons')renderCoupons();}
+    function switchMemberTab(tab){document.getElementById('member-tab-orders').classList.add('hidden');document.getElementById('member-tab-profile').classList.add('hidden');document.getElementById('member-tab-coupons').classList.add('hidden');document.getElementById('tab-btn-orders').classList.remove('member-tab-active');document.getElementById('tab-btn-profile').classList.remove('member-tab-active');document.getElementById('tab-btn-coupons').classList.remove('member-tab-active');document.getElementById('member-tab-'+tab).classList.remove('hidden');document.getElementById('tab-btn-'+tab).classList.add('member-tab-active');if(tab==='profile')loadProfile();if(tab==='orders'){const _oc=document.getElementById('orders-container');if(_oc)_oc.innerHTML='<div class="text-center py-10 text-gray-500 text-xs tracking-widest">載入中...</div>';if(window._fbWatchOrders){window._fbWatchOrders(list=>{orders=list;renderOrders();},()=>{if(orders.length===0&&_oc)_oc.innerHTML='<div class="text-center py-10 text-gray-500 text-xs tracking-widest">載入失敗，請稍後再試</div>';});}else{renderOrders();}}else{if(window._fbUnwatchOrders)window._fbUnwatchOrders();if(tab==='profile'){if(window._fbGetOrders){window._fbGetOrders().then(list=>{orders=list;renderProfileRecentOrders();},()=>renderProfileRecentOrders());}else{renderProfileRecentOrders();}}}if(tab==='coupons')renderCoupons();}
     function renderProfileRecentOrders(){
       const container=document.getElementById('profile-recent-orders');
       if(!container)return;
@@ -1618,13 +1619,13 @@ window._fbGetOrders = async function() {
   }
 };
 let _ordersUnsub = null;
-window._fbWatchOrders = function(cb) {
+window._fbWatchOrders = function(cb, errCb) {
   if (_ordersUnsub) { _ordersUnsub(); _ordersUnsub = null; }
-  if (!window._fbCurrentUser) return;
+  if (!window._fbCurrentUser) { if(errCb) errCb(); return; }
   const q = query(collection(_fbDb, 'orders'), where('userId', '==', window._fbCurrentUser.uid), orderBy('time', 'desc'));
   _ordersUnsub = onSnapshot(q, (snap) => {
     const list = []; snap.forEach(d => list.push(d.data())); cb(list);
-  }, (e) => { console.error('_fbWatchOrders 失敗:', e.message); });
+  }, (e) => { console.error('_fbWatchOrders 失敗:', e.message); if(errCb) errCb(); });
 };
 window._fbUnwatchOrders = function() {
   if (_ordersUnsub) { _ordersUnsub(); _ordersUnsub = null; }
