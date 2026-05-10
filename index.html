@@ -707,7 +707,39 @@
       currentShipping='';
       renderCart();
     }
-    function cancelOrder(orderId){/* ... */}
+    function cancelOrder(orderId){
+      if(!confirm('確定要取消此訂單？取消後無法復原。'))return;
+      if(window._fbUpdateOrder){
+        window._fbUpdateOrder(orderId,{status:'已取消'}).then(()=>{
+          showToast('訂單已取消');
+          // 同步更新記憶體
+          const o=orders.find(x=>x.id===orderId);
+          if(o) o.status='已取消';
+          renderOrders();
+        }).catch(()=>showToast('取消失敗，請稍後再試'));
+      }
+    }
+    function showPaymentInfo(){
+      // 匯款帳號資訊（可於後台系統設定修改）
+      const bankInfo = window._bankInfo || { bank:'玉山銀行', account:'808-0123456789012', name:'蘋果九一一有限公司' };
+      alert(`匯款資訊\n\n銀行：${bankInfo.bank}\n帳號：${bankInfo.account}\n戶名：${bankInfo.name}\n\n匯款後請點「回報匯款」填入帳號末5碼`);
+    }
+    function reportPayment(orderId){
+      const last5=prompt('請輸入您匯款帳號的末5碼：');
+      if(last5===null)return; // 用戶按取消
+      if(!/^\d{5}$/.test(last5.trim())){
+        showToast('請輸入正確的5位數字');
+        return;
+      }
+      if(window._fbUpdateOrder){
+        window._fbUpdateOrder(orderId,{status:'已付款待確認',paymentLast5:last5.trim()}).then(()=>{
+          showToast('已回報匯款，待客服確認');
+          const o=orders.find(x=>x.id===orderId);
+          if(o){ o.status='已付款待確認'; o.paymentLast5=last5.trim(); }
+          renderOrders();
+        }).catch(()=>showToast('回報失敗，請稍後再試'));
+      }
+    }
     function renderOrders(){
       const container=document.getElementById('orders-container');
       if(!container)return;
@@ -726,7 +758,21 @@
           const total=o.total||o.orderTotal||0;
           const timeStr=o.time?new Date(o.time).toLocaleString('zh-TW'):'-';
           const items=(o.items||[]).map(i=>i.name).join('、')||'-';
-          const statusColor=o.status==='已完成'?'text-green-400':o.status==='已取消'?'text-gray-500':o.status==='已出貨'?'text-blue-400':o.status==='已付款'?'text-neoncyan':'text-neonred';
+          const statusColor=o.status==='已完成'?'text-green-400':o.status==='已取消'?'text-gray-500':o.status==='已出貨'?'text-blue-400':o.status==='已付款'?'text-neoncyan':o.status==='已付款待確認'?'text-yellow-400':'text-neonred';
+          const isUnpaid = o.status==='未付款';
+          const isTransfer = _pay==='transfer';
+          const btnCancel = isUnpaid
+            ? `<button onclick="cancelOrder('${o.id}')" class="text-[10px] px-3 py-1 border border-red-500 text-red-400 rounded hover:bg-red-500 hover:text-black transition">取消訂單</button>`
+            : '';
+          const btnPayInfo = isUnpaid && isTransfer
+            ? `<button onclick="showPaymentInfo()" class="text-[10px] px-3 py-1 border border-slate-500 text-gray-300 rounded hover:bg-slate-600 transition">查看匯款資訊</button>`
+            : '';
+          const btnReport = isUnpaid && isTransfer
+            ? `<button onclick="reportPayment('${o.id}')" class="text-[10px] px-3 py-1 border border-neoncyan text-neoncyan rounded hover:bg-neoncyan hover:text-black transition">回報匯款</button>`
+            : '';
+          const btns = (btnPayInfo||btnReport||btnCancel)
+            ? `<div class="flex gap-2 flex-wrap pt-1">${btnPayInfo}${btnReport}${btnCancel}</div>`
+            : '';
           return`<div class="bg-darkbg border border-slate-700 p-4 rounded space-y-2">
           <div class="flex justify-between items-start gap-2">
             <div>
@@ -742,6 +788,7 @@
             <span>${shipLabel} · ${payLabel}</span>
             <span>${timeStr}</span>
           </div>
+          ${btns}
         </div>`;
         }).join('');
       }
@@ -1128,7 +1175,7 @@
       const sname=document.getElementById('store-name');if(sname&&!sname.value)sname.value=p.name||'';
       const sphone=document.getElementById('store-phone');if(sphone&&!sphone.value)sphone.value=p.phone||'';
     }
-    function reportPayment(orderId){/* ... */}
+
     window.onload=function(){renderCart();renderFrontCategories();initBirthSelects();initRegBirthSelects();loadProfile();if(isLoggedIn)document.getElementById('user-status-dot').classList.replace('bg-slate-600','bg-neoncyan');document.getElementById('agree-terms').addEventListener('change',function(){document.getElementById('submit-order-btn').disabled=!this.checked;});document.getElementById('submit-order-btn').addEventListener('mousedown',function(){if(!document.getElementById('agree-terms').checked)showToast('請先閱讀並同意購物與服務條款');});};
   </script>
 <script type="module">
