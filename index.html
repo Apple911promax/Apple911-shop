@@ -741,7 +741,7 @@
         catch(e){ showToast('訂單送出失敗，請重試'); if(btn)btn.disabled=false; return; }
         if(btn)btn.disabled=false;
       } else {
-        console.warn('_fbAddOrder 尚未載入');
+        showToast('系統尚未就緒，請稍後重試'); return;
       }
       // 存進本地 orders
       orders.unshift(newOrder);
@@ -1243,7 +1243,6 @@
       if(window._fbRegister){window._fbRegister();}else{simLogin('註冊成功');}
     }
     function _logoutUI(){isLoggedIn=false;window._memberProfile=null;document.getElementById('user-status-dot').classList.replace('bg-neoncyan','bg-slate-600');showSection('home');}
-    function logout(){_logoutUI();}
     function toggleSubmenu(id){document.getElementById(id).classList.toggle('open');}
     function toggleFab(){const m=document.getElementById('fab-menu'),i=document.getElementById('fab-icon');m.classList.toggle('open');if(m.classList.contains('open')){i.classList.replace('fa-headset','fa-xmark');i.parentElement.classList.remove('animate-pulse');}else{i.classList.replace('fa-xmark','fa-headset');i.parentElement.classList.add('animate-pulse');}}
     function updateBirthDays(){const y=parseInt(document.getElementById('profile-birth-year').value)||0;const m=parseInt(document.getElementById('profile-birth-month').value)||0;const dEl=document.getElementById('profile-birth-day');if(!dEl)return;const prev=dEl.value;const days=y&&m?new Date(y,m,0).getDate():31;dEl.innerHTML='<option value="">日</option>';for(let i=1;i<=days;i++){const o=document.createElement('option');o.value=i;o.textContent=i;dEl.appendChild(o);}if(prev&&parseInt(prev)<=days)dEl.value=prev;}function initBirthSelects(){const currentYear=new Date().getFullYear();const yEl=document.getElementById('profile-birth-year');const mEl=document.getElementById('profile-birth-month');if(!yEl||!mEl)return;for(let y=currentYear;y>=1920;y--){const o=document.createElement('option');o.value=y;o.textContent=y;yEl.appendChild(o);}for(let m=1;m<=12;m++){const o=document.createElement('option');o.value=m;o.textContent=m;mEl.appendChild(o);}yEl.removeEventListener('change',updateBirthDays);mEl.removeEventListener('change',updateBirthDays);yEl.addEventListener('change',updateBirthDays);mEl.addEventListener('change',updateBirthDays);}
@@ -1401,8 +1400,8 @@ window._fbWatchOrders = function(cb) {
 window._fbUnwatchOrders = function() {
   if (_ordersUnsub) { _ordersUnsub(); _ordersUnsub = null; }
 };
-window._fbUpdateOrder = async function(orderId, data) { try { await updateDoc(doc(_fbDb, 'orders', orderId), data); } catch(e) {} };
-window._fbUpdateProfile = async function(profile) { if (!window._fbCurrentUser) return; try { await setDoc(doc(_fbDb, 'members', window._fbCurrentUser.uid), profile, { merge: true }); } catch(e) {} };
+window._fbUpdateOrder = async function(orderId, data) { try { await updateDoc(doc(_fbDb, 'orders', orderId), data); } catch(e) { throw e; } };
+window._fbUpdateProfile = async function(profile) { if (!window._fbCurrentUser) return; try { await setDoc(doc(_fbDb, 'members', window._fbCurrentUser.uid), profile, { merge: true }); } catch(e) { throw e; } };
 onSnapshot(_fbProdsRef, (snap) => {
   if (snap.exists()) { products = snap.data().list || []; }
   if (typeof renderFrontCategories === 'function') renderFrontCategories();
