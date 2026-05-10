@@ -880,7 +880,7 @@
         }).catch(e=>{ console.error('_fbGetOrders error:', e.code, e.message); if(orders.length===0) _doRender([]); });
       }
     }
-    function switchMemberTab(tab){document.getElementById('member-tab-orders').classList.add('hidden');document.getElementById('member-tab-profile').classList.add('hidden');document.getElementById('member-tab-coupons').classList.add('hidden');document.getElementById('tab-btn-orders').classList.remove('member-tab-active');document.getElementById('tab-btn-profile').classList.remove('member-tab-active');document.getElementById('tab-btn-coupons').classList.remove('member-tab-active');document.getElementById('member-tab-'+tab).classList.remove('hidden');document.getElementById('tab-btn-'+tab).classList.add('member-tab-active');if(tab==='profile')loadProfile();if(tab==='orders'||tab==='profile'){if(window._fbGetOrders){window._fbGetOrders().then(list=>{orders=list;if(tab==='orders')renderOrders();if(tab==='profile')renderProfileRecentOrders();});}else{if(tab==='orders')renderOrders();if(tab==='profile')renderProfileRecentOrders();}}if(tab==='coupons')renderCoupons();}
+    function switchMemberTab(tab){document.getElementById('member-tab-orders').classList.add('hidden');document.getElementById('member-tab-profile').classList.add('hidden');document.getElementById('member-tab-coupons').classList.add('hidden');document.getElementById('tab-btn-orders').classList.remove('member-tab-active');document.getElementById('tab-btn-profile').classList.remove('member-tab-active');document.getElementById('tab-btn-coupons').classList.remove('member-tab-active');document.getElementById('member-tab-'+tab).classList.remove('hidden');document.getElementById('tab-btn-'+tab).classList.add('member-tab-active');if(tab==='profile')loadProfile();if(tab==='orders'){if(window._fbWatchOrders){window._fbWatchOrders(list=>{orders=list;renderOrders();});}else{renderOrders();}}else{if(window._fbUnwatchOrders)window._fbUnwatchOrders();if(tab==='profile'){if(window._fbGetOrders){window._fbGetOrders().then(list=>{orders=list;renderProfileRecentOrders();});}else{renderProfileRecentOrders();}}}if(tab==='coupons')renderCoupons();}
     function renderProfileRecentOrders(){
       const container=document.getElementById('profile-recent-orders');
       if(!container)return;
@@ -1392,6 +1392,18 @@ window._fbGetOrders = async function() {
     console.error('_fbGetOrders 失敗:', e.code, e.message);
     return [];
   }
+};
+let _ordersUnsub = null;
+window._fbWatchOrders = function(cb) {
+  if (_ordersUnsub) { _ordersUnsub(); _ordersUnsub = null; }
+  if (!window._fbCurrentUser) return;
+  const q = query(collection(_fbDb, 'orders'), where('userId', '==', window._fbCurrentUser.uid), orderBy('time', 'desc'));
+  _ordersUnsub = onSnapshot(q, (snap) => {
+    const list = []; snap.forEach(d => list.push(d.data())); cb(list);
+  }, (e) => { console.error('_fbWatchOrders 失敗:', e.message); });
+};
+window._fbUnwatchOrders = function() {
+  if (_ordersUnsub) { _ordersUnsub(); _ordersUnsub = null; }
 };
 window._fbUpdateOrder = async function(orderId, data) { try { await updateDoc(doc(_fbDb, 'orders', orderId), data); } catch(e) {} };
 window._fbUpdateProfile = async function(profile) { if (!window._fbCurrentUser) return; try { await setDoc(doc(_fbDb, 'members', window._fbCurrentUser.uid), profile, { merge: true }); } catch(e) {} };
