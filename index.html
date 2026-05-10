@@ -713,22 +713,23 @@
     function renderOrders(){
       const container=document.getElementById('orders-container');
       if(!container)return;
-      if(orders.length===0){
-        container.innerHTML='<div class="text-center py-10 text-gray-500 text-xs tracking-widest">尚無訂單記錄</div>';
-        return;
-      }
       const shipMap={'cvs':'超商取貨','home':'宅配到府','store':'到店取貨'};
       const payMap={'transfer':'銀行轉帳','linepay':'LINE Pay','onsite':'到店付款'};
-      container.innerHTML=orders.map(o=>{
-        const _ship=o.shippingMethod||o.ship||'';
-        const _pay=o.paymentMethod||o.pay||'';
-        const shipLabel=shipMap[_ship]||_ship||'-';
-        const payLabel=payMap[_pay]||_pay||'-';
-        const total=o.total||o.orderTotal||0;
-        const timeStr=o.time?new Date(o.time).toLocaleString('zh-TW'):'-';
-        const items=(o.items||[]).map(i=>i.name).join('、')||'-';
-        const statusColor=o.status==='已完成'?'text-green-400':o.status==='已取消'?'text-gray-500':o.status==='已出貨'?'text-blue-400':o.status==='已付款'?'text-neoncyan':'text-neonred';
-        return`<div class="bg-darkbg border border-slate-700 p-4 rounded space-y-2">
+      function _doRender(list){
+        if(!list||list.length===0){
+          container.innerHTML='<div class="text-center py-10 text-gray-500 text-xs tracking-widest">尚無訂單記錄</div>';
+          return;
+        }
+        container.innerHTML=list.map(o=>{
+          const _ship=o.shippingMethod||o.ship||'';
+          const _pay=o.paymentMethod||o.pay||'';
+          const shipLabel=shipMap[_ship]||_ship||'-';
+          const payLabel=payMap[_pay]||_pay||'-';
+          const total=o.total||o.orderTotal||0;
+          const timeStr=o.time?new Date(o.time).toLocaleString('zh-TW'):'-';
+          const items=(o.items||[]).map(i=>i.name).join('、')||'-';
+          const statusColor=o.status==='已完成'?'text-green-400':o.status==='已取消'?'text-gray-500':o.status==='已出貨'?'text-blue-400':o.status==='已付款'?'text-neoncyan':'text-neonred';
+          return`<div class="bg-darkbg border border-slate-700 p-4 rounded space-y-2">
           <div class="flex justify-between items-start gap-2">
             <div>
               <p class="text-[10px] text-gray-500 font-tech tracking-widest">${o.id}</p>
@@ -744,7 +745,18 @@
             <span>${timeStr}</span>
           </div>
         </div>`;
-      }).join('');
+        }).join('');
+      }
+      // 若記憶體已有資料直接 render，同時背景更新
+      if(orders.length>0) _doRender(orders);
+      else container.innerHTML='<div class="text-center py-10 text-gray-500 text-xs tracking-widest">載入中…</div>';
+      // 永遠從 Firebase 撈最新資料
+      if(window._fbGetOrders){
+        window._fbGetOrders().then(list=>{
+          if(list&&list.length>0){ orders=list; _doRender(list); }
+          else if(orders.length===0){ _doRender([]); }
+        }).catch(e=>{ console.error('[ORDER DEBUG] _fbGetOrders error:', e.code, e.message); if(orders.length===0) _doRender([]); });
+      }
     }
     function switchMemberTab(tab){document.getElementById('member-tab-orders').classList.add('hidden');document.getElementById('member-tab-profile').classList.add('hidden');document.getElementById('member-tab-coupons').classList.add('hidden');document.getElementById('tab-btn-orders').classList.remove('member-tab-active');document.getElementById('tab-btn-profile').classList.remove('member-tab-active');document.getElementById('tab-btn-coupons').classList.remove('member-tab-active');document.getElementById('member-tab-'+tab).classList.remove('hidden');document.getElementById('tab-btn-'+tab).classList.add('member-tab-active');if(tab==='profile')loadProfile();if(tab==='orders'||tab==='profile'){if(window._fbGetOrders){window._fbGetOrders().then(list=>{orders=list;if(tab==='orders')renderOrders();if(tab==='profile')renderProfileRecentOrders();});}else{if(tab==='orders')renderOrders();if(tab==='profile')renderProfileRecentOrders();}}if(tab==='coupons')renderCoupons();}
     function renderProfileRecentOrders(){
@@ -1223,7 +1235,13 @@ window._fbGetOrders = async function() {
     const q = query(collection(_fbDb, 'orders'), where('userId', '==', window._fbCurrentUser.uid), orderBy('time', 'desc'));
     const snap = await getDocs(q);
     const list = []; snap.forEach(doc => list.push(doc.data())); return list;
-  } catch(e) { return []; }
+  } catch(e) {
+    console.error('[ORDER DEBUG] _fbGetOrders failed:', e.code, e.message);
+    if(e.code==='failed-precondition'){
+      console.warn('[ORDER DEBUG] Firestore 缺少複合索引，請至 Firebase Console 建立 orders collection 的 (userId ASC, time DESC) 索引，或點擊上方錯誤訊息中的連結');
+    }
+    return [];
+  }
 };
 window._fbUpdateOrder = async function(orderId, data) { try { await updateDoc(doc(_fbDb, 'orders', orderId), data); } catch(e) {} };
 window._fbUpdateProfile = async function(profile) { if (!window._fbCurrentUser) return; try { await setDoc(doc(_fbDb, 'members', window._fbCurrentUser.uid), profile, { merge: true }); } catch(e) {} };
