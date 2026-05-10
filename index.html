@@ -241,7 +241,7 @@
               <span class="text-neoncyan underline hover:text-white transition" onclick="openTerms('payment')">付款資訊</span>、<span class="text-neoncyan underline hover:text-white transition" onclick="openTerms('shipping')">配送取件</span>、<span class="text-neoncyan underline hover:text-white transition" onclick="openTerms('returns')">退換貨政策</span>、<span class="text-neoncyan underline hover:text-white transition" onclick="openTerms('warranty')">維修保固</span>、<span class="text-neoncyan underline hover:text-white transition" onclick="openTerms('terms')">服務條款</span>
             </label>
           </div>
-          <button id="submit-order-btn" onclick="submitOrder()" disabled class="w-full py-4 bg-neoncyan text-black font-bold tech-clip text-sm hover:bg-white transition shadow-lg tracking-widest uppercase">確認送出訂單 SUBMIT ORDER</button>
+          <button id="submit-order-btn" onclick="submitOrder()" class="w-full py-4 bg-neoncyan text-black font-bold tech-clip text-sm hover:bg-white transition shadow-lg tracking-widest uppercase">確認送出訂單 SUBMIT ORDER</button>
         </div>
       </div>
     </div>
@@ -678,6 +678,10 @@
       return true;
     }
     function submitOrder(){
+      if(!document.getElementById('agree-terms').checked){
+        showToast('請先閱讀並同意購物與服務條款');
+        return;
+      }
       if(!validateCheckoutFields()) return;
       const subtotal=cart.reduce((s,i)=>s+(i.price||0),0);
       const shippingFee=calcShippingFee(currentShipping,subtotal);
