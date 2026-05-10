@@ -324,7 +324,7 @@
   <input id="reg-address" type="text" placeholder="地址（結帳時自動預填）" class="w-full bg-darkbg border border-slate-700 text-white p-3 tech-clip text-sm outline-none focus:border-neoncyan transition">
 </div>
 <p id="reg-error" class="text-neonred text-xs mt-3 hidden"></p>
-<button onclick="window._fbRegister?window._fbRegister():simLogin('註冊成功')" class="w-full py-4 bg-neoncyan text-black font-bold tech-clip mt-4 text-sm tracking-widest shadow-[0_0_15px_rgba(0,243,255,0.2)] hover:bg-white transition">加入會員 REGISTER</button>
+<button onclick="validateAndRegister()" class="w-full py-4 bg-neoncyan text-black font-bold tech-clip mt-4 text-sm tracking-widest shadow-[0_0_15px_rgba(0,243,255,0.2)] hover:bg-white transition">加入會員 REGISTER</button>
 <div class="text-center mt-4 text-xs text-gray-500">已有帳號？ <button onclick="switchAuth('login')" class="text-neoncyan font-bold hover:underline">返回登入 LOGIN</button></div></div></div></div>
   <div class="overlay fixed inset-0 bg-black/60 z-[50]" onclick="closeAllDrawers()"></div>
   <div class="cart-drawer drawer-transition bg-panelbg border-l border-neoncyan fixed inset-y-0 right-0 w-full md:w-[400px] z-[60] flex flex-col shadow-2xl"><div class="p-5 border-b border-slate-800 flex justify-between items-center shrink-0"><h2 class="font-bold text-white tracking-widest">CART</h2><button onclick="closeAllDrawers()" class="text-neoncyan transition hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button></div><div class="flex-grow p-4 space-y-3 overflow-y-auto" id="cart-items"></div><div class="p-5 bg-darkbg border-t border-slate-800 shrink-0"><div class="flex justify-between text-white font-bold mb-4"><span>總計金額</span><span id="cart-total" class="text-goldlight font-tech text-lg">NT$ 0</span></div><button onclick="checkout()" class="w-full py-4 mb-3 bg-blue-600 text-white font-bold tech-clip hover:bg-blue-500 transition">結帳 CHECKOUT</button><button onclick="closeAllDrawers()" class="w-full py-4 bg-transparent border border-slate-700 text-gray-400 font-bold tech-clip transition">繼續購物 CONTINUE</button></div></div>
@@ -1231,6 +1231,21 @@
     function closeAuth(){document.getElementById('auth-modal').classList.replace('flex','hidden');}
     function switchAuth(view){document.getElementById('auth-view-login').classList.add('hidden');document.getElementById('auth-view-register').classList.add('hidden');document.getElementById(`auth-view-${view}`).classList.remove('hidden');document.getElementById('auth-title').innerText=view==='login'?'SYSTEM LOGIN':'NEW REGISTRATION';}
     function simLogin(msg){isLoggedIn=true;document.getElementById('user-status-dot').classList.replace('bg-slate-600','bg-neoncyan');closeAuth();showToast(msg||'登入成功');}
+    function validateAndRegister(){
+      const nameEl=document.getElementById('reg-name');
+      const phoneEl=document.getElementById('reg-phone');
+      const emailEl=document.getElementById('reg-email');
+      const passEl=document.getElementById('reg-password');
+      const byEl=document.getElementById('reg-birth-year');
+      const bmEl=document.getElementById('reg-birth-month');
+      const bdEl=document.getElementById('reg-birth-day');
+      const addrEl=document.getElementById('reg-address');
+      let ok=true;
+      [nameEl,phoneEl,emailEl,passEl,addrEl].forEach(el=>{if(el&&!el.value.trim()){setFieldError(el);ok=false;}});
+      [byEl,bmEl,bdEl].forEach(el=>{if(el&&!el.value){setFieldError(el);ok=false;}});
+      if(!ok){showToast('請填寫完整資料');return;}
+      if(window._fbRegister){window._fbRegister();}else{simLogin('註冊成功');}
+    }
     function logout(){isLoggedIn=false;window._memberProfile=null;document.getElementById('user-status-dot').classList.replace('bg-neoncyan','bg-slate-600');showSection('home');}
     function toggleSubmenu(id){document.getElementById(id).classList.toggle('open');}
     function toggleFab(){const m=document.getElementById('fab-menu'),i=document.getElementById('fab-icon');m.classList.toggle('open');if(m.classList.contains('open')){i.classList.replace('fa-headset','fa-xmark');i.parentElement.classList.remove('animate-pulse');}else{i.classList.replace('fa-xmark','fa-headset');i.parentElement.classList.add('animate-pulse');}}
