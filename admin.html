@@ -461,6 +461,7 @@
     // ════════════════════════════════════════════════════════════
     function loadOrders() {
       // 現在訂單由 Firebase onSnapshot 即時更新，不需手動從 localStorage 載入
+      console.log('[ADMIN ORDER DEBUG] loadOrders called, orders count:', orders.length, 'currentPage:', currentPage);
       renderStats();
       if (currentPage === 'members-orders' && currentMoTab === 'orders') renderTable();
     }
@@ -518,6 +519,7 @@
     // 訂單列表渲染
     // ════════════════════════════════════════════════════════════
     function renderTable() {
+      console.log('[ADMIN ORDER DEBUG] renderTable called, orders:', orders.length, orders);
       const filtered = getFiltered();
       const tableEl  = document.getElementById('orders-table');
       if (!tableEl) return;
@@ -1898,12 +1900,15 @@ onAuthStateChanged(_fbAuth, (user) => {
 const _fbOrdersCol = collection(_fbDb, 'orders');
 const _fbOrdersQuery = query(_fbOrdersCol, orderBy('time', 'desc'));
 onSnapshot(_fbOrdersQuery, (snap) => {
+  console.log('[ADMIN ORDER DEBUG] snapshot size:', snap.size);
   const realList = [];
   snap.forEach(docSnap => realList.push(docSnap.data()));
   orders = realList;
+  console.log('[ADMIN ORDER DEBUG] loaded orders:', orders);
   console.log('[Firebase] 訂單即時更新，共', orders.length, '筆');
   if (typeof loadOrders === 'function') loadOrders();
 }, (err) => {
+  console.error('[ADMIN ORDER DEBUG] snapshot error:', err.code, err.message);
   console.error('[Firebase] 監聽訂單失敗:', err.message);
 });
 
