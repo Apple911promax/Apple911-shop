@@ -296,7 +296,7 @@
           <div class="bg-panelbg border border-slate-700 tech-clip p-5 space-y-4">
             <p class="text-xs font-bold text-neoncyan tracking-widest border-b border-slate-700 pb-2">新增優惠券</p>
             <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
-              <div>
+              <div class="col-span-2 md:col-span-1">
                 <p class="text-[10px] text-gray-600 uppercase tracking-widest font-bold mb-1">折扣碼</p>
                 <div class="flex gap-2">
                   <input id="cp-code" type="text" placeholder="SUMMER2026" class="bg-darkbg border border-slate-600 text-white p-2 tech-clip text-sm focus:border-neoncyan transition flex-1 min-w-0" style="text-transform:uppercase">
@@ -702,36 +702,52 @@
         </div>`;
         return;
       }
+      const rows = coupons.map(c => {
+        const typeLabel = c.type === 'percent' ? `${c.value}%` : `NT$${c.value}`;
+        const expiryLabel = c.expiry ? new Date(c.expiry).toLocaleDateString('zh-TW') : '永久';
+        const limitLabel = c.usageLimit > 0 ? `${c.usedCount||0}/${c.usageLimit}` : `${c.usedCount||0}/∞`;
+        const expired = c.expiry && Date.now() > c.expiry;
+        const statusClass = !c.active ? 'text-gray-600' : expired ? 'text-neonred' : 'text-neoncyan';
+        const sendBtn = `<button onclick="openSendCouponModal('${c.id}')" class="px-3 py-1 text-[10px] font-bold tech-btn bg-purple-500/10 text-purple-400 hover:bg-purple-500 hover:text-white transition">發送</button>`;
+        const toggleBtn = `<button onclick="toggleCoupon('${c.id}')" class="px-3 py-1 text-[10px] font-bold tech-btn transition ${c.active ? 'bg-slate-700 text-gray-300 hover:bg-slate-600' : 'bg-neoncyan/10 text-neoncyan hover:bg-neoncyan hover:text-black'}">${c.active ? '停用' : '啟用'}</button>`;
+        const delBtn = `<button onclick="deleteCoupon('${c.id}')" class="px-3 py-1 text-[10px] font-bold tech-btn bg-neonred/10 text-neonred hover:bg-neonred hover:text-black transition">刪除</button>`;
+        return { c, typeLabel, expiryLabel, limitLabel, expired, statusClass, sendBtn, toggleBtn, delBtn };
+      });
       el.innerHTML = `<div class="bg-panelbg border border-slate-700 tech-clip overflow-hidden">
-        <div class="px-4 py-2 border-b border-slate-800 grid grid-cols-7 gap-2 text-[10px] font-bold text-gray-600 uppercase tracking-widest">
-          <span class="col-span-1">折扣碼</span>
-          <span class="col-span-1">類型</span>
-          <span class="col-span-1">折扣</span>
-          <span class="col-span-1">最低消費</span>
-          <span class="col-span-1">到期日</span>
-          <span class="col-span-1">使用</span>
-          <span class="col-span-1 text-right">操作</span>
+        <!-- 桌面版表格 -->
+        <div class="hidden md:block">
+          <div class="px-4 py-2 border-b border-slate-800 grid grid-cols-7 gap-2 text-[10px] font-bold text-gray-600 uppercase tracking-widest">
+            <span>折扣碼</span><span>類型</span><span>折扣</span><span>最低消費</span><span>到期日</span><span>使用</span><span class="text-right">操作</span>
+          </div>
+          ${rows.map(({c,typeLabel,expiryLabel,limitLabel,expired,statusClass,sendBtn,toggleBtn,delBtn}) =>
+            `<div class="px-4 py-3 border-b border-slate-800 last:border-0 grid grid-cols-7 gap-2 items-center hover:bg-white/5 transition">
+              <span class="font-tech font-bold ${statusClass} text-sm">${c.code}</span>
+              <span class="text-xs text-gray-400">${c.type === 'percent' ? '百分比' : '折抵'}</span>
+              <span class="text-xs font-bold text-white">${typeLabel}</span>
+              <span class="text-xs text-gray-400">${c.minOrder > 0 ? 'NT$'+c.minOrder : '無'}</span>
+              <span class="text-xs ${expired ? 'text-neonred' : 'text-gray-400'}">${expiryLabel}</span>
+              <span class="text-xs text-gray-400">${limitLabel}</span>
+              <div class="flex justify-end gap-2">${sendBtn}${toggleBtn}${delBtn}</div>
+            </div>`
+          ).join('')}
         </div>
-        ${coupons.map(c => {
-          const typeLabel = c.type === 'percent' ? `${c.value}%` : `NT$${c.value}`;
-          const expiryLabel = c.expiry ? new Date(c.expiry).toLocaleDateString('zh-TW') : '永久';
-          const limitLabel = c.usageLimit > 0 ? `${c.usedCount||0}/${c.usageLimit}` : `${c.usedCount||0}/∞`;
-          const expired = c.expiry && Date.now() > c.expiry;
-          const statusClass = !c.active ? 'text-gray-600' : expired ? 'text-neonred' : 'text-neoncyan';
-          return `<div class="px-4 py-3 border-b border-slate-800 last:border-0 grid grid-cols-7 gap-2 items-center hover:bg-white/5 transition">
-            <span class="col-span-1 font-tech font-bold ${statusClass} text-sm">${c.code}</span>
-            <span class="col-span-1 text-xs text-gray-400">${c.type === 'percent' ? '百分比' : '折抵'}</span>
-            <span class="col-span-1 text-xs font-bold text-white">${typeLabel}</span>
-            <span class="col-span-1 text-xs text-gray-400">${c.minOrder > 0 ? 'NT$'+c.minOrder : '無'}</span>
-            <span class="col-span-1 text-xs ${expired ? 'text-neonred' : 'text-gray-400'}">${expiryLabel}</span>
-            <span class="col-span-1 text-xs text-gray-400">${limitLabel}</span>
-            <div class="col-span-1 flex justify-end gap-2">
-              <button onclick="openSendCouponModal('${c.id}')" class="px-3 py-1 text-[10px] font-bold tech-btn bg-purple-500/10 text-purple-400 hover:bg-purple-500 hover:text-white transition">發送</button>
-              <button onclick="toggleCoupon('${c.id}')" class="px-3 py-1 text-[10px] font-bold tech-btn transition ${c.active ? 'bg-slate-700 text-gray-300 hover:bg-slate-600' : 'bg-neoncyan/10 text-neoncyan hover:bg-neoncyan hover:text-black'}">${c.active ? '停用' : '啟用'}</button>
-              <button onclick="deleteCoupon('${c.id}')" class="px-3 py-1 text-[10px] font-bold tech-btn bg-neonred/10 text-neonred hover:bg-neonred hover:text-black transition">刪除</button>
-            </div>
-          </div>`;
-        }).join('')}
+        <!-- 手機版卡片 -->
+        <div class="md:hidden divide-y divide-slate-800">
+          ${rows.map(({c,typeLabel,expiryLabel,limitLabel,expired,statusClass,sendBtn,toggleBtn,delBtn}) =>
+            `<div class="p-4 space-y-2 hover:bg-white/5 transition">
+              <div class="flex items-center justify-between">
+                <span class="font-tech font-bold ${statusClass} text-sm tracking-widest">${c.code}</span>
+                <span class="text-[10px] text-gray-500">${c.type === 'percent' ? '百分比' : '折抵'} ${typeLabel}</span>
+              </div>
+              <div class="flex flex-wrap gap-x-3 gap-y-0.5 text-[10px] text-gray-500">
+                ${c.minOrder > 0 ? `<span>最低 NT$${c.minOrder}</span>` : ''}
+                <span>到期 <span class="${expired ? 'text-neonred' : ''}">${expiryLabel}</span></span>
+                <span>使用 ${limitLabel}</span>
+              </div>
+              <div class="flex gap-2 justify-end pt-1">${sendBtn}${toggleBtn}${delBtn}</div>
+            </div>`
+          ).join('')}
+        </div>
       </div>`;
     }
 
