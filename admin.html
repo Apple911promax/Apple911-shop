@@ -501,10 +501,20 @@
       return orders.filter(o => {
         const oName  = o.shippingInfo?.name  || o.customerName  || o.name  || o.customer  || o.buyerName  || '';
         const oPhone = o.shippingInfo?.phone || o.customerPhone || o.phone || o.mobile    || o.buyerPhone || '';
+        const oEmail = o.shippingInfo?.email || '';
+        const oNote  = o.note || '';
+        const shipMap = {cvs:'超商取貨',home:'宅配到府',store:'到店取貨'};
+        const payMap  = {transfer:'銀行轉帳',bank:'銀行轉帳',linepay:'LINE Pay',onsite:'到店付款',storepay:'到店付款'};
+        const oShip  = (o.shippingMethod||'') + ' ' + (shipMap[o.shippingMethod]||'');
+        const oPay   = (o.paymentMethod||'')  + ' ' + (payMap[o.paymentMethod]||'');
         const matchKw = !kw || o.id.toLowerCase().includes(kw) ||
           (o.items||[]).some(i => i.name.toLowerCase().includes(kw)) ||
           oName.toLowerCase().includes(kw) ||
-          oPhone.includes(kw);
+          oPhone.includes(kw) ||
+          oEmail.toLowerCase().includes(kw) ||
+          oNote.toLowerCase().includes(kw) ||
+          oShip.toLowerCase().includes(kw) ||
+          oPay.toLowerCase().includes(kw);
         const matchSt = !st || o.status === st;
         return matchKw && matchSt;
       });
