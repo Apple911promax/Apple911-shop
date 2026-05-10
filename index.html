@@ -1443,13 +1443,24 @@ window._fbLogin = async function() {
       const snap = await getDocs(q);
       if (snap.empty) { if(typeof showToast==='function') showToast('此手機號碼尚未註冊'); return; }
       emailToUse = snap.docs[0].data().email;
-    } catch(e) { if(typeof showToast==='function') showToast('查詢失敗'); return; }
+    } catch(e) {
+      console.error('[Login] 手機查詢失敗', e.code, e.message);
+      if(typeof showToast==='function') showToast('查詢失敗（'+(e.code||e.message)+'）');
+      return;
+    }
   }
   try {
     await signInWithEmailAndPassword(_fbAuth, emailToUse, password);
     if (typeof closeAuth === 'function') closeAuth();
     if (typeof showToast === 'function') showToast('登入成功');
-  } catch(e) { if (typeof showToast === 'function') showToast('登入失敗'); }
+  } catch(e) {
+    console.error('[Login] 登入失敗', e.code, e.message);
+    const msg = e.code==='auth/wrong-password'||e.code==='auth/invalid-credential'?'密碼錯誤'
+      : e.code==='auth/user-not-found'?'帳號不存在'
+      : e.code==='auth/too-many-requests'?'嘗試次數過多，請稍後再試'
+      : '登入失敗（'+(e.code||e.message)+'）';
+    if (typeof showToast === 'function') showToast(msg);
+  }
 };
 window._fbRegister = async function() {
   const nameEl    = document.getElementById('reg-name');
