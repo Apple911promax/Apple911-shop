@@ -741,7 +741,7 @@
         catch(e){ showToast('訂單送出失敗，請重試'); if(btn)btn.disabled=false; return; }
         if(btn)btn.disabled=false;
       } else {
-        console.warn('_fbAddOrder 尚未載入');
+        showToast('系統尚未就緒，請稍後重試'); return;
       }
       // 存進本地 orders
       orders.unshift(newOrder);
@@ -1376,6 +1376,7 @@ window._fbAddOrder = async function(newOrder) {
     await setDoc(doc(_fbDb, 'orders', newOrder.id), newOrder);
   } catch(e) {
     console.error('Firebase 訂單寫入失敗:', e.code, e.message);
+    throw e;
   }
 };
 window._fbGetOrders = async function() {
@@ -1401,8 +1402,8 @@ window._fbWatchOrders = function(cb) {
 window._fbUnwatchOrders = function() {
   if (_ordersUnsub) { _ordersUnsub(); _ordersUnsub = null; }
 };
-window._fbUpdateOrder = async function(orderId, data) { try { await updateDoc(doc(_fbDb, 'orders', orderId), data); } catch(e) {} };
-window._fbUpdateProfile = async function(profile) { if (!window._fbCurrentUser) return; try { await setDoc(doc(_fbDb, 'members', window._fbCurrentUser.uid), profile, { merge: true }); } catch(e) {} };
+window._fbUpdateOrder = async function(orderId, data) { try { await updateDoc(doc(_fbDb, 'orders', orderId), data); } catch(e) { throw e; } };
+window._fbUpdateProfile = async function(profile) { if (!window._fbCurrentUser) return; try { await setDoc(doc(_fbDb, 'members', window._fbCurrentUser.uid), profile, { merge: true }); } catch(e) { throw e; } };
 onSnapshot(_fbProdsRef, (snap) => {
   if (snap.exists()) { products = snap.data().list || []; }
   if (typeof renderFrontCategories === 'function') renderFrontCategories();

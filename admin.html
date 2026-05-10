@@ -643,14 +643,14 @@
       const newStatus = sel.value;
       window._fbUpdateOrder(orderId, { status: newStatus }).then(() => {
         showToast('狀態已更新：' + newStatus);
-      });
+      }).catch(() => { showToast('狀態更新失敗，請重試'); });
     }
 
     function markPaid(orderId) {
       if (!window._fbUpdateOrder) return;
       window._fbUpdateOrder(orderId, { status: '已付款' }).then(() => {
         showToast('已標記為已付款');
-      });
+      }).catch(() => { showToast('標記失敗，請重試'); });
     }
 
     function copyOrder(orderId) {
@@ -1678,7 +1678,7 @@
         const memberOrders = orders.filter(o =>
           (m.uid && o.userId === m.uid) ||
           (m.phone && o.shippingInfo?.phone === m.phone) ||
-          (m.email && o.shippingInfo?.phone === m.phone) ||
+          (m.email && o.shippingInfo?.email === m.email) ||
           (m.phone && o.customerPhone === m.phone) ||
           (m.email && o.customerEmail === m.email)
         );
@@ -1739,7 +1739,7 @@
       const memberOrders = orders.filter(o =>
         (m.uid && o.userId === m.uid) ||
         (m.phone && o.shippingInfo?.phone === m.phone) ||
-        (m.email && o.shippingInfo?.phone === m.phone) ||
+        (m.email && o.shippingInfo?.email === m.email) ||
         (m.phone && o.customerPhone === m.phone) ||
         (m.email && o.customerEmail === m.email)
       );
@@ -1810,7 +1810,7 @@
       window._fbUpdateOrder(orderId, { status: newStatus }).then(() => {
         showMemberDetail(memberId);
         showToast('狀態已更新：' + newStatus);
-      });
+      }).catch(() => { showToast('狀態更新失敗，請重試'); });
     }
 
     // ════════════════════════════════════════════════════════════
@@ -1904,7 +1904,7 @@ onAuthStateChanged(_fbAuth, (user) => {
       const list = [];
       snap.forEach(docSnap => list.push(docSnap.data()));
       if (typeof _membersCache !== 'undefined') window._membersCache = list;
-      if (currentPage === 'members' && typeof renderMembers === 'function') renderMembers();
+      if (currentPage === 'members-orders' && currentMoTab === 'members' && typeof renderMembers === 'function') renderMembers();
       console.log('[Firebase] 會員即時更新，共', list.length, '筆');
     }, (err) => { console.error('[Firebase] 監聽會員失敗:', err.message); });
   } else {
@@ -1919,7 +1919,7 @@ window._fbUpdateOrder = async function(orderId, data) {
     const ref = doc(_fbDb, 'orders', orderId);
     await updateDoc(ref, data);
     console.log('[Firebase] 訂單更新成功:', orderId);
-  } catch(e) { console.error('[Firebase] 訂單更新失敗:', e.message); }
+  } catch(e) { console.error('[Firebase] 訂單更新失敗:', e.message); throw e; }
 };
 
 window._fbUpdateMember = async function(uid, data) {
@@ -1934,14 +1934,14 @@ window._fbSaveProducts = async function(prods) {
   try {
     await setDoc(_fbProdsRef, { list: prods, updatedAt: Date.now() });
     console.log('[Firebase] 商品儲存成功，共', prods.length, '筆');
-  } catch(e) { console.error('[Firebase] 商品儲存失敗:', e.message); }
+  } catch(e) { console.error('[Firebase] 商品儲存失敗:', e.message); if (typeof showToast === 'function') showToast('商品儲存失敗，請重試'); }
 };
 
 window._fbSaveCategories = async function(cats) {
   try {
     await setDoc(_fbCatRef, { list: cats, updatedAt: Date.now() });
     console.log('[Firebase] 分類儲存成功');
-  } catch(e) { console.error('[Firebase] 分類儲存失敗:', e.message); }
+  } catch(e) { console.error('[Firebase] 分類儲存失敗:', e.message); if (typeof showToast === 'function') showToast('分類儲存失敗，請重試'); }
 };
 
 onSnapshot(_fbProdsRef, (snap) => {
