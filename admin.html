@@ -1695,6 +1695,9 @@
           .filter(o => o.status !== '已取消')
           .reduce((s, o) => s + (o.total || o.orderTotal || 0), 0);
         const modelText = m.device || m.model || '';
+        const _sColor = {'黑名單':'text-neonred border-neonred/40','停用':'text-gray-500 border-gray-500/40','觀察':'text-yellow-400 border-yellow-400/40'}[m.status] || 'text-green-400 border-green-400/40';
+        const statusBadge = m.status ? `<span class="text-[9px] font-bold tracking-widest border px-1.5 py-0.5 rounded ${_sColor}">${m.status}</span>` : '';
+        const tagsHtml = m.tags ? m.tags.split(',').map(t=>t.trim()).filter(Boolean).map(t=>`<span class="text-[9px] bg-slate-800 text-gray-400 px-1.5 py-0.5 rounded tracking-widest">${t}</span>`).join('') : '';
         return `
         <div class="bg-panelbg border border-slate-700 tech-clip p-4 hover:border-neoncyan transition cursor-pointer"
           onclick="showMemberDetail('${m.id || m.phone}')">
@@ -1706,11 +1709,13 @@
               <div class="flex flex-wrap items-center gap-2">
                 <p class="text-white text-lg font-bold truncate">${m.name || '-'}</p>
                 ${m.gender ? `<span class="text-[10px] uppercase tracking-widest text-gray-400">${m.gender}</span>` : ''}
+                ${statusBadge}
               </div>
               <div class="flex flex-wrap gap-3 items-center text-xs">
                 <span class="text-neoncyan font-tech">${m.phone || '-'}</span>
                 ${m.email ? `<span class="text-gray-400">${m.email}</span>` : ''}
               </div>
+              ${tagsHtml ? `<div class="flex flex-wrap gap-1">${tagsHtml}</div>` : ''}
               <div class="grid grid-cols-2 gap-3 text-[10px] text-gray-500">
                 ${m.birthday ? `<span>生日：<span class="text-gray-300">${m.birthday}</span></span>` : ''}
                 ${modelText ? `<span>型號：<span class="text-gray-300">${modelText}</span></span>` : ''}
