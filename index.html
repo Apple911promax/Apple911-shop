@@ -451,7 +451,6 @@
     let sidebarOpenBrandId=null;
     function _getFrontCats(){return categories.length>0?categories:[{id:1,name:'手機殼',brands:[{id:101,name:'Apple',series:[{id:1001,name:'iPhone 16系列'},{id:1002,name:'iPhone 15系列'}]}]},{id:2,name:'維修服務',brands:[]},{id:3,name:'保護貼',brands:[]}];}
     function _prodCard(p){const imgHtml=p.image?`<img src="${p.image}" class="h-20 w-full object-contain mb-3">`:`<div class="h-24 flex items-center justify-center text-4xl text-slate-600 mb-3 group-hover:text-neoncyan transition"><i class="fa-solid ${p.img||'fa-box'}"></i></div>`;return`<div class="bg-darkbg border border-slate-800 p-4 tech-clip flex flex-col text-center hover:border-neoncyan transition group">${imgHtml}<h4 class="text-xs font-bold text-white mb-2 line-clamp-1">${p.name}</h4><div class="text-goldlight font-tech text-sm mb-4">${p.price===0?(p.tag||'現場報價'):'NT$ '+p.price}</div><div class="flex gap-2 mt-auto"><button onclick="openProdModal(${p.id})" class="flex-1 py-3 bg-slate-800 text-neoncyan text-[10px] font-bold rounded hover:bg-slate-700 hover:text-white transition uppercase tracking-widest">商品資訊</button><button onclick="addToCart(${p.id})" class="flex-1 py-3 bg-neoncyan text-black text-[10px] font-bold rounded hover:bg-white transition uppercase tracking-widest">加入購物車</button></div></div>`;}
-    function navToFront(id){/* ... */}
     function navFrontBack(){if(frontPath.length>=3){applyFilter(frontPath[0].name);}else{frontPath=[];showSection('home');}}
     function renderFrontDrill(){/* ... */}
     function applyFilter(cat){
@@ -910,8 +909,7 @@
       if(!container)return;
       container.innerHTML='<div class="text-center py-10 text-gray-500 text-xs tracking-widest">目前尚無優惠券</div>';
     }
-    function toggleCoupons(){/* ... */}
-    function openPaymentInfo(){/* ... */}
+
     function openTerms(type){
       const data={
         payment:{
