@@ -804,12 +804,12 @@
       } else {
         const sentTo = coupon.sentTo || [];
         listEl.innerHTML = members.map(m => {
-          const alreadySent = sentTo.includes(m.id || m.phone);
+          const alreadySent = sentTo.includes(m.uid) || (m.phone && sentTo.includes(m.phone)) || (m.email && sentTo.includes(m.email));
           const name = (m.name || '-').replace(/</g, '&lt;');
           const phone = (m.phone || '').replace(/</g, '&lt;');
           const email = (m.email || '').replace(/</g, '&lt;');
           return `<label class="flex items-center gap-3 px-4 py-3 transition send-member-row ${alreadySent ? 'opacity-50 cursor-default' : 'hover:bg-white/5 cursor-pointer'}" data-name="${name.toLowerCase()}" data-phone="${phone}" data-email="${email.toLowerCase()}">
-            <input type="checkbox" class="send-member-cb accent-neoncyan" value="${m.id || m.phone}" ${alreadySent ? 'disabled' : ''} onchange="updateSendStats()">
+            <input type="checkbox" class="send-member-cb accent-neoncyan" value="${m.uid}" ${alreadySent ? 'disabled' : ''} onchange="updateSendStats()">
             <div class="flex-1 min-w-0">
               <p class="text-sm font-bold text-white truncate">${name}</p>
               <p class="text-[10px] text-gray-500">${phone}${email ? ' · '+email : ''}</p>
@@ -862,7 +862,14 @@
       if (!coupon) return;
       const existing = coupon.sentTo || [];
       const checkedAll = [...document.querySelectorAll('.send-member-cb:checked:not([disabled])')].map(cb => cb.value);
-      const willSend = checkedAll.filter(v => !existing.includes(v));
+      const _mCache = window._membersCache || [];
+      const willSend = checkedAll.filter(uid => {
+        const m = _mCache.find(x => x.uid === uid);
+        if (!m) return !existing.includes(uid);
+        return !existing.includes(m.uid) &&
+               !(m.phone && existing.includes(m.phone)) &&
+               !(m.email && existing.includes(m.email));
+      });
       const willSkip = checkedAll.length - willSend.length;
       if (willSend.length === 0 && willSkip === 0) { showToast('請至少選擇一位會員'); return; }
       if (willSend.length === 0) { showToast(`已全部領取，無可發送的會員`); return; }

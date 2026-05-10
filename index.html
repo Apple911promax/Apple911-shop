@@ -625,6 +625,14 @@
       if(coupon.expiry && Date.now()>coupon.expiry){ showToast('此優惠碼已過期'); return; }
       if(coupon.usageLimit>0 && (coupon.usedCount||0)>=coupon.usageLimit){ showToast('此優惠碼已達使用上限'); return; }
       if(coupon.minOrder>0 && subtotal<coupon.minOrder){ showToast(`須消費滿 NT$${coupon.minOrder} 才可使用`); return; }
+      if(coupon.sentTo&&coupon.sentTo.length>0){
+        const _uid=window._fbCurrentUser?.uid;
+        const _phone=window._memberProfile?.phone||'';
+        const _email=window._memberProfile?.email||window._fbCurrentUser?.email||'';
+        if(!_uid){showToast('此優惠券需要登入才能使用');return;}
+        const _ok=coupon.sentTo.includes(_uid)||(_phone&&coupon.sentTo.includes(_phone))||(_email&&coupon.sentTo.includes(_email));
+        if(!_ok){showToast('此優惠券不適用於此會員');return;}
+      }
       appliedCoupon=coupon;
       showToast('優惠碼套用成功');
       updateCheckoutTotal();
@@ -980,7 +988,34 @@
     function renderCoupons(){
       const container=document.getElementById('coupons-container');
       if(!container)return;
-      container.innerHTML='<div class="text-center py-10 text-gray-500 text-xs tracking-widest">目前尚無優惠券</div>';
+      const uid=window._fbCurrentUser?.uid;
+      const phone=window._memberProfile?.phone||'';
+      const email=window._memberProfile?.email||window._fbCurrentUser?.email||'';
+      if(!uid){container.innerHTML='<div class="text-center py-10 text-gray-500 text-xs tracking-widest">請先登入以查看優惠券</div>';return;}
+      const myCoupons=coupons.filter(c=>{
+        const st=c.sentTo;
+        if(!st||st.length===0)return false;
+        return st.includes(uid)||(phone&&st.includes(phone))||(email&&st.includes(email));
+      });
+      if(myCoupons.length===0){container.innerHTML='<div class="text-center py-10 text-gray-500 text-xs tracking-widest">目前尚無優惠券</div>';return;}
+      container.innerHTML=myCoupons.map(c=>{
+        const expired=c.expiry&&Date.now()>c.expiry;
+        const typeLabel=c.type==='percent'?`折扣 ${c.value}%`:`折抵 NT$${c.value}`;
+        const expiryLabel=c.expiry?new Date(c.expiry).toLocaleDateString('zh-TW'):'永久有效';
+        const statusText=!c.active?'已停用':expired?'已過期':'可使用';
+        const statusColor=!c.active?'text-gray-500':expired?'text-neonred':'text-neoncyan';
+        return `<div class="bg-darkbg border border-slate-700 p-4 rounded space-y-2${expired||!c.active?' opacity-50':''}">
+          <div class="flex items-center justify-between">
+            <span class="font-tech font-bold text-neoncyan tracking-widest text-sm">${c.code}</span>
+            <span class="text-[10px] font-bold ${statusColor}">${statusText}</span>
+          </div>
+          <p class="text-sm text-white font-bold">${typeLabel}</p>
+          <div class="text-[10px] text-gray-500 space-y-0.5">
+            ${c.minOrder>0?`<p>最低消費 NT$${c.minOrder}</p>`:''}
+            <p>到期日：${expiryLabel}</p>
+          </div>
+        </div>`;
+      }).join('');
     }
     function applySettings(s){
       siteSettings=s||{};
