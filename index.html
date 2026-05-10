@@ -678,12 +678,10 @@
         time: Date.now()
       };
       // 存進 Firebase
-      console.log('[ORDER DEBUG] order object:', newOrder);
       if(window._fbAddOrder){
-        console.log('[ORDER DEBUG] calling _fbAddOrder');
-        window._fbAddOrder(newOrder).catch((e)=>{ console.error('[ORDER DEBUG] _fbAddOrder rejected:', e); });
+        window._fbAddOrder(newOrder).catch(()=>{});
       } else {
-        console.warn('[ORDER DEBUG] window._fbAddOrder is not defined yet');
+        console.warn('_fbAddOrder 尚未載入');
       }
       // 存進本地 orders
       orders.unshift(newOrder);
@@ -755,7 +753,7 @@
         window._fbGetOrders().then(list=>{
           if(list&&list.length>0){ orders=list; _doRender(list); }
           else if(orders.length===0){ _doRender([]); }
-        }).catch(e=>{ console.error('[ORDER DEBUG] _fbGetOrders error:', e.code, e.message); if(orders.length===0) _doRender([]); });
+        }).catch(e=>{ console.error('_fbGetOrders error:', e.code, e.message); if(orders.length===0) _doRender([]); });
       }
     }
     function switchMemberTab(tab){document.getElementById('member-tab-orders').classList.add('hidden');document.getElementById('member-tab-profile').classList.add('hidden');document.getElementById('member-tab-coupons').classList.add('hidden');document.getElementById('tab-btn-orders').classList.remove('member-tab-active');document.getElementById('tab-btn-profile').classList.remove('member-tab-active');document.getElementById('tab-btn-coupons').classList.remove('member-tab-active');document.getElementById('member-tab-'+tab).classList.remove('hidden');document.getElementById('tab-btn-'+tab).classList.add('member-tab-active');if(tab==='profile')loadProfile();if(tab==='orders'||tab==='profile'){if(window._fbGetOrders){window._fbGetOrders().then(list=>{orders=list;if(tab==='orders')renderOrders();if(tab==='profile')renderProfileRecentOrders();});}else{if(tab==='orders')renderOrders();if(tab==='profile')renderProfileRecentOrders();}}if(tab==='coupons')renderCoupons();}
@@ -1221,12 +1219,10 @@ window._fbGoogleLogin = async function() {
 };
 window.logout = async function() { try { await signOut(_fbAuth); } catch(e) {} isLoggedIn=false; window._memberProfile=null; window._fbCurrentUser=null; const dot=document.getElementById('user-status-dot'); if(dot)dot.classList.replace('bg-neoncyan','bg-slate-600'); if(typeof showSection==='function')showSection('home'); };
 window._fbAddOrder = async function(newOrder) {
-  console.log('[ORDER DEBUG] Firebase write start, id:', newOrder.id);
   try {
     await setDoc(doc(_fbDb, 'orders', newOrder.id), newOrder);
-    console.log('[ORDER DEBUG] Firebase write success, id:', newOrder.id);
   } catch(e) {
-    console.error('[ORDER DEBUG] Firebase write failed:', e.code, e.message);
+    console.error('Firebase 訂單寫入失敗:', e.code, e.message);
   }
 };
 window._fbGetOrders = async function() {
@@ -1236,10 +1232,7 @@ window._fbGetOrders = async function() {
     const snap = await getDocs(q);
     const list = []; snap.forEach(doc => list.push(doc.data())); return list;
   } catch(e) {
-    console.error('[ORDER DEBUG] _fbGetOrders failed:', e.code, e.message);
-    if(e.code==='failed-precondition'){
-      console.warn('[ORDER DEBUG] Firestore 缺少複合索引，請至 Firebase Console 建立 orders collection 的 (userId ASC, time DESC) 索引，或點擊上方錯誤訊息中的連結');
-    }
+    console.error('_fbGetOrders 失敗:', e.code, e.message);
     return [];
   }
 };
