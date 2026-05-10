@@ -431,6 +431,17 @@
     </div>
   </div>
 
+  <!-- 優惠券發送紀錄 Modal -->
+  <div id="coupon-logs-modal" class="hidden fixed inset-0 bg-black/80 z-[200] flex items-center justify-center p-6">
+    <div class="bg-panelbg border border-slate-600 tech-clip w-full max-w-sm shadow-[0_0_20px_rgba(0,0,0,0.5)] flex flex-col" style="max-height:75vh">
+      <div class="p-4 border-b border-slate-700 flex items-center justify-between shrink-0">
+        <p class="text-sm font-bold text-white tracking-wide"><i class="fa-solid fa-clock-rotate-left text-gray-400 mr-2"></i>發送紀錄 — <span id="coupon-logs-title" class="text-neoncyan font-tech"></span></p>
+        <button onclick="closeCouponLogsModal()" class="text-gray-500 hover:text-white transition"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+      <div id="coupon-logs-body" class="flex-1 overflow-y-auto p-4 custom-scrollbar"></div>
+    </div>
+  </div>
+
   <!-- 優惠券發送 Modal -->
   <div id="coupon-send-modal" class="hidden fixed inset-0 bg-black/80 z-[200] flex items-center justify-center p-6">
     <div class="bg-panelbg border border-neoncyan/50 tech-clip w-full max-w-sm shadow-[0_0_30px_rgba(0,243,255,0.15)] flex flex-col" style="max-height:80vh">
@@ -709,6 +720,7 @@
         const expired = c.expiry && Date.now() > c.expiry;
         const statusClass = !c.active ? 'text-gray-600' : expired ? 'text-neonred' : 'text-neoncyan';
         const sendBtn = `<button onclick="openSendCouponModal('${c.id}')" class="px-3 py-1 text-[10px] font-bold tech-btn bg-purple-500/10 text-purple-400 hover:bg-purple-500 hover:text-white transition">發送</button>`;
+        const logBtn = `<button onclick="openCouponLogsModal('${c.id}')" class="px-3 py-1 text-[10px] font-bold tech-btn bg-slate-700 text-gray-400 hover:bg-slate-600 hover:text-white transition">紀錄</button>`;
         const toggleBtn = `<button onclick="toggleCoupon('${c.id}')" class="px-3 py-1 text-[10px] font-bold tech-btn transition ${c.active ? 'bg-slate-700 text-gray-300 hover:bg-slate-600' : 'bg-neoncyan/10 text-neoncyan hover:bg-neoncyan hover:text-black'}">${c.active ? '停用' : '啟用'}</button>`;
         const delBtn = `<button onclick="deleteCoupon('${c.id}')" class="px-3 py-1 text-[10px] font-bold tech-btn bg-neonred/10 text-neonred hover:bg-neonred hover:text-black transition">刪除</button>`;
         return { c, typeLabel, expiryLabel, limitLabel, expired, statusClass, sendBtn, toggleBtn, delBtn };
@@ -727,7 +739,7 @@
               <span class="text-xs text-gray-400">${c.minOrder > 0 ? 'NT$'+c.minOrder : '無'}</span>
               <span class="text-xs ${expired ? 'text-neonred' : 'text-gray-400'}">${expiryLabel}</span>
               <span class="text-xs text-gray-400">${limitLabel}</span>
-              <div class="flex justify-end gap-2">${sendBtn}${toggleBtn}${delBtn}</div>
+              <div class="flex justify-end gap-2">${sendBtn}${logBtn}${toggleBtn}${delBtn}</div>
             </div>`
           ).join('')}
         </div>
@@ -744,7 +756,7 @@
                 <span>到期 <span class="${expired ? 'text-neonred' : ''}">${expiryLabel}</span></span>
                 <span>使用 ${limitLabel}</span>
               </div>
-              <div class="flex gap-2 justify-end pt-1">${sendBtn}${toggleBtn}${delBtn}</div>
+              <div class="flex gap-2 justify-end pt-1">${sendBtn}${logBtn}${toggleBtn}${delBtn}</div>
             </div>`
           ).join('')}
         </div>
@@ -895,6 +907,7 @@
         return { ...c, sentTo: merged };
       });
       if (window._fbSaveCoupons) window._fbSaveCoupons(_couponsCache);
+      if (window._fbSaveCouponLog) window._fbSaveCouponLog({ couponId: coupon.id, couponCode: coupon.code, sentTo: willSend, sentCount: willSend.length, sentAt: Date.now() });
       closeSendCouponModal();
       const msg = willSkip > 0
         ? `成功發送 ${willSend.length} 位，跳過 ${willSkip} 位已領取會員`
@@ -902,6 +915,39 @@
       showToast(msg);
       renderCoupons();
     }
+
+    async function openCouponLogsModal(couponId) {
+      const coupon = _couponsCache.find(c => c.id === couponId);
+      if (!coupon) return;
+      const modal = document.getElementById('coupon-logs-modal');
+      const title = document.getElementById('coupon-logs-title');
+      const body = document.getElementById('coupon-logs-body');
+      if (!modal) return;
+      title.textContent = coupon.code;
+      body.innerHTML = '<div class="text-center py-6 text-gray-500 text-xs tracking-widest">載入中...</div>';
+      modal.classList.replace('hidden', 'flex');
+      const logs = window._fbGetCouponLogs ? await window._fbGetCouponLogs(couponId) : [];
+      if (!logs || logs.length === 0) {
+        body.innerHTML = '<div class="text-center py-6 text-gray-500 text-xs tracking-widest">尚無發送紀錄</div>';
+        return;
+      }
+      const mCache = window._membersCache || [];
+      body.innerHTML = logs.map(l => {
+        const dateStr = new Date(l.sentAt).toLocaleString('zh-TW');
+        const names = (l.sentTo || []).map(uid => {
+          const m = mCache.find(x => x.uid === uid);
+          return m ? (m.name || m.phone || uid) : uid;
+        });
+        return `<div class="border-b border-slate-800 last:border-0 py-3 space-y-1">
+          <div class="flex justify-between items-center">
+            <span class="text-xs font-bold text-neoncyan">發送 ${l.sentCount} 位</span>
+            <span class="text-[10px] text-gray-500">${dateStr}</span>
+          </div>
+          <p class="text-[10px] text-gray-400 leading-relaxed">${names.join('、') || '-'}</p>
+        </div>`;
+      }).join('');
+    }
+    function closeCouponLogsModal() { document.getElementById('coupon-logs-modal')?.classList.replace('flex', 'hidden'); }
 
     // ════════════════════════════════════════════════════════════
     // 系統設定
@@ -2564,6 +2610,24 @@ onSnapshot(_fbCouponsRef, (snap) => {
   }
   console.log('[Firebase] 後台優惠券即時同步，共', _couponsCache.length, '筆');
 }, (e) => { console.error('[Firebase] 後台優惠券監聽失敗:', e.message); });
+
+const _fbCouponLogsRef = doc(_fbDb, 'store', 'couponLogs');
+window._fbSaveCouponLog = async function(log) {
+  try {
+    const snap = await getDoc(_fbCouponLogsRef);
+    const list = snap.exists() ? (snap.data().list || []) : [];
+    list.unshift(log);
+    await setDoc(_fbCouponLogsRef, { list, updatedAt: Date.now() });
+  } catch(e) { console.error('[Firebase] 發送紀錄寫入失敗:', e.message); }
+};
+window._fbGetCouponLogs = async function(couponId) {
+  try {
+    const snap = await getDoc(_fbCouponLogsRef);
+    if (!snap.exists()) return [];
+    const list = snap.data().list || [];
+    return couponId ? list.filter(l => l.couponId === couponId) : list;
+  } catch(e) { console.error('[Firebase] 發送紀錄讀取失敗:', e.message); return []; }
+};
 
 console.log('[Firebase] 後台監聽已啟動');
 </script>
