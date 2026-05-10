@@ -298,7 +298,10 @@
             <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
               <div>
                 <p class="text-[10px] text-gray-600 uppercase tracking-widest font-bold mb-1">折扣碼</p>
-                <input id="cp-code" type="text" placeholder="SUMMER2026" class="bg-darkbg border border-slate-600 text-white p-2 tech-clip text-sm focus:border-neoncyan transition w-full" style="text-transform:uppercase">
+                <div class="flex gap-2">
+                  <input id="cp-code" type="text" placeholder="SUMMER2026" class="bg-darkbg border border-slate-600 text-white p-2 tech-clip text-sm focus:border-neoncyan transition flex-1 min-w-0" style="text-transform:uppercase">
+                  <button onclick="generateCouponCode()" class="px-3 py-2 bg-slate-700 text-gray-300 font-bold tech-btn text-xs hover:bg-neoncyan hover:text-black transition shrink-0">自動生成</button>
+                </div>
               </div>
               <div>
                 <p class="text-[10px] text-gray-600 uppercase tracking-widest font-bold mb-1">類型</p>
@@ -730,6 +733,21 @@
           </div>`;
         }).join('')}
       </div>`;
+    }
+
+    function generateCouponCode() {
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+      const existing = new Set(_couponsCache.map(c => c.code));
+      for (let i = 0; i < 20; i++) {
+        let suffix = '';
+        for (let j = 0; j < 6; j++) suffix += chars[Math.floor(Math.random() * chars.length)];
+        const code = 'A911-' + suffix;
+        if (!existing.has(code)) {
+          document.getElementById('cp-code').value = code;
+          return;
+        }
+      }
+      showToast('產生失敗，請再試一次');
     }
 
     function addCoupon() {
