@@ -482,9 +482,9 @@
     }
     function openProdModal(id){const p=_getLatestProducts().find(p=>p.id==id);if(!p)return;const imgEl=document.getElementById('prod-modal-img');imgEl.innerHTML=p.image?`<img src="${p.image}" class="max-h-48 object-contain rounded">`:`<div class="h-32 flex items-center justify-center text-6xl text-slate-600"><i class="fa-solid ${p.img||'fa-box'}"></i></div>`;document.getElementById('prod-modal-name').innerText=p.name||'';document.getElementById('prod-modal-price').innerText=p.price===0?(p.tag||'現場報價'):'NT$ '+p.price;const descEl=document.getElementById('prod-modal-desc');descEl.innerText=(p.description&&p.description.trim())?p.description.trim():'';document.getElementById('prod-modal-add-btn').onclick=()=>{addToCart(id);};const modal=document.getElementById('prod-modal');modal.classList.remove('hidden');modal.classList.add('flex');}
     function closeProdModal(){const modal=document.getElementById('prod-modal');modal.classList.add('hidden');modal.classList.remove('flex');}
-    function addToCart(id){const p=_getLatestProducts().find(p=>p.id==id);if(p)cart.push(p);renderCart();showToast('已加入購物車');}
-    function removeFromCart(index){cart.splice(index,1);renderCart();}
-    function renderCart(){const countBadge=document.getElementById('cart-count'),cartContainer=document.getElementById('cart-items'),totalEl=document.getElementById('cart-total');countBadge.innerText=cart.length;if(cart.length>0)countBadge.classList.remove('scale-0');else countBadge.classList.add('scale-0');if(cart.length===0){cartContainer.innerHTML='<div class="flex h-full items-center justify-center text-gray-500 font-bold tracking-widest uppercase">EMPTY</div>';totalEl.innerText='NT$ 0';return;}let total=0;cartContainer.innerHTML=cart.map((item,index)=>{total+=item.price;return`<div class="bg-darkbg p-4 border border-slate-700 flex justify-between items-center rounded tech-clip"><div class="text-left"><div class="text-white text-sm font-bold">${item.name}</div><div class="text-goldlight font-tech text-sm">NT$ ${item.price}</div></div><button onclick="removeFromCart(${index})" class="text-slate-500 hover:text-neonred p-2 transition text-lg"><i class="fa-solid fa-trash-can"></i></button></div>`}).join('');totalEl.innerText='NT$ '+total;}
+    function addToCart(id){const p=_getLatestProducts().find(p=>p.id==id);if(!p)return;const exist=cart.find(c=>c.id==id);if(exist){exist.qty++;}else{cart.push({...p,qty:1});}renderCart();showToast('已加入購物車');}
+    function removeFromCart(index){if(cart[index].qty>1){cart[index].qty--;}else{cart.splice(index,1);}renderCart();}
+    function renderCart(){const countBadge=document.getElementById('cart-count'),cartContainer=document.getElementById('cart-items'),totalEl=document.getElementById('cart-total');const totalQty=cart.reduce((s,i)=>s+i.qty,0);countBadge.innerText=totalQty;if(totalQty>0)countBadge.classList.remove('scale-0');else countBadge.classList.add('scale-0');if(cart.length===0){cartContainer.innerHTML='<div class="flex h-full items-center justify-center text-gray-500 font-bold tracking-widest uppercase">EMPTY</div>';totalEl.innerText='NT$ 0';return;}let total=0;cartContainer.innerHTML=cart.map((item,index)=>{const lineTotal=item.price*item.qty;total+=lineTotal;return`<div class="bg-darkbg p-4 border border-slate-700 flex justify-between items-center rounded tech-clip"><div class="text-left"><div class="text-white text-sm font-bold">${item.name}${item.qty>1?` ×${item.qty}`:''}</div><div class="text-goldlight font-tech text-sm">NT$ ${lineTotal}</div></div><button onclick="removeFromCart(${index})" class="text-slate-500 hover:text-neonred p-2 transition text-lg"><i class="fa-solid fa-trash-can"></i></button></div>`}).join('');totalEl.innerText='NT$ '+total;}
     function checkout(){
       if(cart.length===0)return showToast('購物車為空');
       if(!isLoggedIn){showToast('請先登入');document.getElementById('auth-modal').classList.replace('hidden','flex');return;}
@@ -493,7 +493,7 @@
       // 購物清單
       const container=document.getElementById('checkout-cart-items');
       if(container){
-        container.innerHTML=cart.map(i=>`<div class="flex justify-between items-center text-sm"><span class="text-white">${i.name}</span><span class="text-goldlight font-tech">NT$ ${i.price}</span></div>`).join('');
+        container.innerHTML=cart.map(i=>`<div class="flex justify-between items-center text-sm"><span class="text-white">${i.name}${i.qty>1?` ×${i.qty}`:''}</span><span class="text-goldlight font-tech">NT$ ${i.price*i.qty}</span></div>`).join('');
       }
       // 重置取貨卡片 & 欄位狀態
       currentShipping='';
@@ -557,7 +557,7 @@
     }
     /* 更新結帳頁小計 / 運費 / 總計 */
     function updateCheckoutTotal(){
-      const subtotal = cart.reduce((s,i)=>s+(i.price||0),0);
+      const subtotal = cart.reduce((s,i)=>s+(i.price||0)*i.qty,0);
       const fee = calcShippingFee(currentShipping, subtotal);
       const total = subtotal + fee;
       const subEl=document.getElementById('checkout-subtotal');
@@ -608,7 +608,7 @@
       const hintBox=document.getElementById('shipping-fee-hint');
       const hintText=document.getElementById('shipping-fee-hint-text');
       if(hintBox && hintText){
-        const subtotal=cart.reduce((s,i)=>s+(i.price||0),0);
+        const subtotal=cart.reduce((s,i)=>s+(i.price||0)*i.qty,0);
         const fee=calcShippingFee(method,subtotal);
         if(method==='store'){
           hintText.textContent='到店自取免運費';
@@ -685,7 +685,7 @@
         return;
       }
       if(!validateCheckoutFields()) return;
-      const subtotal=cart.reduce((s,i)=>s+(i.price||0),0);
+      const subtotal=cart.reduce((s,i)=>s+(i.price||0)*i.qty,0);
       const shippingFee=calcShippingFee(currentShipping,subtotal);
       const orderTotal=subtotal+shippingFee;
       const paymentMethod=document.getElementById('pay-method')?.value||'';
@@ -722,7 +722,7 @@
       const newOrder={
         id: orderId,
         userId: window._fbCurrentUser?.uid||'guest',
-        items: cart.map(i=>({id:i.id,name:i.name,price:i.price})),
+        items: cart.map(i=>({id:i.id,name:i.name,price:i.price,qty:i.qty})),
         subtotal,
         shippingFee,
         orderTotal,
