@@ -452,7 +452,7 @@
     function _getFrontCats(){return categories.length>0?categories:[{id:1,name:'手機殼',brands:[{id:101,name:'Apple',series:[{id:1001,name:'iPhone 16系列'},{id:1002,name:'iPhone 15系列'}]}]},{id:2,name:'維修服務',brands:[]},{id:3,name:'保護貼',brands:[]}];}
     function _prodCard(p){const imgHtml=p.image?`<img src="${p.image}" class="h-20 w-full object-contain mb-3">`:`<div class="h-24 flex items-center justify-center text-4xl text-slate-600 mb-3 group-hover:text-neoncyan transition"><i class="fa-solid ${p.img||'fa-box'}"></i></div>`;return`<div class="bg-darkbg border border-slate-800 p-4 tech-clip flex flex-col text-center hover:border-neoncyan transition group">${imgHtml}<h4 class="text-xs font-bold text-white mb-2 line-clamp-1">${p.name}</h4><div class="text-goldlight font-tech text-sm mb-4">${p.price===0?(p.tag||'現場報價'):'NT$ '+p.price}</div><div class="flex gap-2 mt-auto"><button onclick="openProdModal(${p.id})" class="flex-1 py-3 bg-slate-800 text-neoncyan text-[10px] font-bold rounded hover:bg-slate-700 hover:text-white transition uppercase tracking-widest">商品資訊</button><button onclick="addToCart(${p.id})" class="flex-1 py-3 bg-neoncyan text-black text-[10px] font-bold rounded hover:bg-white transition uppercase tracking-widest">加入購物車</button></div></div>`;}
     function navToFront(id){/* ... */}
-    function navFrontBack(){/* ... */}
+    function navFrontBack(){if(frontPath.length>=3){applyFilter(frontPath[0].name);}else{frontPath=[];showSection('home');}}
     function renderFrontDrill(){/* ... */}
     function applyFilter(cat){
       sidebarOpenItemId=null;
@@ -679,7 +679,7 @@
       }
       return true;
     }
-    function submitOrder(){
+    async function submitOrder(){
       if(!document.getElementById('agree-terms').checked){
         showToast('請先閱讀並同意購物與服務條款');
         return;
@@ -733,9 +733,13 @@
         status: paymentMethod==='onsite'?'待取貨':'未付款',
         time: Date.now()
       };
-      // 存進 Firebase
+      // 存進 Firebase（先寫入，失敗則中止）
       if(window._fbAddOrder){
-        window._fbAddOrder(newOrder).catch(()=>{});
+        const btn=document.getElementById('submit-order-btn');
+        if(btn)btn.disabled=true;
+        try{ await window._fbAddOrder(newOrder); }
+        catch(e){ showToast('訂單送出失敗，請重試'); if(btn)btn.disabled=false; return; }
+        if(btn)btn.disabled=false;
       } else {
         console.warn('_fbAddOrder 尚未載入');
       }
@@ -1247,7 +1251,8 @@
       if(!ok){showToast('請填寫完整資料');return;}
       if(window._fbRegister){window._fbRegister();}else{simLogin('註冊成功');}
     }
-    function logout(){isLoggedIn=false;window._memberProfile=null;document.getElementById('user-status-dot').classList.replace('bg-neoncyan','bg-slate-600');showSection('home');}
+    function _logoutUI(){isLoggedIn=false;window._memberProfile=null;document.getElementById('user-status-dot').classList.replace('bg-neoncyan','bg-slate-600');showSection('home');}
+    function logout(){_logoutUI();}
     function toggleSubmenu(id){document.getElementById(id).classList.toggle('open');}
     function toggleFab(){const m=document.getElementById('fab-menu'),i=document.getElementById('fab-icon');m.classList.toggle('open');if(m.classList.contains('open')){i.classList.replace('fa-headset','fa-xmark');i.parentElement.classList.remove('animate-pulse');}else{i.classList.replace('fa-xmark','fa-headset');i.parentElement.classList.add('animate-pulse');}}
     function updateBirthDays(){const y=parseInt(document.getElementById('profile-birth-year').value)||0;const m=parseInt(document.getElementById('profile-birth-month').value)||0;const dEl=document.getElementById('profile-birth-day');if(!dEl)return;const prev=dEl.value;const days=y&&m?new Date(y,m,0).getDate():31;dEl.innerHTML='<option value="">日</option>';for(let i=1;i<=days;i++){const o=document.createElement('option');o.value=i;o.textContent=i;dEl.appendChild(o);}if(prev&&parseInt(prev)<=days)dEl.value=prev;}function initBirthSelects(){const currentYear=new Date().getFullYear();const yEl=document.getElementById('profile-birth-year');const mEl=document.getElementById('profile-birth-month');if(!yEl||!mEl)return;for(let y=currentYear;y>=1920;y--){const o=document.createElement('option');o.value=y;o.textContent=y;yEl.appendChild(o);}for(let m=1;m<=12;m++){const o=document.createElement('option');o.value=m;o.textContent=m;mEl.appendChild(o);}yEl.addEventListener('change',updateBirthDays);mEl.addEventListener('change',updateBirthDays);}
@@ -1295,7 +1300,7 @@ onAuthStateChanged(_fbAuth, async (user) => {
     if (typeof loadProfile === 'function') loadProfile();
   } else {
     window._fbCurrentUser = null; window._memberProfile = null;
-    if (typeof logout === 'function' && isLoggedIn) logout();
+    if (isLoggedIn && typeof _logoutUI === 'function') _logoutUI();
   }
 });
 window._fbLogin = async function() {
@@ -1374,7 +1379,7 @@ window._fbGoogleLogin = async function() {
     if (typeof loadProfile === 'function') loadProfile();
   } catch(e) { if(typeof showToast==='function') showToast('Google 登入失敗'); }
 };
-window.logout = async function() { try { await signOut(_fbAuth); } catch(e) {} isLoggedIn=false; window._memberProfile=null; window._fbCurrentUser=null; const dot=document.getElementById('user-status-dot'); if(dot)dot.classList.replace('bg-neoncyan','bg-slate-600'); if(typeof showSection==='function')showSection('home'); };
+window.logout = async function() { if(!isLoggedIn)return; try { await signOut(_fbAuth); } catch(e) {} window._fbCurrentUser=null; if(typeof _logoutUI==='function')_logoutUI(); };
 window._fbAddOrder = async function(newOrder) {
   try {
     await setDoc(doc(_fbDb, 'orders', newOrder.id), newOrder);
