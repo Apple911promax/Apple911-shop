@@ -1716,6 +1716,7 @@
                 ${m.email ? `<span class="text-gray-400">${m.email}</span>` : ''}
               </div>
               ${tagsHtml ? `<div class="flex flex-wrap gap-1">${tagsHtml}</div>` : ''}
+              ${m.adminNote ? `<p class="text-[10px] text-gray-500 leading-relaxed"><i class="fa-solid fa-note-sticky mr-1 text-gray-600"></i>${m.adminNote}</p>` : ''}
               <div class="grid grid-cols-2 gap-3 text-[10px] text-gray-500">
                 ${m.birthday ? `<span>生日：<span class="text-gray-300">${m.birthday}</span></span>` : ''}
                 ${modelText ? `<span>型號：<span class="text-gray-300">${modelText}</span></span>` : ''}
