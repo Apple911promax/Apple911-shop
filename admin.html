@@ -1803,6 +1803,47 @@
             <div><p class="text-gray-600 uppercase tracking-widest font-bold mb-1 text-[10px]">註冊時間</p><p class="text-gray-300">${(m.registeredAt || m.createdAt) ? new Date(m.registeredAt || m.createdAt).toLocaleDateString('zh-TW') : '-'}</p></div>
           </div>
         </div>
+        <div class="bg-panelbg border border-slate-700 tech-clip p-5 space-y-4">
+          <p class="text-xs font-bold text-neoncyan tracking-widest border-b border-slate-700 pb-2">管理員設定</p>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <p class="text-gray-600 uppercase tracking-widest font-bold mb-1 text-[10px]">姓名</p>
+              <input id="ma-name" type="text" class="bg-darkbg border border-slate-600 text-white p-2 tech-clip text-sm focus:border-neoncyan transition w-full">
+            </div>
+            <div>
+              <p class="text-gray-600 uppercase tracking-widest font-bold mb-1 text-[10px]">手機</p>
+              <input id="ma-phone" type="text" class="bg-darkbg border border-slate-600 text-white p-2 tech-clip text-sm focus:border-neoncyan transition w-full">
+            </div>
+            <div class="md:col-span-2">
+              <p class="text-gray-600 uppercase tracking-widest font-bold mb-1 text-[10px]">地址</p>
+              <input id="ma-address" type="text" class="bg-darkbg border border-slate-600 text-white p-2 tech-clip text-sm focus:border-neoncyan transition w-full">
+            </div>
+            <div>
+              <p class="text-gray-600 uppercase tracking-widest font-bold mb-1 text-[10px]">信箱（唯讀）</p>
+              <p class="text-gray-400 text-xs py-2">${m.email||'-'}</p>
+            </div>
+            <div>
+              <p class="text-gray-600 uppercase tracking-widest font-bold mb-1 text-[10px]">會員狀態</p>
+              <select id="ma-status" class="bg-darkbg border border-slate-600 text-white p-2 tech-clip text-sm focus:border-neoncyan transition w-full">
+                <option value="正常">正常</option>
+                <option value="觀察">觀察</option>
+                <option value="停用">停用</option>
+                <option value="黑名單">黑名單</option>
+              </select>
+            </div>
+            <div class="md:col-span-2">
+              <p class="text-gray-600 uppercase tracking-widest font-bold mb-1 text-[10px]">標籤（逗號分隔，例：常客,維修客）</p>
+              <input id="ma-tags" type="text" placeholder="常客,維修客,需注意" class="bg-darkbg border border-slate-600 text-white p-2 tech-clip text-sm focus:border-neoncyan transition w-full">
+            </div>
+            <div class="md:col-span-2">
+              <p class="text-gray-600 uppercase tracking-widest font-bold mb-1 text-[10px]">管理備註</p>
+              <textarea id="ma-note" rows="3" class="bg-darkbg border border-slate-600 text-white p-2 tech-clip text-sm focus:border-neoncyan transition w-full resize-none"></textarea>
+            </div>
+          </div>
+          <div class="flex justify-end pt-1">
+            <button onclick="saveMemberAdmin('${m.uid||''}')" class="px-6 py-2 bg-neoncyan text-black font-bold tech-btn text-xs hover:bg-white transition">儲存設定</button>
+          </div>
+        </div>
         <div class="bg-panelbg border border-slate-700 tech-clip overflow-hidden">
           <div class="px-4 py-3 border-b border-slate-700 flex items-center justify-between">
             <p class="text-xs font-bold text-neoncyan tracking-widest">訂單記錄</p>
@@ -1810,6 +1851,25 @@
           </div>
           ${ordersHtml}
         </div>`;
+      document.getElementById('ma-name').value    = m.name      || '';
+      document.getElementById('ma-phone').value   = m.phone     || '';
+      document.getElementById('ma-address').value = m.address   || '';
+      document.getElementById('ma-note').value    = m.adminNote || '';
+      document.getElementById('ma-tags').value    = m.tags      || '';
+      const maStatus = document.getElementById('ma-status');
+      if (maStatus) maStatus.value = m.status || '正常';
+    }
+
+    function saveMemberAdmin(uid) {
+      if (!uid || !window._fbUpdateMember) { showToast('無法儲存，請重新整理後再試'); return; }
+      const name      = document.getElementById('ma-name')?.value.trim()    || '';
+      const phone     = document.getElementById('ma-phone')?.value.trim()   || '';
+      const address   = document.getElementById('ma-address')?.value.trim() || '';
+      const adminNote = document.getElementById('ma-note')?.value.trim()    || '';
+      const tags      = document.getElementById('ma-tags')?.value.trim()    || '';
+      const status    = document.getElementById('ma-status')?.value         || '正常';
+      window._fbUpdateMember(uid, { name, phone, address, adminNote, tags, status, updatedAt: Date.now() });
+      showToast('會員設定已儲存');
     }
 
     function applyStatusFromDetail(orderId, memberId) {
