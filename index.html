@@ -1506,7 +1506,15 @@ window._fbGoogleLogin = async function() {
     if (typeof closeAuth === 'function') closeAuth();
     if (typeof showToast === 'function') showToast('Google 登入成功');
     if (typeof loadProfile === 'function') loadProfile();
-  } catch(e) { if(typeof showToast==='function') showToast('Google 登入失敗'); }
+  } catch(e) {
+    console.error('[Google Login]', e.code, e.message);
+    const msg = e.code==='auth/popup-blocked'?'瀏覽器封鎖彈窗，請允許後重試'
+      : e.code==='auth/popup-closed-by-user'?'視窗已關閉，請重試'
+      : e.code==='auth/unauthorized-domain'?'此網域未授權，請聯絡管理員'
+      : e.code==='auth/cancelled-popup-request'?'請重試'
+      : 'Google 登入失敗（'+( e.code||e.message)+'）';
+    if(typeof showToast==='function') showToast(msg);
+  }
 };
 window.logout = async function() { if(!isLoggedIn)return; try { await signOut(_fbAuth); } catch(e) {} window._fbCurrentUser=null; if(typeof _logoutUI==='function')_logoutUI(); };
 window._fbAddOrder = async function(newOrder) {
@@ -1570,13 +1578,13 @@ setTimeout(()=>{if(categories.length===0){categories=_getFrontCats();renderFront
 </script>
 <!-- Popup 彈窗 -->
 <div id="site-popup-modal" class="hidden fixed inset-0 bg-black/80 z-[120] flex items-center justify-center p-4 backdrop-blur-sm">
-  <div class="bg-panelbg border border-neoncyan/50 tech-clip w-full max-w-sm shadow-[0_0_30px_rgba(0,243,255,0.15)] p-6 space-y-4">
+  <div class="bg-panelbg border border-goldlight/50 tech-clip w-full max-w-sm shadow-[0_0_30px_rgba(212,175,55,0.15)] p-6 space-y-4">
     <div class="flex items-center justify-between">
-      <h3 id="site-popup-title" class="font-bold text-neoncyan tracking-widest text-sm"></h3>
+      <h3 id="site-popup-title" class="font-bold text-goldlight tracking-widest text-sm"></h3>
       <button onclick="closeSitePopup()" class="text-gray-400 hover:text-white transition"><i class="fa-solid fa-xmark text-lg"></i></button>
     </div>
     <div id="site-popup-content" class="text-sm text-gray-300 leading-relaxed whitespace-pre-line"></div>
-    <button onclick="closeSitePopup()" class="w-full py-3 bg-neoncyan text-black font-bold tech-clip text-xs hover:bg-white transition tracking-widest">了解了 OK</button>
+    <button onclick="closeSitePopup()" class="w-full py-3 bg-goldlight text-black font-bold tech-clip text-xs hover:bg-white transition tracking-widest">了解了 OK</button>
   </div>
 </div>
 </body>
