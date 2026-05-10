@@ -1415,6 +1415,7 @@ onSnapshot(_fbCatRef, (snap) => {
   if (snap.exists()) { categories = snap.data().list || []; }
   if (typeof renderFrontCategories === 'function') renderFrontCategories();
 });
+setTimeout(()=>{if(categories.length===0){categories=_getFrontCats();renderFrontCategories();}},5000);
 </script>
 </body>
 </html>
