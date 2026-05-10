@@ -680,12 +680,14 @@
       }
       return true;
     }
+    function validateCartItemsBeforeSubmit(){const validIds=new Set(products.filter(p=>p&&p.active!==false).map(p=>p.id));const before=cart.length;cart=cart.filter(item=>validIds.has(item.id));if(cart.length!==before){try{localStorage.setItem('apple911_cart',JSON.stringify(cart));}catch(e){}renderCart();showToast('部分商品已下架，已從購物車移除，請重新確認訂單');return false;}return true;}
     async function submitOrder(){
       if(!document.getElementById('agree-terms').checked){
         showToast('請先閱讀並同意購物與服務條款');
         return;
       }
       if(!validateCheckoutFields()) return;
+      if(!validateCartItemsBeforeSubmit()) return;
       const subtotal=cart.reduce((s,i)=>s+(i.price||0)*i.qty,0);
       const shippingFee=calcShippingFee(currentShipping,subtotal);
       const orderTotal=subtotal+shippingFee;
