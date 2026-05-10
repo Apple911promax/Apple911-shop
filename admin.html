@@ -716,14 +716,20 @@
       const rows = coupons.map(c => {
         const typeLabel = c.type === 'percent' ? `${c.value}%` : `NT$${c.value}`;
         const expiryLabel = c.expiry ? new Date(c.expiry).toLocaleDateString('zh-TW') : '永久';
-        const limitLabel = c.usageLimit > 0 ? `${c.usedCount||0}/${c.usageLimit}` : `${c.usedCount||0}/∞`;
+        const sentCount = (c.sentTo||[]).length;
+        const usedCount = c.usedCount||0;
+        const limitLabel = c.usageLimit > 0 ? `${usedCount}/${c.usageLimit}` : `${usedCount}/∞`;
+        const statsLabel = sentCount > 0
+          ? `<span class="text-neoncyan">用 ${usedCount}</span><span class="text-gray-600 mx-0.5">/</span><span class="text-gray-500">發 ${sentCount}</span>`
+          : `<span>${limitLabel}</span>`;
+        const statsLabelPlain = sentCount > 0 ? `用 ${usedCount} / 發 ${sentCount}` : limitLabel;
         const expired = c.expiry && Date.now() > c.expiry;
         const statusClass = !c.active ? 'text-gray-600' : expired ? 'text-neonred' : 'text-neoncyan';
         const sendBtn = `<button onclick="openSendCouponModal('${c.id}')" class="px-3 py-1 text-[10px] font-bold tech-btn bg-purple-500/10 text-purple-400 hover:bg-purple-500 hover:text-white transition">發送</button>`;
         const logBtn = `<button onclick="openCouponLogsModal('${c.id}')" class="px-3 py-1 text-[10px] font-bold tech-btn bg-slate-700 text-gray-400 hover:bg-slate-600 hover:text-white transition">紀錄</button>`;
         const toggleBtn = `<button onclick="toggleCoupon('${c.id}')" class="px-3 py-1 text-[10px] font-bold tech-btn transition ${c.active ? 'bg-slate-700 text-gray-300 hover:bg-slate-600' : 'bg-neoncyan/10 text-neoncyan hover:bg-neoncyan hover:text-black'}">${c.active ? '停用' : '啟用'}</button>`;
         const delBtn = `<button onclick="deleteCoupon('${c.id}')" class="px-3 py-1 text-[10px] font-bold tech-btn bg-neonred/10 text-neonred hover:bg-neonred hover:text-black transition">刪除</button>`;
-        return { c, typeLabel, expiryLabel, limitLabel, expired, statusClass, sendBtn, toggleBtn, delBtn };
+        return { c, typeLabel, expiryLabel, limitLabel, statsLabel, statsLabelPlain, expired, statusClass, sendBtn, logBtn, toggleBtn, delBtn };
       });
       el.innerHTML = `<div class="bg-panelbg border border-slate-700 tech-clip overflow-hidden">
         <!-- 桌面版表格 -->
@@ -731,21 +737,21 @@
           <div class="px-4 py-2 border-b border-slate-800 grid grid-cols-7 gap-2 text-[10px] font-bold text-gray-600 uppercase tracking-widest">
             <span>折扣碼</span><span>類型</span><span>折扣</span><span>最低消費</span><span>到期日</span><span>使用</span><span class="text-right">操作</span>
           </div>
-          ${rows.map(({c,typeLabel,expiryLabel,limitLabel,expired,statusClass,sendBtn,toggleBtn,delBtn}) =>
+          ${rows.map(({c,typeLabel,expiryLabel,statsLabel,expired,statusClass,sendBtn,logBtn,toggleBtn,delBtn}) =>
             `<div class="px-4 py-3 border-b border-slate-800 last:border-0 grid grid-cols-7 gap-2 items-center hover:bg-white/5 transition">
               <span class="font-tech font-bold ${statusClass} text-sm">${c.code}</span>
               <span class="text-xs text-gray-400">${c.type === 'percent' ? '百分比' : '折抵'}</span>
               <span class="text-xs font-bold text-white">${typeLabel}</span>
               <span class="text-xs text-gray-400">${c.minOrder > 0 ? 'NT$'+c.minOrder : '無'}</span>
               <span class="text-xs ${expired ? 'text-neonred' : 'text-gray-400'}">${expiryLabel}</span>
-              <span class="text-xs text-gray-400">${limitLabel}</span>
+              <span class="text-xs">${statsLabel}</span>
               <div class="flex justify-end gap-2">${sendBtn}${logBtn}${toggleBtn}${delBtn}</div>
             </div>`
           ).join('')}
         </div>
         <!-- 手機版卡片 -->
         <div class="md:hidden divide-y divide-slate-800">
-          ${rows.map(({c,typeLabel,expiryLabel,limitLabel,expired,statusClass,sendBtn,toggleBtn,delBtn}) =>
+          ${rows.map(({c,typeLabel,expiryLabel,statsLabelPlain,expired,statusClass,sendBtn,logBtn,toggleBtn,delBtn}) =>
             `<div class="p-4 space-y-2 hover:bg-white/5 transition">
               <div class="flex items-center justify-between">
                 <span class="font-tech font-bold ${statusClass} text-sm tracking-widest">${c.code}</span>
@@ -754,7 +760,7 @@
               <div class="flex flex-wrap gap-x-3 gap-y-0.5 text-[10px] text-gray-500">
                 ${c.minOrder > 0 ? `<span>最低 NT$${c.minOrder}</span>` : ''}
                 <span>到期 <span class="${expired ? 'text-neonred' : ''}">${expiryLabel}</span></span>
-                <span>使用 ${limitLabel}</span>
+                <span>${statsLabelPlain}</span>
               </div>
               <div class="flex gap-2 justify-end pt-1">${sendBtn}${logBtn}${toggleBtn}${delBtn}</div>
             </div>`
