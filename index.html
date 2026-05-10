@@ -252,6 +252,56 @@
   <footer class="bg-panelbg border-t border-slate-800 mt-auto py-10 relative z-10"><div class="text-center mb-6"><h2 class="text-xl font-black text-white tracking-widest font-esport">APPLE <span class="text-gold-gradient">911</span></h2><p class="text-neoncyan text-[10px] font-bold mt-1 tracking-widest uppercase">OFFICIAL SERVICE HUB</p></div><div class="max-w-md mx-auto grid grid-cols-2 gap-3 px-4 text-xs font-bold text-gray-400 text-center"><button onclick="openTerms('payment')" class="bg-darkbg border border-slate-800 p-4 tech-clip hover:text-neoncyan hover:border-neoncyan transition">付款資訊</button><button onclick="openTerms('shipping')" class="bg-darkbg border border-slate-800 p-4 tech-clip hover:text-neoncyan hover:border-neoncyan transition">配送取件</button><button onclick="openTerms('tracking')" class="bg-darkbg border border-slate-800 p-4 tech-clip hover:text-neoncyan hover:border-neoncyan transition">進度查詢</button><button onclick="openTerms('returns')" class="bg-darkbg border border-slate-800 p-4 tech-clip hover:text-neoncyan hover:border-neoncyan transition">退換貨政策</button><button onclick="openTerms('warranty')" class="bg-darkbg border border-slate-800 p-4 tech-clip hover:text-neoncyan hover:border-neoncyan transition">維修保固</button><button onclick="openTerms('terms')" class="bg-darkbg border border-slate-800 p-4 tech-clip hover:text-neoncyan hover:border-neoncyan transition">服務條款</button></div><div class="text-center mt-8 text-[9px] text-slate-600 tracking-widest">&copy; 2026 APPLE 911.</div></footer>
 
   <div class="fixed bottom-6 right-6 z-[70] flex flex-col items-end"><div id="fab-menu" class="fab-menu flex flex-col gap-3 mb-3 mr-1 items-center"><a href="#" class="w-10 h-10 bg-white rounded-full flex items-center justify-center text-blue-500 shadow-lg transition"><i class="fa-solid fa-location-dot text-xl"></i></a><a href="#" class="w-10 h-10 bg-[#1877F2] rounded-full flex items-center justify-center text-white shadow-lg transition"><i class="fa-brands fa-facebook-f text-xl"></i></a><a href="#" class="w-10 h-10 bg-[#06C755] rounded-full flex items-center justify-center text-white shadow-lg transition"><i class="fa-brands fa-line text-2xl"></i></a><a href="#" class="w-10 h-10 rounded-full flex items-center justify-center text-white shadow-lg transition" style="background:radial-gradient(circle at 30% 107%,#fdf497 0%,#fdf497 5%,#fd5949 45%,#d6249f 60%,#285AEB 90%);"><i class="fa-brands fa-instagram text-xl"></i></a></div><button onclick="toggleFab()" class="w-14 h-14 bg-neoncyan text-black rounded-full flex items-center justify-center shadow-lg tech-btn animate-pulse transition"><i id="fab-icon" class="fa-solid fa-headset text-2xl fab-main-icon"></i></button></div>
+  <!-- 取消訂單確認 modal -->
+  <div id="cancel-order-modal" class="fixed inset-0 bg-black/90 z-[105] hidden items-center justify-center p-4 backdrop-blur-sm">
+    <div class="bg-panelbg border-t-4 border-neonred w-full max-w-sm tech-clip shadow-[0_0_30px_rgba(255,0,60,0.2)]">
+      <div class="p-5 flex justify-between items-center border-b border-white/10">
+        <h3 class="font-bold text-neonred tracking-widest text-sm"><i class="fa-solid fa-triangle-exclamation mr-2"></i>取消訂單</h3>
+        <button onclick="document.getElementById('cancel-order-modal').classList.replace('flex','hidden')" class="text-gray-400 hover:text-white transition"><i class="fa-solid fa-xmark text-xl"></i></button>
+      </div>
+      <div class="p-6 text-sm text-gray-300">確定要取消此訂單？<span class="text-neonred font-bold">取消後無法復原。</span></div>
+      <div class="p-4 bg-darkbg border-t border-white/5 flex gap-3">
+        <button onclick="document.getElementById('cancel-order-modal').classList.replace('flex','hidden')" class="flex-1 py-3 bg-slate-800 text-gray-300 font-bold tech-clip hover:bg-slate-700 transition tracking-widest text-sm">返回</button>
+        <button id="cancel-order-confirm-btn" class="flex-1 py-3 bg-neonred text-white font-bold tech-clip hover:bg-white hover:text-black transition tracking-widest text-sm">確定取消</button>
+      </div>
+    </div>
+  </div>
+  <!-- 匯款資訊 modal -->
+  <div id="payment-info-modal" class="fixed inset-0 bg-black/90 z-[105] hidden items-center justify-center p-4 backdrop-blur-sm">
+    <div class="bg-panelbg border-t-4 border-neoncyan w-full max-w-sm tech-clip shadow-[0_0_30px_rgba(0,243,255,0.2)]">
+      <div class="p-5 flex justify-between items-center border-b border-white/10">
+        <h3 class="font-bold text-neoncyan tracking-widest text-sm"><i class="fa-solid fa-building-columns mr-2"></i>匯款資訊</h3>
+        <button onclick="document.getElementById('payment-info-modal').classList.replace('flex','hidden')" class="text-gray-400 hover:text-white transition"><i class="fa-solid fa-xmark text-xl"></i></button>
+      </div>
+      <div class="p-6 space-y-3 text-sm">
+        <div class="flex justify-between border-b border-slate-800 pb-2"><span class="text-gray-500 tracking-widest text-xs">銀行</span><span id="pinfo-bank" class="text-white font-bold"></span></div>
+        <div class="flex justify-between border-b border-slate-800 pb-2"><span class="text-gray-500 tracking-widest text-xs">帳號</span><span id="pinfo-account" class="text-neoncyan font-tech font-bold tracking-widest"></span></div>
+        <div class="flex justify-between pb-2"><span class="text-gray-500 tracking-widest text-xs">戶名</span><span id="pinfo-name" class="text-white"></span></div>
+        <p class="text-[10px] text-gray-500 pt-2 border-t border-slate-800">匯款完成後請點「回報匯款」填入帳號末 5 碼</p>
+      </div>
+      <div class="p-4 bg-darkbg border-t border-white/5">
+        <button onclick="document.getElementById('payment-info-modal').classList.replace('flex','hidden')" class="w-full py-3 bg-slate-800 text-neoncyan font-bold tech-clip hover:bg-white hover:text-black transition tracking-widest text-sm uppercase">我已了解</button>
+      </div>
+    </div>
+  </div>
+  <!-- 回報匯款 modal -->
+  <div id="report-payment-modal" class="fixed inset-0 bg-black/90 z-[105] hidden items-center justify-center p-4 backdrop-blur-sm">
+    <div class="bg-panelbg border-t-4 border-neoncyan w-full max-w-sm tech-clip shadow-[0_0_30px_rgba(0,243,255,0.2)]">
+      <div class="p-5 flex justify-between items-center border-b border-white/10">
+        <h3 class="font-bold text-neoncyan tracking-widest text-sm"><i class="fa-solid fa-paper-plane mr-2"></i>回報匯款</h3>
+        <button onclick="document.getElementById('report-payment-modal').classList.replace('flex','hidden')" class="text-gray-400 hover:text-white transition"><i class="fa-solid fa-xmark text-xl"></i></button>
+      </div>
+      <div class="p-6 space-y-4">
+        <p class="text-xs text-gray-400">請輸入您匯款帳號的末 5 碼，以便客服核對款項。</p>
+        <input id="report-last5-input" type="text" maxlength="5" inputmode="numeric" placeholder="帳號末 5 碼" class="w-full bg-darkbg border border-slate-700 text-white p-3 tech-clip text-sm outline-none focus:border-neoncyan transition tracking-widest text-center font-tech text-lg">
+        <p id="report-last5-error" class="text-neonred text-[10px] hidden">請輸入正確的 5 位數字</p>
+      </div>
+      <div class="p-4 bg-darkbg border-t border-white/5 flex gap-3">
+        <button onclick="document.getElementById('report-payment-modal').classList.replace('flex','hidden')" class="flex-1 py-3 bg-slate-800 text-gray-300 font-bold tech-clip hover:bg-slate-700 transition tracking-widest text-sm">取消</button>
+        <button id="report-payment-confirm-btn" class="flex-1 py-3 bg-neoncyan text-black font-bold tech-clip hover:bg-white transition tracking-widest text-sm">確認送出</button>
+      </div>
+    </div>
+  </div>
   <div id="terms-modal" class="fixed inset-0 bg-black/90 z-[100] hidden items-center justify-center p-4 backdrop-blur-sm" onclick="closeTerms(event)"><div class="bg-panelbg border-t-4 border-neoncyan w-full max-w-lg tech-clip flex flex-col max-h-[85vh] overflow-hidden shadow-[0_0_30px_rgba(0,243,255,0.2)]" onclick="event.stopPropagation()"><div class="p-5 flex justify-between items-center border-b border-white/10 shrink-0"><h3 id="modal-title" class="font-bold text-neoncyan tracking-widest text-lg"></h3><button onclick="closeTerms()" class="text-gray-400 hover:text-white transition"><i class="fa-solid fa-xmark text-xl"></i></button></div><div id="modal-content" class="p-6 overflow-y-auto space-y-4 text-sm text-gray-300 leading-relaxed custom-scrollbar font-sans"></div><div class="p-4 bg-darkbg border-t border-white/5 shrink-0"><button onclick="closeTerms()" class="w-full py-4 bg-slate-800 text-neoncyan font-bold tech-clip hover:bg-white hover:text-black transition tracking-widest uppercase">我已了解關閉</button></div></div></div>
   <div id="auth-modal" class="fixed inset-0 bg-black/95 z-[80] hidden items-center justify-center p-4 backdrop-blur-sm"><div class="bg-panelbg border-t-2 border-neoncyan w-full max-w-sm tech-clip overflow-hidden shadow-[0_0_30px_rgba(0,243,255,0.2)]"><div class="p-4 flex justify-between items-center border-b border-white/5"><h3 class="font-bold text-neoncyan tracking-widest font-esport text-lg flex items-center gap-2"><i class="fa-solid fa-fingerprint"></i> <span id="auth-title">SYSTEM LOGIN</span></h3><button onclick="closeAuth()" class="text-gray-400 hover:text-white transition"><i class="fa-solid fa-xmark text-xl"></i></button></div><div id="auth-view-login" class="p-6"><div class="space-y-4"><input id="login-account" type="text" placeholder="手機 或 信箱 PHONE / EMAIL" class="w-full bg-darkbg border border-slate-700 text-white p-3 tech-clip text-sm outline-none focus:border-neoncyan transition"><input id="login-password" type="password" placeholder="登入密碼 PASSWORD" class="w-full bg-darkbg border border-slate-700 text-white p-3 tech-clip text-sm outline-none focus:border-neoncyan transition"></div><button onclick="window._fbLogin?window._fbLogin():simLogin('登入成功')" class="w-full py-4 bg-neoncyan text-black font-bold tech-clip mt-6 text-sm tracking-widest shadow-[0_0_15px_rgba(0,243,255,0.2)] hover:bg-white transition">登入系統 CONNECT</button><div class="relative flex items-center my-6"><div class="flex-grow border-t border-slate-800"></div><span class="px-3 text-[10px] text-gray-500 tracking-widest uppercase">快速連線 SSO</span><div class="flex-grow border-t border-slate-800"></div></div><div class="space-y-3"><button onclick="window._fbGoogleLogin?window._fbGoogleLogin():simLogin('Google 授權成功')" class="w-full py-3 bg-darkbg border border-gray-600 text-gray-300 font-bold tech-clip flex justify-center items-center gap-2 hover:bg-white/5 transition"><i class="fa-brands fa-google text-lg"></i> GOOGLE</button><button onclick="simLogin('LINE 授權成功')" class="w-full py-3 bg-darkbg border border-[#06C755] text-[#06C755] font-bold tech-clip flex justify-center items-center gap-2 hover:bg-[#06C755]/10 transition"><i class="fa-brands fa-line text-lg"></i> LINE</button></div><div class="text-center mt-6 text-xs text-gray-500">尚未加入？ <button onclick="switchAuth('register')" class="text-neoncyan font-bold hover:underline">建立帳號 REGISTER</button></div></div><div id="auth-view-register" class="p-6 hidden overflow-y-auto max-h-[80vh] custom-scrollbar"><div class="space-y-3">
   <input id="reg-name" type="text" placeholder="真實姓名（取件核對用，請勿亂填）" class="w-full bg-darkbg border border-slate-700 text-white p-3 tech-clip text-sm outline-none focus:border-neoncyan transition">
@@ -708,37 +758,48 @@
       renderCart();
     }
     function cancelOrder(orderId){
-      if(!confirm('確定要取消此訂單？取消後無法復原。'))return;
-      if(window._fbUpdateOrder){
-        window._fbUpdateOrder(orderId,{status:'已取消'}).then(()=>{
-          showToast('訂單已取消');
-          // 同步更新記憶體
-          const o=orders.find(x=>x.id===orderId);
-          if(o) o.status='已取消';
-          renderOrders();
-        }).catch(()=>showToast('取消失敗，請稍後再試'));
-      }
+      const modal=document.getElementById('cancel-order-modal');
+      modal.classList.replace('hidden','flex');
+      document.getElementById('cancel-order-confirm-btn').onclick=function(){
+        modal.classList.replace('flex','hidden');
+        if(window._fbUpdateOrder){
+          window._fbUpdateOrder(orderId,{status:'已取消'}).then(()=>{
+            showToast('訂單已取消');
+            const o=orders.find(x=>x.id===orderId);
+            if(o) o.status='已取消';
+            renderOrders();
+          }).catch(()=>showToast('取消失敗，請稍後再試'));
+        }
+      };
     }
     function showPaymentInfo(){
-      // 匯款帳號資訊（可於後台系統設定修改）
-      const bankInfo = window._bankInfo || { bank:'玉山銀行', account:'808-0123456789012', name:'蘋果九一一有限公司' };
-      alert(`匯款資訊\n\n銀行：${bankInfo.bank}\n帳號：${bankInfo.account}\n戶名：${bankInfo.name}\n\n匯款後請點「回報匯款」填入帳號末5碼`);
+      const bankInfo=window._bankInfo||{bank:'玉山銀行',account:'808-0123456789012',name:'蘋果九一一有限公司'};
+      document.getElementById('pinfo-bank').textContent=bankInfo.bank;
+      document.getElementById('pinfo-account').textContent=bankInfo.account;
+      document.getElementById('pinfo-name').textContent=bankInfo.name;
+      document.getElementById('payment-info-modal').classList.replace('hidden','flex');
     }
     function reportPayment(orderId){
-      const last5=prompt('請輸入您匯款帳號的末5碼：');
-      if(last5===null)return; // 用戶按取消
-      if(!/^\d{5}$/.test(last5.trim())){
-        showToast('請輸入正確的5位數字');
-        return;
-      }
-      if(window._fbUpdateOrder){
-        window._fbUpdateOrder(orderId,{status:'已付款待確認',paymentLast5:last5.trim()}).then(()=>{
-          showToast('已回報匯款，待客服確認');
-          const o=orders.find(x=>x.id===orderId);
-          if(o){ o.status='已付款待確認'; o.paymentLast5=last5.trim(); }
-          renderOrders();
-        }).catch(()=>showToast('回報失敗，請稍後再試'));
-      }
+      const modal=document.getElementById('report-payment-modal');
+      const input=document.getElementById('report-last5-input');
+      const errMsg=document.getElementById('report-last5-error');
+      input.value='';
+      errMsg.classList.add('hidden');
+      modal.classList.replace('hidden','flex');
+      document.getElementById('report-payment-confirm-btn').onclick=function(){
+        const val=input.value.trim();
+        if(!/^\d{5}$/.test(val)){errMsg.classList.remove('hidden');return;}
+        errMsg.classList.add('hidden');
+        modal.classList.replace('flex','hidden');
+        if(window._fbUpdateOrder){
+          window._fbUpdateOrder(orderId,{status:'已付款待確認',paymentLast5:val}).then(()=>{
+            showToast('已回報匯款，待客服確認');
+            const o=orders.find(x=>x.id===orderId);
+            if(o){o.status='已付款待確認';o.paymentLast5=val;}
+            renderOrders();
+          }).catch(()=>showToast('回報失敗，請稍後再試'));
+        }
+      };
     }
     function renderOrders(){
       const container=document.getElementById('orders-container');
