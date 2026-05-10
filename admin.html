@@ -428,6 +428,25 @@
     </div>
   </div>
 
+  <!-- 優惠券發送 Modal -->
+  <div id="coupon-send-modal" class="hidden fixed inset-0 bg-black/80 z-[200] flex items-center justify-center p-6">
+    <div class="bg-panelbg border border-neoncyan/50 tech-clip w-full max-w-sm shadow-[0_0_30px_rgba(0,243,255,0.15)] flex flex-col" style="max-height:80vh">
+      <div class="p-4 border-b border-slate-700 flex items-center justify-between shrink-0">
+        <p class="text-sm font-bold text-white tracking-wide"><i class="fa-solid fa-paper-plane text-neoncyan mr-2"></i>發送優惠券</p>
+        <button onclick="closeSendCouponModal()" class="text-gray-500 hover:text-white transition"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="p-3 border-b border-slate-800 shrink-0 flex items-center justify-between">
+        <p id="send-coupon-code" class="text-neoncyan font-tech font-bold text-sm"></p>
+        <button onclick="toggleSelectAllMembers()" class="text-[10px] font-bold text-gray-400 hover:text-neoncyan transition tracking-widest">全選 / 取消全選</button>
+      </div>
+      <div id="send-member-list" class="overflow-y-auto flex-1 divide-y divide-slate-800"></div>
+      <div class="p-4 border-t border-slate-700 flex justify-end gap-3 shrink-0">
+        <button onclick="closeSendCouponModal()" class="px-5 py-2 bg-slate-800 text-gray-400 font-bold tech-btn text-xs hover:bg-slate-600 hover:text-white transition">取消</button>
+        <button onclick="confirmSendCoupon()" class="px-5 py-2 bg-neoncyan text-black font-bold tech-btn text-xs hover:bg-white transition">確認發送</button>
+      </div>
+    </div>
+  </div>
+
   <div id="confirm-modal" class="hidden fixed inset-0 bg-black/80 z-[200] flex items-center justify-center p-6">
     <div class="bg-panelbg border border-neoncyan/50 tech-clip w-full max-w-xs shadow-[0_0_30px_rgba(0,243,255,0.15)] p-6 space-y-5">
       <div class="flex items-center gap-3">
@@ -696,6 +715,7 @@
             <span class="col-span-1 text-xs ${expired ? 'text-neonred' : 'text-gray-400'}">${expiryLabel}</span>
             <span class="col-span-1 text-xs text-gray-400">${limitLabel}</span>
             <div class="col-span-1 flex justify-end gap-2">
+              <button onclick="openSendCouponModal('${c.id}')" class="px-3 py-1 text-[10px] font-bold tech-btn bg-purple-500/10 text-purple-400 hover:bg-purple-500 hover:text-white transition">發送</button>
               <button onclick="toggleCoupon('${c.id}')" class="px-3 py-1 text-[10px] font-bold tech-btn transition ${c.active ? 'bg-slate-700 text-gray-300 hover:bg-slate-600' : 'bg-neoncyan/10 text-neoncyan hover:bg-neoncyan hover:text-black'}">${c.active ? '停用' : '啟用'}</button>
               <button onclick="deleteCoupon('${c.id}')" class="px-3 py-1 text-[10px] font-bold tech-btn bg-neonred/10 text-neonred hover:bg-neonred hover:text-black transition">刪除</button>
             </div>
@@ -742,6 +762,60 @@
         renderCoupons();
         renderStats();
       });
+    }
+
+    let _sendCouponTargetId = null;
+    function openSendCouponModal(id) {
+      const coupon = _couponsCache.find(c => c.id === id);
+      if (!coupon) return;
+      _sendCouponTargetId = id;
+      document.getElementById('send-coupon-code').textContent = coupon.code;
+      const members = window._membersCache || [];
+      const listEl = document.getElementById('send-member-list');
+      if (members.length === 0) {
+        listEl.innerHTML = `<p class="p-6 text-center text-gray-600 text-xs tracking-widest">尚無會員資料</p>`;
+      } else {
+        const sentTo = coupon.sentTo || [];
+        listEl.innerHTML = members.map(m => {
+          const alreadySent = sentTo.includes(m.id || m.phone);
+          return `<label class="flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition cursor-pointer">
+            <input type="checkbox" class="send-member-cb accent-neoncyan" value="${m.id || m.phone}" ${alreadySent ? 'checked' : ''}>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-bold text-white truncate">${m.name || '-'}</p>
+              <p class="text-[10px] text-gray-500">${m.phone || ''} ${m.email ? '· '+m.email : ''}</p>
+            </div>
+            ${alreadySent ? '<span class="text-[9px] text-purple-400 font-bold tracking-widest shrink-0">已發送</span>' : ''}
+          </label>`;
+        }).join('');
+      }
+      document.getElementById('coupon-send-modal').classList.remove('hidden');
+    }
+
+    function closeSendCouponModal() {
+      document.getElementById('coupon-send-modal').classList.add('hidden');
+      _sendCouponTargetId = null;
+    }
+
+    function toggleSelectAllMembers() {
+      const cbs = document.querySelectorAll('.send-member-cb');
+      const allChecked = [...cbs].every(cb => cb.checked);
+      cbs.forEach(cb => cb.checked = !allChecked);
+    }
+
+    function confirmSendCoupon() {
+      if (!_sendCouponTargetId) return;
+      const checked = [...document.querySelectorAll('.send-member-cb:checked')].map(cb => cb.value);
+      if (checked.length === 0) { showToast('請至少選擇一位會員'); return; }
+      _couponsCache = _couponsCache.map(c => {
+        if (c.id !== _sendCouponTargetId) return c;
+        const existing = c.sentTo || [];
+        const merged = [...new Set([...existing, ...checked])];
+        return { ...c, sentTo: merged };
+      });
+      if (window._fbSaveCoupons) window._fbSaveCoupons(_couponsCache);
+      closeSendCouponModal();
+      showToast(`已發送給 ${checked.length} 位會員`);
+      renderCoupons();
     }
 
     // ════════════════════════════════════════════════════════════
