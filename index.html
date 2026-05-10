@@ -484,7 +484,7 @@
     function closeProdModal(){const modal=document.getElementById('prod-modal');modal.classList.add('hidden');modal.classList.remove('flex');}
     function addToCart(id){const p=_getLatestProducts().find(p=>p.id==id);if(!p)return;const exist=cart.find(c=>c.id==id);if(exist){exist.qty++;}else{cart.push({...p,qty:1});}renderCart();showToast('已加入購物車');}
     function removeFromCart(index){if(cart[index].qty>1){cart[index].qty--;}else{cart.splice(index,1);}renderCart();}
-    function renderCart(){const countBadge=document.getElementById('cart-count'),cartContainer=document.getElementById('cart-items'),totalEl=document.getElementById('cart-total');const totalQty=cart.reduce((s,i)=>s+i.qty,0);countBadge.innerText=totalQty;if(totalQty>0)countBadge.classList.remove('scale-0');else countBadge.classList.add('scale-0');if(cart.length===0){cartContainer.innerHTML='<div class="flex h-full items-center justify-center text-gray-500 font-bold tracking-widest uppercase">EMPTY</div>';totalEl.innerText='NT$ 0';return;}let total=0;cartContainer.innerHTML=cart.map((item,index)=>{const lineTotal=item.price*item.qty;total+=lineTotal;return`<div class="bg-darkbg p-4 border border-slate-700 flex justify-between items-center rounded tech-clip"><div class="text-left"><div class="text-white text-sm font-bold">${item.name}${item.qty>1?` ×${item.qty}`:''}</div><div class="text-goldlight font-tech text-sm">NT$ ${lineTotal}</div></div><button onclick="removeFromCart(${index})" class="text-slate-500 hover:text-neonred p-2 transition text-lg"><i class="fa-solid fa-trash-can"></i></button></div>`}).join('');totalEl.innerText='NT$ '+total;}
+    function renderCart(){const countBadge=document.getElementById('cart-count'),cartContainer=document.getElementById('cart-items'),totalEl=document.getElementById('cart-total');const totalQty=cart.reduce((s,i)=>s+i.qty,0);countBadge.innerText=totalQty;if(totalQty>0)countBadge.classList.remove('scale-0');else countBadge.classList.add('scale-0');if(cart.length===0){cartContainer.innerHTML='<div class="flex h-full items-center justify-center text-gray-500 font-bold tracking-widest uppercase">EMPTY</div>';totalEl.innerText='NT$ 0';return;}let total=0;cartContainer.innerHTML=cart.map((item,index)=>{const lineTotal=item.price*item.qty;total+=lineTotal;return`<div class="bg-darkbg p-4 border border-slate-700 flex justify-between items-center rounded tech-clip"><div class="text-left"><div class="text-white text-sm font-bold">${item.name}${item.qty>1?` ×${item.qty}`:''}</div><div class="text-goldlight font-tech text-sm">NT$ ${lineTotal}</div></div><button onclick="removeFromCart(${index})" class="text-slate-500 hover:text-neonred p-2 transition text-lg"><i class="fa-solid fa-trash-can"></i></button></div>`}).join('');totalEl.innerText='NT$ '+total;try{localStorage.setItem('apple911_cart',JSON.stringify(cart));}catch(e){}}
     function checkout(){
       if(cart.length===0)return showToast('購物車為空');
       if(!isLoggedIn){showToast('請先登入');document.getElementById('auth-modal').classList.replace('hidden','flex');return;}
@@ -761,6 +761,7 @@
       // 清空購物車與結帳狀態
       cart=[];
       currentShipping='';
+      try{localStorage.removeItem('apple911_cart');}catch(e){}
       renderCart();
     }
     function cancelOrder(orderId){
@@ -1267,7 +1268,7 @@
       const sphone=document.getElementById('store-phone');if(sphone&&!sphone.value)sphone.value=p.phone||'';
     }
 
-    window.onload=function(){renderCart();renderFrontCategories();initBirthSelects();initRegBirthSelects();loadProfile();if(isLoggedIn)document.getElementById('user-status-dot').classList.replace('bg-slate-600','bg-neoncyan');document.getElementById('agree-terms').addEventListener('change',function(){document.getElementById('submit-order-btn').disabled=!this.checked;});document.getElementById('submit-order-btn').addEventListener('mousedown',function(){if(!document.getElementById('agree-terms').checked)showToast('請先閱讀並同意購物與服務條款');});};
+    window.onload=function(){try{const saved=localStorage.getItem('apple911_cart');if(saved)cart=JSON.parse(saved);}catch(e){}renderCart();renderFrontCategories();initBirthSelects();initRegBirthSelects();loadProfile();if(isLoggedIn)document.getElementById('user-status-dot').classList.replace('bg-slate-600','bg-neoncyan');document.getElementById('agree-terms').addEventListener('change',function(){document.getElementById('submit-order-btn').disabled=!this.checked;});document.getElementById('submit-order-btn').addEventListener('mousedown',function(){if(!document.getElementById('agree-terms').checked)showToast('請先閱讀並同意購物與服務條款');});};
   </script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
