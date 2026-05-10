@@ -680,7 +680,7 @@
       }
       return true;
     }
-    function validateCartItemsBeforeSubmit(){const validIds=new Set(products.filter(p=>p&&p.active!==false).map(p=>p.id));const before=cart.length;cart=cart.filter(item=>validIds.has(item.id));if(cart.length!==before){try{localStorage.setItem('apple911_cart',JSON.stringify(cart));}catch(e){}renderCart();showToast('部分商品已下架，已從購物車移除，請重新確認訂單');return false;}return true;}
+    function validateCartItemsBeforeSubmit(){if(products.length===0){showToast('商品資料尚未載入完成，請稍後再試');return false;}const validIds=new Set(products.filter(p=>p&&p.active!==false).map(p=>p.id));const before=cart.length;cart=cart.filter(item=>validIds.has(item.id));if(cart.length!==before){try{localStorage.setItem('apple911_cart',JSON.stringify(cart));}catch(e){}renderCart();showToast('部分商品已下架，已從購物車移除，請重新確認訂單');return false;}return true;}
     async function submitOrder(){
       if(!document.getElementById('agree-terms').checked){
         showToast('請先閱讀並同意購物與服務條款');
