@@ -139,6 +139,7 @@
             <div id="checkout-discount-row" class="hidden flex justify-between text-sm text-neoncyan">
               <span id="checkout-discount-label">優惠折抵</span><span id="checkout-discount" class="font-tech">-NT$ 0</span>
             </div>
+            <div id="checkout-coupon-list" class="space-y-1.5"></div>
             <div class="flex gap-2 pt-1">
               <input id="coupon-code-input" type="text" placeholder="輸入優惠碼" class="flex-1 bg-panelbg border border-slate-600 text-white text-xs p-2 rounded outline-none focus:border-neoncyan transition uppercase" style="text-transform:uppercase">
               <button onclick="applyCoupon()" class="px-3 py-2 bg-slate-700 text-neoncyan text-xs font-bold rounded hover:bg-neoncyan hover:text-black transition">套用</button>
@@ -541,6 +542,7 @@
       if(cpInput) cpInput.value='';
       const discRow=document.getElementById('checkout-discount-row');
       if(discRow) discRow.classList.add('hidden');
+      renderCheckoutCoupons();
       // 金額更新
       updateCheckoutTotal();
       initCities();
@@ -636,6 +638,42 @@
       appliedCoupon=coupon;
       showToast('優惠碼套用成功');
       updateCheckoutTotal();
+    }
+    function renderCheckoutCoupons(){
+      const el=document.getElementById('checkout-coupon-list');
+      if(!el)return;
+      const uid=window._fbCurrentUser?.uid;
+      const phone=window._memberProfile?.phone||'';
+      const email=window._memberProfile?.email||window._fbCurrentUser?.email||'';
+      if(!uid){el.innerHTML='';return;}
+      const subtotal=cart.reduce((s,i)=>s+(i.price||0)*i.qty,0);
+      const myCoupons=coupons.filter(c=>{
+        if(!c.active)return false;
+        if(c.expiry&&Date.now()>c.expiry)return false;
+        if(c.usageLimit>0&&(c.usedCount||0)>=c.usageLimit)return false;
+        const st=c.sentTo;
+        if(!st||st.length===0)return false;
+        return st.includes(uid)||(phone&&st.includes(phone))||(email&&st.includes(email));
+      });
+      if(myCoupons.length===0){el.innerHTML='';return;}
+      el.innerHTML='<p class="text-[10px] text-gray-500 tracking-widest font-bold mt-1">我的優惠券</p>'+
+        myCoupons.map(c=>{
+          const typeLabel=c.type==='percent'?`${c.value}% 折扣`:`折抵 NT$${c.value}`;
+          const minLabel=c.minOrder>0?`，滿 NT$${c.minOrder} 可用`:'';
+          const unavail=c.minOrder>0&&subtotal<c.minOrder;
+          return `<div class="flex items-center justify-between bg-darkbg border border-slate-700 px-3 py-2 rounded gap-2">
+            <div class="flex-1 min-w-0">
+              <span class="font-tech font-bold text-neoncyan text-xs">${c.code}</span>
+              <span class="text-[10px] text-gray-400 ml-1.5">${typeLabel}${minLabel}</span>
+            </div>
+            <button onclick="applyCheckoutCoupon('${c.code}')" class="px-3 py-1 text-[10px] font-bold tech-btn shrink-0 transition ${unavail?'bg-slate-800 text-gray-600 cursor-not-allowed':'bg-neoncyan/10 text-neoncyan hover:bg-neoncyan hover:text-black'}" ${unavail?'disabled':''}>使用</button>
+          </div>`;
+        }).join('');
+    }
+    function applyCheckoutCoupon(code){
+      const cpInput=document.getElementById('coupon-code-input');
+      if(cpInput)cpInput.value=code;
+      applyCoupon();
     }
     /* 卡片點選：更新取貨狀態、切換欄位、切換付款卡片 */
     function selectShipping(method){
