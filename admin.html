@@ -293,11 +293,42 @@
           <h2 class="text-sm font-bold text-white tracking-widest border-l-4 border-neoncyan pl-2">
             優惠券管理 <span class="text-gray-500 font-sans font-normal text-xs ml-1">COUPONS</span>
           </h2>
-          <div class="bg-panelbg border border-slate-700 tech-clip p-16 text-center">
-            <i class="fa-solid fa-ticket text-4xl text-slate-700 mb-4 block"></i>
-            <p class="text-gray-600 font-bold tracking-widest text-sm">目前尚無優惠券管理功能</p>
-            <p class="text-gray-700 text-xs mt-1 tracking-widest">COMING SOON</p>
+          <div class="bg-panelbg border border-slate-700 tech-clip p-5 space-y-4">
+            <p class="text-xs font-bold text-neoncyan tracking-widest border-b border-slate-700 pb-2">新增優惠券</p>
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+              <div>
+                <p class="text-[10px] text-gray-600 uppercase tracking-widest font-bold mb-1">折扣碼</p>
+                <input id="cp-code" type="text" placeholder="SUMMER2026" class="bg-darkbg border border-slate-600 text-white p-2 tech-clip text-sm focus:border-neoncyan transition w-full" style="text-transform:uppercase">
+              </div>
+              <div>
+                <p class="text-[10px] text-gray-600 uppercase tracking-widest font-bold mb-1">類型</p>
+                <select id="cp-type" class="bg-darkbg border border-slate-600 text-white p-2 tech-clip text-sm focus:border-neoncyan transition w-full">
+                  <option value="fixed">折抵金額（元）</option>
+                  <option value="percent">百分比折扣（%）</option>
+                </select>
+              </div>
+              <div>
+                <p class="text-[10px] text-gray-600 uppercase tracking-widest font-bold mb-1">折扣值</p>
+                <input id="cp-value" type="number" min="1" placeholder="100" class="bg-darkbg border border-slate-600 text-white p-2 tech-clip text-sm focus:border-neoncyan transition w-full">
+              </div>
+              <div>
+                <p class="text-[10px] text-gray-600 uppercase tracking-widest font-bold mb-1">最低消費（0=無限制）</p>
+                <input id="cp-min" type="number" min="0" value="0" class="bg-darkbg border border-slate-600 text-white p-2 tech-clip text-sm focus:border-neoncyan transition w-full">
+              </div>
+              <div>
+                <p class="text-[10px] text-gray-600 uppercase tracking-widest font-bold mb-1">到期日（留空=永久）</p>
+                <input id="cp-expiry" type="date" class="bg-darkbg border border-slate-600 text-white p-2 tech-clip text-sm focus:border-neoncyan transition w-full">
+              </div>
+              <div>
+                <p class="text-[10px] text-gray-600 uppercase tracking-widest font-bold mb-1">使用次數上限（0=無限）</p>
+                <input id="cp-limit" type="number" min="0" value="0" class="bg-darkbg border border-slate-600 text-white p-2 tech-clip text-sm focus:border-neoncyan transition w-full">
+              </div>
+            </div>
+            <div class="flex justify-end">
+              <button onclick="addCoupon()" class="px-6 py-2 bg-neoncyan text-black font-bold tech-btn text-xs hover:bg-white transition">新增優惠券</button>
+            </div>
           </div>
+          <div id="coupons-list"></div>
         </div>
 
         <!-- ── 系統設定 ── -->
@@ -358,10 +389,10 @@
     const STATUS_LIST = ['未付款','已付款','處理中','已出貨','已完成','已取消'];
     let orders      = [];
     let currentPage = 'dashboard';
-    let _productsCache = []; 
+    let _productsCache = [];
     window._membersCache = []; // 會員資料快取
     let _categoriesCache = null; // 分類資料快取；null=尚未載入，[]=已載入但無品項
-
+    let _couponsCache = [];
 
     // ════════════════════════════════════════════════════════════
     // 登入 / 登出
@@ -410,6 +441,7 @@
       if (page === 'members-orders') { switchMoTab('orders'); }
       if (page === 'overview') renderOverview();
       if (page === 'products') renderProducts();
+      if (page === 'coupons') renderCoupons();
       if (window.matchMedia('(max-width: 767px)').matches) {
         const sbMobile = document.getElementById('sidebar-mobile');
         if (sbMobile && sbMobile.classList.contains('flex')) toggleSidebar();
@@ -559,13 +591,98 @@
       if (currentPage === 'members-orders' && currentMoTab === 'orders') renderTable();
     }
 
+    // ════════════════════════════════════════════════════════════
+    // 優惠券管理
+    // ════════════════════════════════════════════════════════════
+    function renderCoupons() {
+      const el = document.getElementById('coupons-list');
+      if (!el) return;
+      const coupons = _couponsCache;
+      if (coupons.length === 0) {
+        el.innerHTML = `<div class="bg-panelbg border border-slate-700 tech-clip p-10 text-center">
+          <i class="fa-solid fa-ticket text-4xl text-slate-700 mb-4 block"></i>
+          <p class="text-gray-600 font-bold tracking-widest text-sm">尚無優惠券</p>
+        </div>`;
+        return;
+      }
+      el.innerHTML = `<div class="bg-panelbg border border-slate-700 tech-clip overflow-hidden">
+        <div class="px-4 py-2 border-b border-slate-800 grid grid-cols-7 gap-2 text-[10px] font-bold text-gray-600 uppercase tracking-widest">
+          <span class="col-span-1">折扣碼</span>
+          <span class="col-span-1">類型</span>
+          <span class="col-span-1">折扣</span>
+          <span class="col-span-1">最低消費</span>
+          <span class="col-span-1">到期日</span>
+          <span class="col-span-1">使用</span>
+          <span class="col-span-1 text-right">操作</span>
+        </div>
+        ${coupons.map(c => {
+          const typeLabel = c.type === 'percent' ? `${c.value}%` : `NT$${c.value}`;
+          const expiryLabel = c.expiry ? new Date(c.expiry).toLocaleDateString('zh-TW') : '永久';
+          const limitLabel = c.usageLimit > 0 ? `${c.usedCount||0}/${c.usageLimit}` : `${c.usedCount||0}/∞`;
+          const expired = c.expiry && Date.now() > c.expiry;
+          const statusClass = !c.active ? 'text-gray-600' : expired ? 'text-neonred' : 'text-neoncyan';
+          return `<div class="px-4 py-3 border-b border-slate-800 last:border-0 grid grid-cols-7 gap-2 items-center hover:bg-white/5 transition">
+            <span class="col-span-1 font-tech font-bold ${statusClass} text-sm">${c.code}</span>
+            <span class="col-span-1 text-xs text-gray-400">${c.type === 'percent' ? '百分比' : '折抵'}</span>
+            <span class="col-span-1 text-xs font-bold text-white">${typeLabel}</span>
+            <span class="col-span-1 text-xs text-gray-400">${c.minOrder > 0 ? 'NT$'+c.minOrder : '無'}</span>
+            <span class="col-span-1 text-xs ${expired ? 'text-neonred' : 'text-gray-400'}">${expiryLabel}</span>
+            <span class="col-span-1 text-xs text-gray-400">${limitLabel}</span>
+            <div class="col-span-1 flex justify-end gap-2">
+              <button onclick="toggleCoupon('${c.id}')" class="px-3 py-1 text-[10px] font-bold tech-btn transition ${c.active ? 'bg-slate-700 text-gray-300 hover:bg-slate-600' : 'bg-neoncyan/10 text-neoncyan hover:bg-neoncyan hover:text-black'}">${c.active ? '停用' : '啟用'}</button>
+              <button onclick="deleteCoupon('${c.id}')" class="px-3 py-1 text-[10px] font-bold tech-btn bg-neonred/10 text-neonred hover:bg-neonred hover:text-black transition">刪除</button>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>`;
+    }
+
+    function addCoupon() {
+      const code = document.getElementById('cp-code')?.value.trim().toUpperCase();
+      const type = document.getElementById('cp-type')?.value || 'fixed';
+      const value = parseInt(document.getElementById('cp-value')?.value || '0');
+      const minOrder = parseInt(document.getElementById('cp-min')?.value || '0');
+      const expiryInput = document.getElementById('cp-expiry')?.value;
+      const usageLimit = parseInt(document.getElementById('cp-limit')?.value || '0');
+      if (!code) { showToast('請輸入折扣碼'); return; }
+      if (value <= 0) { showToast('折扣值必須大於 0'); return; }
+      if (type === 'percent' && value > 100) { showToast('百分比折扣不可超過 100%'); return; }
+      if (_couponsCache.some(c => c.code === code)) { showToast('折扣碼已存在'); return; }
+      const expiry = expiryInput ? new Date(expiryInput).setHours(23, 59, 59, 999) : 0;
+      const newCoupon = { id: 'CP-' + Date.now(), code, type, value, minOrder, expiry, usageLimit, usedCount: 0, active: true, createdAt: Date.now() };
+      _couponsCache = [..._couponsCache, newCoupon];
+      if (window._fbSaveCoupons) window._fbSaveCoupons(_couponsCache);
+      document.getElementById('cp-code').value = '';
+      document.getElementById('cp-value').value = '';
+      document.getElementById('cp-min').value = '0';
+      document.getElementById('cp-expiry').value = '';
+      document.getElementById('cp-limit').value = '0';
+      showToast('優惠券已新增');
+      renderCoupons();
+      renderStats();
+    }
+
+    function toggleCoupon(id) {
+      _couponsCache = _couponsCache.map(c => c.id === id ? { ...c, active: !c.active } : c);
+      if (window._fbSaveCoupons) window._fbSaveCoupons(_couponsCache);
+      renderCoupons();
+    }
+
+    function deleteCoupon(id) {
+      showConfirm('確定刪除此優惠券？', () => {
+        _couponsCache = _couponsCache.filter(c => c.id !== id);
+        if (window._fbSaveCoupons) window._fbSaveCoupons(_couponsCache);
+        renderCoupons();
+        renderStats();
+      });
+    }
 
     // ════════════════════════════════════════════════════════════
     // 控制台統計
     // ════════════════════════════════════════════════════════════
     function renderStats() {
       const prods   = loadProducts();
-      const coupons = [];
+      const coupons = _couponsCache;
       const _now=new Date(), _yr=_now.getFullYear(), _mo=_now.getMonth(), _todayStr=_now.toDateString();
       const _valid=orders.filter(o=>o.status!=='已取消');
       const _moOrders=orders.filter(o=>{const d=new Date(o.time);return d.getFullYear()===_yr&&d.getMonth()===_mo;});
@@ -2127,6 +2244,14 @@ window._fbSaveCategories = async function(cats) {
   } catch(e) { console.error('[Firebase] 分類儲存失敗:', e.message); if (typeof showToast === 'function') showToast('分類儲存失敗，請重試'); }
 };
 
+const _fbCouponsRef = doc(_fbDb, 'store', 'coupons');
+window._fbSaveCoupons = async function(coupons) {
+  try {
+    await setDoc(_fbCouponsRef, { list: coupons, updatedAt: Date.now() });
+    console.log('[Firebase] 優惠券儲存成功，共', coupons.length, '筆');
+  } catch(e) { console.error('[Firebase] 優惠券儲存失敗:', e.message); if (typeof showToast === 'function') showToast('優惠券儲存失敗，請重試'); }
+};
+
 onSnapshot(_fbProdsRef, (snap) => {
   if (snap.exists()) {
     const prods = snap.data().list || [];
@@ -2146,6 +2271,15 @@ onSnapshot(_fbCatRef, (snap) => {
   }
   console.log('[Firebase] 後台分類即時同步');
 }, (e) => { console.error('[Firebase] 後台分類監聽失敗:', e.message); });
+
+onSnapshot(_fbCouponsRef, (snap) => {
+  if (snap.exists()) {
+    _couponsCache = snap.data().list || [];
+    if (typeof renderStats === 'function') renderStats();
+    if (currentPage === 'coupons' && typeof renderCoupons === 'function') renderCoupons();
+  }
+  console.log('[Firebase] 後台優惠券即時同步，共', _couponsCache.length, '筆');
+}, (e) => { console.error('[Firebase] 後台優惠券監聽失敗:', e.message); });
 
 console.log('[Firebase] 後台監聽已啟動');
 </script>
