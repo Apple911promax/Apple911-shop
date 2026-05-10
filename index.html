@@ -637,6 +637,8 @@
     function handleShippingChange(){ /* 已由 selectShipping() 取代 */ }
     function setFieldError(el){el.classList.add('border-red-500','ring-1','ring-red-500');const ev=el.tagName==='SELECT'||el.tagName==='TEXTAREA'?'change':'input';el.addEventListener(ev,()=>clearFieldError(el),{once:true});}
     function clearFieldError(el){el.classList.remove('border-red-500','ring-1','ring-red-500');}
+    window.setFieldError=setFieldError;
+    window.clearFieldError=clearFieldError;
     function validateCheckoutFields(){
       if(!currentShipping){ showToast('請選擇取貨方式'); return false; }
       const pay=document.getElementById('pay-method')?.value;
@@ -1300,10 +1302,34 @@ window._fbLogin = async function() {
   } catch(e) { if (typeof showToast === 'function') showToast('登入失敗'); }
 };
 window._fbRegister = async function() {
-  const name=document.getElementById('reg-name')?.value.trim(), phone=document.getElementById('reg-phone')?.value.trim(), email=document.getElementById('reg-email')?.value.trim(), password=document.getElementById('reg-password')?.value, by=document.getElementById('reg-birth-year')?.value, bm=document.getElementById('reg-birth-month')?.value, bd=document.getElementById('reg-birth-day')?.value, address=document.getElementById('reg-address')?.value.trim();
-  if (!name || !phone || !email || !password || !by || !bm || !bd || !address) {
-    if(typeof showToast==='function') showToast('請填寫完整資料'); return;
-  }
+  const nameEl    = document.getElementById('reg-name');
+  const phoneEl   = document.getElementById('reg-phone');
+  const emailEl   = document.getElementById('reg-email');
+  const passEl    = document.getElementById('reg-password');
+  const byEl      = document.getElementById('reg-birth-year');
+  const bmEl      = document.getElementById('reg-birth-month');
+  const bdEl      = document.getElementById('reg-birth-day');
+  const addrEl    = document.getElementById('reg-address');
+  const name      = nameEl?.value.trim();
+  const phone     = phoneEl?.value.trim();
+  const email     = emailEl?.value.trim();
+  const password  = passEl?.value;
+  const by        = byEl?.value;
+  const bm        = bmEl?.value;
+  const bd        = bdEl?.value;
+  const address   = addrEl?.value.trim();
+  // 紅框驗證
+  let ok = true;
+  const sf = window.setFieldError || (()=>{});
+  if(!name)    { sf(nameEl);  ok=false; }
+  if(!phone)   { sf(phoneEl); ok=false; }
+  if(!email)   { sf(emailEl); ok=false; }
+  if(!password){ sf(passEl);  ok=false; }
+  if(!by)      { sf(byEl);    ok=false; }
+  if(!bm)      { sf(bmEl);    ok=false; }
+  if(!bd)      { sf(bdEl);    ok=false; }
+  if(!address) { sf(addrEl);  ok=false; }
+  if(!ok){ if(typeof showToast==='function') showToast('請填寫完整資料'); return; }
   try {
     const cred = await createUserWithEmailAndPassword(_fbAuth, email, password);
     const memberData = { uid: cred.user.uid, name, phone, email, birthday: `${by}-${String(bm).padStart(2,'0')}-${String(bd).padStart(2,'0')}`, address, registeredAt: Date.now() };
