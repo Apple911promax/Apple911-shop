@@ -881,7 +881,9 @@
       }
       // 累計優惠碼使用次數
       if(appliedCoupon && window._fbIncrementCouponUsage){
-        window._fbIncrementCouponUsage(appliedCoupon.id);
+        const _usedCouponId = appliedCoupon.id;
+        coupons = coupons.map(c => c.id === _usedCouponId ? {...c, usedCount:(c.usedCount||0)+1} : c);
+        window._fbIncrementCouponUsage(_usedCouponId);
       }
       // 清空購物車與結帳狀態
       cart=[];
