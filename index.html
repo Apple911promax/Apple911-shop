@@ -969,6 +969,8 @@
         if(btn)btn.disabled=false;
         // 通知官方賴（fire-and-forget，不影響下單流程）
         fetch('/api/line-notify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({order:newOrder})}).catch(()=>{});
+        // 寄送訂單 Email（fire-and-forget，失敗不阻擋下單）
+        const _orderEmailAddr=window._memberProfile?.email||window._fbCurrentUser?.email||'';fetch('/api/send-order-email',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({order:newOrder,customerEmail:_orderEmailAddr})}).catch(e=>console.warn('[email]',e));
       } else {
         showToast('系統尚未就緒，請稍後重試'); return;
       }
