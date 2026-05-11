@@ -18,15 +18,41 @@ module.exports = async function handler(req, res) {
   if (type === 'status_change') {
     const statusEmoji = { '已付款': '✅', '已出貨': '📦', '已完成': '🎉', '已取消': '❌', '處理中': '🔧', '待取貨': '🏪' };
     const emoji = statusEmoji[newStatus] || '🔔';
-    const text = `${emoji} 訂單狀態變更\n訂單編號：${order.id}\n新狀態：${newStatus}\n客人：${order.shippingInfo?.name || '—'}`;
-    try {
-      const pushRes = await fetch('https://api.line.me/v2/bot/message/push', {
+
+    const ownerText = `${emoji} 訂單狀態變更\n訂單編號：${order.id}\n新狀態：${newStatus}\n客人：${order.shippingInfo?.name || '—'}`;
+
+    const customerMsgMap = {
+      '已付款': `✅ 您的訂單已確認付款\n訂單編號：${order.id}\n我們將盡快為您處理，感謝您的購買！`,
+      '已出貨': `📦 您的訂單已出貨\n訂單編號：${order.id}\n請留意配送通知，感謝您的耐心等候！`,
+      '已完成': `🎉 訂單已完成\n訂單編號：${order.id}\n感謝您的購買，歡迎再次光臨 Apple911！`,
+      '已取消': `❌ 訂單已取消\n訂單編號：${order.id}\n如有疑問請聯繫客服，感謝您的理解。`,
+      '處理中': `🔧 您的訂單正在處理中\n訂單編號：${order.id}\n我們會盡快完成，感謝您的等候！`,
+      '待取貨': `🏪 您的訂單已備妥，可前來取貨\n訂單編號：${order.id}`,
+    };
+
+    const pushPromises = [
+      fetch('https://api.line.me/v2/bot/message/push', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ to: ownerId, messages: [{ type: 'text', text }] }),
-      });
-      const data = await pushRes.json();
-      if (!pushRes.ok) { console.error('LINE push failed:', data); return res.status(200).json({ ok: false, reason: data }); }
+        body: JSON.stringify({ to: ownerId, messages: [{ type: 'text', text: ownerText }] }),
+      }),
+    ];
+
+    if (order.lineUserId && customerMsgMap[newStatus]) {
+      pushPromises.push(
+        fetch('https://api.line.me/v2/bot/message/push', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ to: order.lineUserId, messages: [{ type: 'text', text: customerMsgMap[newStatus] }] }),
+        })
+      );
+    }
+
+    try {
+      const results = await Promise.all(pushPromises);
+      for (const r of results) {
+        if (!r.ok) { const d = await r.json(); console.error('LINE push failed:', d); }
+      }
       return res.status(200).json({ ok: true });
     } catch (e) {
       console.error('LINE notify error:', e);
