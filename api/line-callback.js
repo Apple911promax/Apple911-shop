@@ -57,7 +57,7 @@ module.exports = async function handler(req, res) {
     if (!snap.exists) {
       await memberRef.set({
         uid,
-        lineId: profile.userId,
+        lineUid: profile.userId,
         name: profile.displayName || '',
         picture: profile.pictureUrl || '',
         loginMethod: 'line',
