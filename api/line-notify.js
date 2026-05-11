@@ -3,7 +3,7 @@ module.exports = async function handler(req, res) {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
-  const { order } = req.body || {};
+  const { order, type, newStatus } = req.body || {};
   if (!order) {
     return res.status(400).json({ error: 'Missing order' });
   }
@@ -13,6 +13,25 @@ module.exports = async function handler(req, res) {
   if (!token || !ownerId) {
     console.warn('LINE Messaging API env vars not set');
     return res.status(200).json({ ok: false, reason: 'not_configured' });
+  }
+
+  if (type === 'status_change') {
+    const statusEmoji = { '已付款': '✅', '已出貨': '📦', '已完成': '🎉', '已取消': '❌', '處理中': '🔧', '待取貨': '🏪' };
+    const emoji = statusEmoji[newStatus] || '🔔';
+    const text = `${emoji} 訂單狀態變更\n訂單編號：${order.id}\n新狀態：${newStatus}\n客人：${order.shippingInfo?.name || '—'}`;
+    try {
+      const pushRes = await fetch('https://api.line.me/v2/bot/message/push', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ to: ownerId, messages: [{ type: 'text', text }] }),
+      });
+      const data = await pushRes.json();
+      if (!pushRes.ok) { console.error('LINE push failed:', data); return res.status(200).json({ ok: false, reason: data }); }
+      return res.status(200).json({ ok: true });
+    } catch (e) {
+      console.error('LINE notify error:', e);
+      return res.status(200).json({ ok: false, reason: e.message });
+    }
   }
 
   const shippingMap = { home: '宅配', cvs: '超商取貨', store: '門市自取' };

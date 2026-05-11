@@ -1198,6 +1198,8 @@
       const newStatus = sel.value;
       window._fbUpdateOrder(orderId, { status: newStatus }).then(() => {
         showToast('狀態已更新：' + newStatus);
+        const order = orders.find(o => o.id === orderId);
+        if (order) fetch('/api/line-notify', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: 'status_change', order, newStatus }) }).catch(() => {});
       }).catch(() => { showToast('狀態更新失敗，請重試'); });
     }
 
@@ -1205,6 +1207,8 @@
       if (!window._fbUpdateOrder) return;
       window._fbUpdateOrder(orderId, { status: '已付款' }).then(() => {
         showToast('已標記為已付款');
+        const order = orders.find(o => o.id === orderId);
+        if (order) fetch('/api/line-notify', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: 'status_change', order, newStatus: '已付款' }) }).catch(() => {});
       }).catch(() => { showToast('標記失敗，請重試'); });
     }
 
