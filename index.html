@@ -17,3 +17,1802 @@
       }
     }
   </script>
+  <style>
+    body { background-color:#050505; background-image:radial-gradient(rgba(0,243,255,.05) 1px,transparent 1px); background-size:30px 30px; color:#e2e8f0; min-height:100vh; display:flex; flex-direction:column; }
+    .text-gold-gradient{background:linear-gradient(135deg,#e2c78e 0%,#b38539 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+    .tech-clip{clip-path:polygon(15px 0,100% 0,100% calc(100% - 15px),calc(100% - 15px) 100%,0 100%,0 15px);}
+    .tech-btn{clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px);transition:all .2s;}
+    .tech-btn:active{transform:scale(.95);}
+    .drawer-transition{transition:transform .3s ease;}.cart-drawer{transform:translateX(100%);}.cart-drawer.open{transform:translateX(0);}.menu-drawer{transform:translateX(-100%);}.menu-drawer.open{transform:translateX(0);}
+    .submenu{max-height:0;overflow:hidden;transition:max-height .3s ease;}.submenu.open{max-height:400px;}.menu-arrow{transition:transform .3s ease;}.menu-arrow.open{transform:rotate(180deg);}
+    .overlay{opacity:0;pointer-events:none;transition:opacity .3s ease;backdrop-filter:blur(5px);}.overlay.open{opacity:1;pointer-events:auto;}
+    .member-tab-active{color:#00f3ff!important;border-bottom:2px solid #00f3ff!important;text-shadow:0 0 10px rgba(0,243,255,.5);}
+    .en-sub{font-size:.75em;opacity:.7;font-family:'Rajdhani';letter-spacing:.05em;text-transform:uppercase;}
+    .fab-menu{transform:translateY(20px);opacity:0;pointer-events:none;transition:all .3s cubic-bezier(.175,.885,.32,1.275);}.fab-menu.open{transform:translateY(0);opacity:1;pointer-events:auto;}.fab-main-icon{transition:transform .3s ease;}.fab-main-icon.open{transform:rotate(45deg);}
+    ::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-thumb{background:#00f3ff;border-radius:4px;}.custom-scrollbar::-webkit-scrollbar{width:4px;}.custom-scrollbar::-webkit-scrollbar-thumb{background:#00f3ff;border-radius:10px;}
+    input,select,textarea{font-size:16px!important;}
+    /* 取貨方式卡片 */
+    @keyframes neon-pulse{
+      0%,100%{box-shadow:0 0 6px rgba(0,243,255,0.4),0 0 18px rgba(0,243,255,0.15),inset 0 0 8px rgba(0,243,255,0.05);}
+      50%{box-shadow:0 0 14px rgba(0,243,255,0.75),0 0 32px rgba(0,243,255,0.3),inset 0 0 14px rgba(0,243,255,0.1);}
+    }
+    @keyframes icon-glow-pulse{
+      0%,100%{filter:drop-shadow(0 0 4px rgba(0,243,255,0.6));}
+      50%{filter:drop-shadow(0 0 10px rgba(0,243,255,1)) drop-shadow(0 0 20px rgba(0,243,255,0.5));}
+    }
+    .ship-card{
+      min-height:120px;
+      position:relative;
+      border:1px solid rgba(100,116,139,0.4);
+      background:linear-gradient(160deg,#0d1420 0%,#060b12 100%);
+      border-radius:6px;
+      transition:transform .2s cubic-bezier(.34,1.56,.64,1), border-color .2s, box-shadow .2s;
+      cursor:pointer;
+    }
+    .ship-card:hover{
+      transform:translateY(-3px);
+      border-color:rgba(0,243,255,0.35);
+      box-shadow:0 6px 20px rgba(0,243,255,0.1);
+    }
+    .ship-card:hover .ship-card-icon{
+      filter:drop-shadow(0 0 6px rgba(0,243,255,0.5));
+      color:#7af8ff!important;
+    }
+    .ship-card.selected{
+      border-color:#00f3ff!important;
+      background:linear-gradient(160deg,#071a1f 0%,#040d12 100%)!important;
+      transform:scale(1.03);
+      animation:neon-pulse 1.8s ease-in-out infinite;
+    }
+    .ship-card.selected .ship-card-icon{
+      color:#00f3ff!important;
+      animation:icon-glow-pulse 1.8s ease-in-out infinite;
+    }
+    .ship-card.selected .ship-card-title{color:#e2e8f0!important;}
+    .ship-card.selected .ship-card-sub{color:#00f3ff!important;opacity:0.85;}
+    .ship-card.selected .ship-card-fee{color:#00f3ff!important;opacity:0.9;}
+    /* LINE Pay 用圖片，選中 / hover 時不套用 neoncyan icon 動畫 */
+    #pay-card-linepay .pay-card-icon{ filter:none!important; animation:none!important; }
+    #pay-card-linepay.selected .pay-card-icon{ filter:drop-shadow(0 0 6px rgba(6,199,85,0.5))!important; animation:none!important; }
+    .ship-card-icon{color:#4a6270;font-size:1.75rem;transition:color .2s,filter .2s;}
+    .ship-card-title{font-size:.8rem;font-weight:700;color:#cbd5e1;letter-spacing:.04em;transition:color .2s;}
+    .ship-card-sub{font-size:.65rem;color:#475569;transition:color .2s;}
+    .ship-card-fee{font-size:.65rem;color:#64748b;letter-spacing:.03em;transition:color .2s;}
+  </style>
+</head>
+<body class="font-sans antialiased relative">
+  <nav class="sticky top-0 z-40 bg-panelbg/90 backdrop-blur-md border-b-2 border-neoncyan/50 shadow-[0_0_15px_rgba(0,243,255,0.2)]">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+      <div class="flex items-center gap-3">
+        <button onclick="toggleMenu()" class="p-2 text-neoncyan hover:text-white transition duration-300"><i class="fa-solid fa-bars text-2xl drop-shadow-[0_0_8px_#00f3ff]"></i></button>
+        <div class="font-esport text-2xl font-black tracking-widest text-white flex items-center cursor-pointer" onclick="showSection('home')">APPLE<span class="text-gold-gradient ml-1">911</span></div>
+      </div>
+      <div class="flex items-center gap-2">
+        <button onclick="handleUserClick()" class="p-2 text-neoncyan hover:text-white transition duration-300 relative"><i class="fa-solid fa-user text-xl"></i><span id="user-status-dot" class="absolute top-2 right-2 w-2 h-2 bg-slate-600 rounded-full"></span></button>
+        <button onclick="toggleCart()" class="relative p-2 text-neoncyan hover:text-white transition duration-300"><i class="fa-solid fa-cart-shopping text-xl"></i><span id="cart-count" class="absolute -top-1 -right-1 bg-neonred text-white text-[10px] font-bold rounded-sm w-5 h-5 flex items-center justify-center scale-0 transition-transform font-esport tech-btn">0</span></button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="menu-drawer drawer-transition bg-panelbg border-r border-neoncyan fixed inset-y-0 left-0 w-[85vw] md:w-[350px] shadow-[10px_0_30px_rgba(0,243,255,0.1)] z-[60] flex flex-col">
+    <div class="p-5 border-b border-neoncyan/30 flex justify-between items-center bg-darkbg"><h2 class="text-lg font-bold text-white tracking-widest uppercase">探索商品 <span class="en-sub block mt-1">EXPLORE PRODUCTS</span></h2><button onclick="toggleMenu()" class="text-neoncyan"><i class="fa-solid fa-xmark text-2xl"></i></button></div>
+    <div class="flex-grow overflow-y-auto p-4 space-y-3">
+      <button onclick="applyFilter('all')" class="w-full text-left p-4 bg-darkbg border border-neoncyan text-neoncyan font-bold tech-clip transition uppercase hover:bg-white/5"><i class="fa-solid fa-globe mr-2"></i>全部商品與維修 <span class="en-sub block mt-1">ALL ASSETS & REPAIR</span></button>
+      <div id="front-cat-list"></div>
+    </div>
+  </div>
+
+  <!-- 跑馬燈 -->
+  <div id="marquee-bar" class="hidden overflow-hidden bg-neoncyan/5 border-b border-neoncyan/20 py-1.5">
+    <div id="marquee-track" class="flex whitespace-nowrap text-xs text-neoncyan font-bold tracking-widest" style="animation:marquee-scroll 25s linear infinite;width:max-content"></div>
+  </div>
+  <style>@keyframes marquee-scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}</style>
+
+  <header class="relative py-8 text-center border-b border-neoncyan/30 flex-shrink-0"><h1 class="text-3xl font-black mb-2 text-white uppercase font-esport">APPLE<span class="text-gold-gradient">911</span></h1><p class="text-neoncyan font-bold tracking-widest text-sm">配件怪獸 X 專業維修</p><p class="en-sub text-neoncyan mt-1">ASSETS MONSTER & PROFESSIONAL REPAIR</p></header>
+
+  <main class="flex-grow flex flex-col max-w-7xl mx-auto w-full pb-20">
+    <div id="home-view" class="px-4 py-8">
+    <!-- 首頁公告 -->
+    <div id="announcement-bar" class="hidden mb-4 px-4 py-3 rounded flex items-center gap-2 text-xs font-bold">
+      <i id="announcement-icon" class="fa-solid fa-circle-info shrink-0"></i><span id="announcement-text"></span>
+    </div>
+    <h2 class="text-sm font-bold flex items-center text-white tracking-widest border-l-4 border-neoncyan pl-2 mb-4">服務選單 <span class="en-sub ml-2">SELECT SERVICE</span></h2>
+    <div class="grid grid-cols-2 gap-4" id="home-cat-grid"></div></div>
+    <div id="product-view" class="px-4 py-8 hidden"><div class="flex justify-between items-end mb-6 border-b border-slate-800 pb-2"><h2 class="text-lg font-bold text-white tracking-widest" id="current-view-title">全部商品與服務</h2><button onclick="navFrontBack()" class="text-xs text-gray-500 font-bold hover:text-white transition"><i class="fa-solid fa-arrow-left"></i> 返回</button></div><div class="grid grid-cols-2 lg:grid-cols-4 gap-4" id="product-list"></div></div>
+    <div id="checkout-view" class="px-4 py-8 hidden">
+      <div class="flex justify-between items-end mb-6 border-b border-slate-800 pb-2">
+        <h2 class="text-lg font-bold text-white tracking-widest">訂單結帳 <span class="en-sub inline ml-1">CHECKOUT</span></h2>
+        <button onclick="showSection('home')" class="text-xs text-gray-500 font-bold hover:text-white transition"><i class="fa-solid fa-arrow-left"></i> 繼續購物</button>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- 左欄：購物清單 -->
+        <div class="bg-darkbg border border-slate-700 p-5 rounded space-y-4 shadow-lg h-fit">
+          <h4 class="text-white font-bold border-l-4 border-neoncyan pl-2 text-sm">購物清單明細</h4>
+          <div id="checkout-cart-items" class="space-y-3"></div>
+          <div class="border-t border-slate-700 pt-3 space-y-2">
+            <div class="flex justify-between text-sm text-gray-400">
+              <span>商品小計</span><span id="checkout-subtotal" class="font-tech">NT$ 0</span>
+            </div>
+            <div class="flex justify-between text-sm text-gray-400">
+              <span>運費</span><span id="checkout-shipping-fee" class="font-tech">—</span>
+            </div>
+            <div id="checkout-discount-row" class="hidden flex justify-between text-sm text-neoncyan">
+              <span id="checkout-discount-label">優惠折抵</span><span id="checkout-discount" class="font-tech">-NT$ 0</span>
+            </div>
+            <div id="checkout-coupon-list" class="space-y-1.5"></div>
+            <div class="flex gap-2 pt-1">
+              <input id="coupon-code-input" type="text" placeholder="輸入優惠碼" class="flex-1 bg-panelbg border border-slate-600 text-white text-xs p-2 rounded outline-none focus:border-neoncyan transition uppercase" style="text-transform:uppercase">
+              <button onclick="applyCoupon()" class="px-3 py-2 bg-slate-700 text-neoncyan text-xs font-bold rounded hover:bg-neoncyan hover:text-black transition">套用</button>
+            </div>
+            <div class="flex justify-between text-white font-bold pt-2 border-t border-slate-700">
+              <span>總計金額</span><span id="checkout-total" class="text-goldlight font-tech text-lg">NT$ 0</span>
+            </div>
+          </div>
+        </div>
+        <!-- 右欄：配送 / 付款 / 顧客資料 -->
+        <div class="space-y-6">
+          <!-- 配送與付款 -->
+          <div class="bg-darkbg border border-slate-700 p-5 rounded space-y-5 shadow-lg">
+            <h4 class="text-white font-bold border-l-4 border-neoncyan pl-2 text-sm">取貨方式 <span class="text-neonred">*</span></h4>
+            <!-- 取貨方式卡片 -->
+            <div class="grid grid-cols-3 gap-3" id="shipping-cards">
+              <!-- 超商取貨 -->
+              <button type="button" onclick="selectShipping('cvs')" id="ship-card-cvs" class="ship-card flex flex-col items-center justify-center gap-1.5 p-4 focus:outline-none">
+                <i class="fa-solid fa-store ship-card-icon"></i>
+                <span class="ship-card-title">超商取貨</span>
+                <span class="ship-card-sub">需先付款</span>
+                <span class="ship-card-fee">免運費</span>
+              </button>
+              <!-- 宅配到府 -->
+              <button type="button" onclick="selectShipping('home')" id="ship-card-home" class="ship-card flex flex-col items-center justify-center gap-1.5 p-4 focus:outline-none">
+                <i class="fa-solid fa-truck ship-card-icon"></i>
+                <span class="ship-card-title">宅配到府</span>
+                <span class="ship-card-sub">需先付款</span>
+                <span class="ship-card-fee">$100 起</span>
+              </button>
+              <!-- 門市自取 -->
+              <button type="button" onclick="selectShipping('store')" id="ship-card-store" class="ship-card flex flex-col items-center justify-center gap-1.5 p-4 focus:outline-none">
+                <i class="fa-solid fa-shop ship-card-icon"></i>
+                <span class="ship-card-title">門市自取</span>
+                <span class="ship-card-sub">可現場付款</span>
+                <span class="ship-card-fee">免運費</span>
+              </button>
+            </div>
+            <!-- 運費提示 -->
+            <div id="shipping-fee-hint" class="hidden text-xs text-gray-500 bg-darkbg border border-slate-700 px-3 py-2 rounded">
+              <i class="fa-solid fa-circle-info text-neoncyan mr-1"></i><span id="shipping-fee-hint-text"></span>
+            </div>
+            <!-- 付款方式卡片 -->
+            <div>
+              <label class="text-xs text-gray-400 block mb-2">付款方式 <span class="text-neonred">*</span></label>
+              <!-- 尚未選取取貨方式時的提示 -->
+              <p id="pay-placeholder" class="text-xs text-gray-500 text-center py-3 border border-dashed border-slate-700 rounded">
+                <i class="fa-solid fa-arrow-up mr-1 text-neoncyan/40"></i>請先選擇取貨方式
+              </p>
+              <!-- 付款卡片容器，依取貨方式動態顯示 -->
+              <div id="pay-cards" class="hidden grid grid-cols-3 gap-3">
+                <!-- 銀行轉帳 -->
+                <button type="button" onclick="selectPayment('transfer')" id="pay-card-transfer"
+                  class="pay-card ship-card flex flex-col items-center justify-center gap-1.5 p-3 focus:outline-none">
+                  <i class="fa-solid fa-building-columns ship-card-icon pay-card-icon"></i>
+                  <span class="ship-card-title pay-card-title">銀行轉帳</span>
+                  <span class="ship-card-sub pay-card-sub">需回傳截圖</span>
+                </button>
+                <!-- LINE Pay -->
+                <button type="button" onclick="selectPayment('linepay')" id="pay-card-linepay"
+                  class="pay-card ship-card flex flex-col items-center justify-center gap-1.5 p-3 focus:outline-none">
+                  <img src="data:image/png;base64,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" class="h-7 w-auto object-contain pay-card-icon" alt="LINE Pay">
+                  <span class="ship-card-title pay-card-title">LINE Pay</span>
+                  <span class="ship-card-sub pay-card-sub">即將開放</span>
+                </button>
+                <!-- 到店付款（僅門市自取顯示） -->
+                <button type="button" onclick="selectPayment('onsite')" id="pay-card-onsite"
+                  class="pay-card ship-card flex flex-col items-center justify-center gap-1.5 p-3 focus:outline-none hidden">
+                  <i class="fa-solid fa-hand-holding-dollar ship-card-icon pay-card-icon"></i>
+                  <span class="ship-card-title pay-card-title">到店付款</span>
+                  <span class="ship-card-sub pay-card-sub">現場結帳</span>
+                </button>
+              </div>
+              <!-- 隱藏的實際值，submitOrder 讀取用 -->
+              <input type="hidden" id="pay-method" value="">
+            </div>
+          </div>
+          <!-- 顧客資料 -->
+          <div class="bg-darkbg border border-slate-700 p-5 rounded space-y-4 shadow-lg">
+            <h4 class="text-white font-bold border-l-4 border-neoncyan pl-2 text-sm">顧客資料</h4>
+            <p class="text-xs text-gray-400">請填寫正確資料，以利配送與聯繫</p>
+            <!-- 超商取貨欄位 -->
+            <div id="ship-cvs-fields" class="hidden space-y-4">
+              <div><label class="text-xs text-gray-400 block mb-1">取件人姓名 <span class="text-neonred">*</span></label><input type="text" id="cvs-name" placeholder="請填真實姓名" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none focus:border-neoncyan transition"></div>
+              <div><label class="text-xs text-gray-400 block mb-1">取件人手機 <span class="text-neonred">*</span></label><input type="tel" id="cvs-phone" placeholder="請填正確手機" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none focus:border-neoncyan transition"></div>
+              <div><label class="text-xs text-gray-400 block mb-1">超商類型 <span class="text-neonred">*</span></label><select id="cvs-type" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none focus:border-neoncyan transition"><option value="">請選擇超商</option><option value="7-11">7-11</option><option value="FamilyMart">全家</option></select></div>
+              <div class="grid grid-cols-2 gap-4">
+                <div><label class="text-xs text-gray-400 block mb-1">縣市 <span class="text-neonred">*</span></label><select id="cvs-city" onchange="updateDistricts()" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none focus:border-neoncyan transition"></select></div>
+                <div><label class="text-xs text-gray-400 block mb-1">區域 <span class="text-neonred">*</span></label><select id="cvs-district" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none focus:border-neoncyan transition"><option value="">請選擇區域</option></select></div>
+              </div>
+              <div class="grid grid-cols-2 gap-4">
+                <div><label class="text-xs text-gray-400 block mb-1">門市名稱 <span class="text-neonred">*</span></label><input type="text" id="cvs-store" placeholder="某某門市" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none focus:border-neoncyan transition"></div>
+                <div><label class="text-xs text-gray-400 block mb-1">門市代號 (選填)</label><input type="text" id="cvs-id" placeholder="6位數字" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none focus:border-neoncyan transition"></div>
+              </div>
+              <div><label class="text-xs text-gray-400 block mb-1">備註</label><textarea id="cvs-note" rows="2" placeholder="備註（選填）" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none focus:border-neoncyan transition"></textarea></div>
+            </div>
+            <!-- 宅配到府欄位 -->
+            <div id="ship-home-fields" class="hidden space-y-4">
+              <div><label class="text-xs text-gray-400 block mb-1">收件人姓名 <span class="text-neonred">*</span></label><input type="text" id="home-name" placeholder="請填真實姓名" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none focus:border-neoncyan transition"></div>
+              <div><label class="text-xs text-gray-400 block mb-1">收件人手機 <span class="text-neonred">*</span></label><input type="tel" id="home-phone" placeholder="請填正確手機" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none focus:border-neoncyan transition"></div>
+              <div><label class="text-xs text-gray-400 block mb-1">收件地址 <span class="text-neonred">*</span></label><textarea id="home-addr" rows="2" placeholder="縣市、鄉鎮市區、路段、門號" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none focus:border-neoncyan transition"></textarea></div>
+              <div><label class="text-xs text-gray-400 block mb-1">備註</label><textarea id="home-note" rows="2" placeholder="備註（選填）" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none focus:border-neoncyan transition"></textarea></div>
+            </div>
+            <!-- 門市自取欄位 -->
+            <div id="ship-store-fields" class="hidden space-y-4">
+              <p class="text-neoncyan text-xs font-bold"><i class="fa-solid fa-circle-info mr-2"></i>請於營業時間內到 Apple 911 門市取貨</p>
+              <div><label class="text-xs text-gray-400 block mb-1">取件人姓名 <span class="text-neonred">*</span></label><input type="text" id="store-name" placeholder="請填真實姓名" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none focus:border-neoncyan transition"></div>
+              <div><label class="text-xs text-gray-400 block mb-1">取件人手機 <span class="text-neonred">*</span></label><input type="tel" id="store-phone" placeholder="請填正確手機" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none focus:border-neoncyan transition"></div>
+              <div><label class="text-xs text-gray-400 block mb-1">備註</label><textarea id="store-note" rows="2" placeholder="備註（選填）" class="w-full bg-panelbg border border-slate-600 text-white p-3 rounded outline-none focus:border-neoncyan transition"></textarea></div>
+            </div>
+            <!-- 尚未選取提示 -->
+            <p id="ship-fields-placeholder" class="text-xs text-gray-500 text-center py-4">請先選擇取貨方式</p>
+          </div>
+          <!-- 條款同意 & 送出 -->
+          <div class="flex items-start gap-2 mb-2 px-1">
+            <input type="checkbox" id="agree-terms" class="mt-1 w-4 h-4 accent-neoncyan cursor-pointer">
+            <label for="agree-terms" class="text-xs text-gray-400 leading-relaxed cursor-pointer">我已閱讀並同意以下內容：<br>
+              <span class="text-neoncyan underline hover:text-white transition" onclick="openTerms('payment')">付款資訊</span>、<span class="text-neoncyan underline hover:text-white transition" onclick="openTerms('shipping')">配送取件</span>、<span class="text-neoncyan underline hover:text-white transition" onclick="openTerms('returns')">退換貨政策</span>、<span class="text-neoncyan underline hover:text-white transition" onclick="openTerms('warranty')">維修保固</span>、<span class="text-neoncyan underline hover:text-white transition" onclick="openTerms('terms')">服務條款</span>
+            </label>
+          </div>
+          <button id="submit-order-btn" onclick="submitOrder()" class="w-full py-4 bg-neoncyan text-black font-bold tech-clip text-sm hover:bg-white transition shadow-lg tracking-widest uppercase">確認送出訂單 SUBMIT ORDER</button>
+        </div>
+      </div>
+    </div>
+    <div id="order-success-view" class="px-4 py-8 hidden max-w-2xl mx-auto w-full"><div class="bg-darkbg border border-neoncyan p-8 rounded text-center shadow-lg mb-6 tech-clip"><i class="fa-regular fa-circle-check text-6xl text-neoncyan mb-4"></i><h2 class="text-2xl font-bold text-white mb-2 tracking-widest">訂單已成立</h2><p class="text-gray-400 text-sm">您的訂單編號：<span id="success-order-id" class="text-white font-tech font-bold"></span></p></div><div id="payment-instruction-box" class="bg-panelbg border border-slate-700 p-6 rounded space-y-4 shadow-lg hidden"><h4 class="text-neonred font-bold text-sm">請於 24 小時內完成付款，否則訂單將自動取消</h4><div class="bg-darkbg p-4 rounded border border-slate-800 text-gray-300 text-sm leading-relaxed" id="payment-details-text"></div><div class="border-t border-slate-700 pt-4 mt-4"><button onclick="handleUserClick(); switchMemberTab('orders');" class="w-full py-3 bg-slate-800 text-neoncyan font-bold tech-clip text-sm hover:bg-neoncyan hover:text-black transition uppercase tracking-widest">前往訂單紀錄查看與回報</button></div></div></div>
+    <div id="member-view" class="px-4 py-8 hidden">
+      <!-- 頂部：姓名 + 信箱 + 登出 -->
+      <div class="bg-darkbg border border-neoncyan/40 tech-clip p-5 mb-5 flex items-center justify-between">
+        <div>
+          <div class="text-xs text-gray-500 tracking-widest mb-1">歡迎回來</div>
+          <h3 class="text-xl font-bold text-neoncyan" id="member-name" style="text-shadow:0 0 8px rgba(0,243,255,0.45)">Apple 客戶</h3>
+          <div class="text-xs text-gray-400 mt-1" id="member-email-display"></div>
+        </div>
+        <button onclick="logout()" class="text-gray-500 hover:text-neonred text-xl transition"><i class="fa-solid fa-right-from-bracket"></i></button>
+      </div>
+      <!-- 統計卡片 -->
+      <div class="grid grid-cols-2 gap-3 mb-6">
+        <div class="bg-panelbg border border-goldlight/40 tech-clip p-4">
+          <div class="flex items-center justify-between mb-2"><span class="text-xs text-gray-400">累積消費</span><i class="fa-solid fa-wallet text-goldlight text-sm opacity-60"></i></div>
+          <div class="text-xl font-bold text-goldlight" id="stat-spend">NT$0</div>
+        </div>
+        <div class="bg-panelbg border border-neoncyan/30 tech-clip p-4">
+          <div class="flex items-center justify-between mb-2"><span class="text-xs text-gray-400">總訂單</span><i class="fa-solid fa-bag-shopping text-neoncyan text-sm opacity-60"></i></div>
+          <div class="text-xl font-bold text-white" id="stat-total">0</div>
+        </div>
+        <div class="bg-green-900/20 border border-green-500/40 tech-clip p-4">
+          <div class="flex items-center justify-between mb-2"><span class="text-xs text-gray-400">已完成</span><i class="fa-solid fa-truck text-green-400 text-sm opacity-70"></i></div>
+          <div class="text-xl font-bold text-green-400" id="stat-completed">0</div>
+        </div>
+        <div class="bg-amber-900/20 border border-amber-500/40 tech-clip p-4">
+          <div class="flex items-center justify-between mb-2"><span class="text-xs text-gray-400">待付款</span><i class="fa-regular fa-clock text-amber-400 text-sm opacity-70"></i></div>
+          <div class="text-xl font-bold text-amber-400" id="stat-pending">0</div>
+        </div>
+      </div>
+      <!-- Tabs -->
+      <div class="flex gap-4 border-b border-slate-800 mb-6">
+        <button onclick="switchMemberTab('orders')" id="tab-btn-orders" class="member-tab-btn pb-2 text-sm font-bold text-gray-500 transition">訂單紀錄</button>
+        <button onclick="switchMemberTab('profile')" id="tab-btn-profile" class="member-tab-btn member-tab-active pb-2 text-sm font-bold text-gray-500 transition">個人資料</button>
+        <button onclick="switchMemberTab('coupons')" id="tab-btn-coupons" class="member-tab-btn pb-2 text-sm font-bold text-gray-500 transition">優惠券</button>
+      </div>
+      <!-- 訂單紀錄 -->
+      <div id="member-tab-orders" class="hidden space-y-4"><div id="orders-container" class="space-y-4"></div></div>
+      <!-- 優惠券 -->
+      <div id="member-tab-coupons" class="hidden space-y-4"><div id="coupons-container"></div></div>
+      <!-- 個人資料 -->
+      <div id="member-tab-profile" class="space-y-6">
+        <div class="bg-darkbg border border-slate-700 p-5 rounded">
+          <!-- 標題 + 按鈕列 -->
+          <div class="flex items-center justify-between mb-4">
+            <h4 class="text-sm font-bold text-white">基本資料</h4>
+            <button id="profile-edit-btn" onclick="toggleProfileEdit(true)" class="text-xs text-gray-400 hover:text-neoncyan transition flex items-center gap-1"><i class="fa-solid fa-pen text-xs"></i> 編輯</button>
+            <div id="profile-save-btns" class="hidden flex gap-2">
+              <button onclick="toggleProfileEdit(false)" class="text-xs text-gray-500 hover:text-white transition px-3 py-1 border border-slate-600 rounded">取消</button>
+              <button onclick="saveProfile()" class="text-xs text-black font-bold bg-neoncyan px-3 py-1 rounded hover:bg-white transition">儲存</button>
+            </div>
+          </div>
+          <!-- 檢視模式 -->
+          <div id="profile-view-rows" class="space-y-4">
+            <div class="flex items-start gap-3">
+              <i class="fa-regular fa-envelope text-gray-500 text-sm mt-0.5 w-4 shrink-0"></i>
+              <div class="flex-grow min-w-0">
+                <div class="text-xs text-gray-500 mb-0.5">EMAIL</div>
+                <div class="text-sm text-white break-all" id="view-email">—</div>
+              </div>
+              <span class="text-xs text-gray-600 border border-slate-700 px-2 py-0.5 rounded shrink-0">不可修改</span>
+            </div>
+            <div class="flex items-start gap-3">
+              <i class="fa-regular fa-user text-gray-500 text-sm mt-0.5 w-4 shrink-0"></i>
+              <div><div class="text-xs text-gray-500 mb-0.5">姓名</div><div class="text-sm text-white" id="view-name">—</div></div>
+            </div>
+            <div class="flex items-start gap-3">
+              <i class="fa-solid fa-phone text-gray-500 text-sm mt-0.5 w-4 shrink-0"></i>
+              <div><div class="text-xs text-gray-500 mb-0.5">電話</div><div class="text-sm text-white" id="view-phone">—</div></div>
+            </div>
+            <div class="flex items-start gap-3">
+              <i class="fa-solid fa-location-dot text-gray-500 text-sm mt-0.5 w-4 shrink-0"></i>
+              <div><div class="text-xs text-gray-500 mb-0.5">地址</div><div class="text-sm text-white" id="view-address">—</div></div>
+            </div>
+            <div class="flex items-start gap-3">
+              <i class="fa-regular fa-calendar text-gray-500 text-sm mt-0.5 w-4 shrink-0"></i>
+              <div><div class="text-xs text-gray-500 mb-0.5">生日</div><div class="text-sm text-white" id="view-birthday">—</div></div>
+            </div>
+            <p class="text-xs text-gray-300 pl-7">生日僅可設定一次，儲存後不可修改。<span class="text-neoncyan">生日當月將獲得專屬優惠券，別忘了回來使用 🎁</span></p>
+          </div>
+          <!-- 編輯模式 -->
+          <div id="profile-edit-fields" class="hidden space-y-4">
+            <div>
+              <label class="text-xs text-gray-500 block mb-1">EMAIL（不可修改）</label>
+              <input id="profile-email" type="email" readonly class="w-full bg-panelbg border border-slate-700 text-gray-500 p-3 rounded text-sm">
+            </div>
+            <div>
+              <label class="text-xs text-neoncyan block mb-1">姓名</label>
+              <input id="profile-name" type="text" class="w-full bg-panelbg border border-neoncyan/40 text-white p-3 rounded hover:border-neoncyan/70 focus:outline-none focus:border-neoncyan focus:shadow-[0_0_8px_rgba(0,243,255,0.4)] transition text-sm">
+            </div>
+            <div>
+              <label class="text-xs text-neoncyan block mb-1">手機號碼</label>
+              <input id="profile-phone" type="tel" class="w-full bg-panelbg border border-neoncyan/40 text-white p-3 rounded hover:border-neoncyan/70 focus:outline-none focus:border-neoncyan focus:shadow-[0_0_8px_rgba(0,243,255,0.4)] transition text-sm">
+            </div>
+            <div>
+              <label class="text-xs text-neoncyan block mb-1">常用地址</label>
+              <textarea id="profile-address" rows="2" class="w-full bg-panelbg border border-neoncyan/40 text-white p-3 rounded hover:border-neoncyan/70 focus:outline-none focus:border-neoncyan focus:shadow-[0_0_8px_rgba(0,243,255,0.4)] transition text-sm"></textarea>
+            </div>
+            <div>
+              <label class="text-xs text-neoncyan block mb-1">生日</label>
+              <div class="flex gap-2">
+                <select id="profile-birth-year" class="flex-1 bg-panelbg border border-neoncyan/40 text-white p-3 rounded hover:border-neoncyan/70 focus:outline-none focus:border-neoncyan transition text-sm"><option value="">年</option></select>
+                <select id="profile-birth-month" class="flex-1 bg-panelbg border border-neoncyan/40 text-white p-3 rounded hover:border-neoncyan/70 focus:outline-none focus:border-neoncyan transition text-sm"><option value="">月</option></select>
+                <select id="profile-birth-day" class="flex-1 bg-panelbg border border-neoncyan/40 text-white p-3 rounded hover:border-neoncyan/70 focus:outline-none focus:border-neoncyan transition text-sm"><option value="">日</option></select>
+              </div>
+              <p class="text-xs text-gray-300 mt-1">生日僅可設定一次，儲存後不可修改。<span class="text-neoncyan">生日當月將獲得專屬優惠券，別忘了回來使用 🎁</span></p>
+            </div>
+          </div>
+        </div>
+        <div class="bg-darkbg border border-slate-700 p-5 rounded space-y-3"><h4 class="text-xs font-bold text-gray-400 border-l-4 border-neoncyan pl-2">最近訂單</h4><div id="profile-recent-orders"></div><button onclick="switchMemberTab('orders')" class="w-full py-3 bg-slate-800 text-neoncyan font-bold tech-clip text-xs hover:bg-neoncyan hover:text-black transition uppercase tracking-widest">查看全部訂單紀錄</button></div>
+        <div class="bg-darkbg border border-slate-700 p-5 rounded"><a href="https://line.me/R/ti/p/@apple911" target="_blank" class="flex items-center justify-between"><span class="text-xs text-gray-400">官方 LINE</span><span class="text-[#06C755] font-bold text-sm font-tech"><i class="fa-brands fa-line mr-1"></i>@apple911</span></a></div>
+        <div class="bg-darkbg border border-slate-700 p-5 rounded"><button onclick="openTerms('member')" class="flex items-center justify-between w-full"><span class="text-xs text-gray-400">會員條款</span><span class="text-neoncyan text-xs font-bold">閱讀 →</span></button></div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="bg-panelbg border-t border-slate-800 mt-auto py-10 relative z-10"><div class="text-center mb-6"><h2 class="text-xl font-black text-white tracking-widest font-esport">APPLE <span class="text-gold-gradient">911</span></h2><p class="text-neoncyan text-[10px] font-bold mt-1 tracking-widest uppercase">OFFICIAL SERVICE HUB</p></div><div class="max-w-md mx-auto grid grid-cols-2 gap-3 px-4 text-xs font-bold text-gray-400 text-center"><button onclick="openTerms('payment')" class="bg-darkbg border border-slate-800 p-4 tech-clip hover:text-neoncyan hover:border-neoncyan transition">付款資訊</button><button onclick="openTerms('shipping')" class="bg-darkbg border border-slate-800 p-4 tech-clip hover:text-neoncyan hover:border-neoncyan transition">配送取件</button><button onclick="openTerms('tracking')" class="bg-darkbg border border-slate-800 p-4 tech-clip hover:text-neoncyan hover:border-neoncyan transition">進度查詢</button><button onclick="openTerms('returns')" class="bg-darkbg border border-slate-800 p-4 tech-clip hover:text-neoncyan hover:border-neoncyan transition">退換貨政策</button><button onclick="openTerms('warranty')" class="bg-darkbg border border-slate-800 p-4 tech-clip hover:text-neoncyan hover:border-neoncyan transition">維修保固</button><button onclick="openTerms('terms')" class="bg-darkbg border border-slate-800 p-4 tech-clip hover:text-neoncyan hover:border-neoncyan transition">服務條款</button></div><div class="text-center mt-8 text-[9px] text-slate-600 tracking-widest">&copy; 2026 APPLE 911.</div></footer>
+
+  <div class="fixed bottom-6 right-6 z-[70] flex flex-col items-end"><div id="fab-menu" class="fab-menu flex flex-col gap-3 mb-3 mr-1 items-center"><a href="#" class="w-10 h-10 bg-white rounded-full flex items-center justify-center text-blue-500 shadow-lg transition"><i class="fa-solid fa-location-dot text-xl"></i></a><a href="#" class="w-10 h-10 bg-[#1877F2] rounded-full flex items-center justify-center text-white shadow-lg transition"><i class="fa-brands fa-facebook-f text-xl"></i></a><a href="#" class="w-10 h-10 bg-[#06C755] rounded-full flex items-center justify-center text-white shadow-lg transition"><i class="fa-brands fa-line text-2xl"></i></a><a href="#" class="w-10 h-10 rounded-full flex items-center justify-center text-white shadow-lg transition" style="background:radial-gradient(circle at 30% 107%,#fdf497 0%,#fdf497 5%,#fd5949 45%,#d6249f 60%,#285AEB 90%);"><i class="fa-brands fa-instagram text-xl"></i></a></div><button onclick="toggleFab()" class="w-14 h-14 bg-neoncyan text-black rounded-full flex items-center justify-center shadow-lg tech-btn animate-pulse transition"><i id="fab-icon" class="fa-solid fa-headset text-2xl fab-main-icon"></i></button></div>
+  <!-- 取消訂單確認 modal -->
+  <div id="cancel-order-modal" class="fixed inset-0 bg-black/90 z-[105] hidden items-center justify-center p-4 backdrop-blur-sm">
+    <div class="bg-panelbg border-t-4 border-neonred w-full max-w-sm tech-clip shadow-[0_0_30px_rgba(255,0,60,0.2)]">
+      <div class="p-5 flex justify-between items-center border-b border-white/10">
+        <h3 class="font-bold text-neonred tracking-widest text-sm"><i class="fa-solid fa-triangle-exclamation mr-2"></i>取消訂單</h3>
+        <button onclick="document.getElementById('cancel-order-modal').classList.replace('flex','hidden')" class="text-gray-400 hover:text-white transition"><i class="fa-solid fa-xmark text-xl"></i></button>
+      </div>
+      <div class="p-6 text-sm text-gray-300">確定要取消此訂單？<span class="text-neonred font-bold">取消後無法復原。</span></div>
+      <div class="p-4 bg-darkbg border-t border-white/5 flex gap-3">
+        <button onclick="document.getElementById('cancel-order-modal').classList.replace('flex','hidden')" class="flex-1 py-3 bg-slate-800 text-gray-300 font-bold tech-clip hover:bg-slate-700 transition tracking-widest text-sm">返回</button>
+        <button id="cancel-order-confirm-btn" class="flex-1 py-3 bg-neonred text-white font-bold tech-clip hover:bg-white hover:text-black transition tracking-widest text-sm">確定取消</button>
+      </div>
+    </div>
+  </div>
+  <!-- 匯款資訊 modal -->
+  <div id="payment-info-modal" class="fixed inset-0 bg-black/90 z-[105] hidden items-center justify-center p-4 backdrop-blur-sm">
+    <div class="bg-panelbg border-t-4 border-neoncyan w-full max-w-sm tech-clip shadow-[0_0_30px_rgba(0,243,255,0.2)]">
+      <div class="p-5 flex justify-between items-center border-b border-white/10">
+        <h3 class="font-bold text-neoncyan tracking-widest text-sm"><i class="fa-solid fa-building-columns mr-2"></i>匯款資訊</h3>
+        <button onclick="document.getElementById('payment-info-modal').classList.replace('flex','hidden')" class="text-gray-400 hover:text-white transition"><i class="fa-solid fa-xmark text-xl"></i></button>
+      </div>
+      <div class="p-6 space-y-3 text-sm">
+        <div class="flex justify-between border-b border-slate-800 pb-2"><span class="text-gray-500 tracking-widest text-xs">銀行</span><span id="pinfo-bank" class="text-white font-bold"></span></div>
+        <div class="flex justify-between border-b border-slate-800 pb-2"><span class="text-gray-500 tracking-widest text-xs">帳號</span><span id="pinfo-account" class="text-neoncyan font-tech font-bold tracking-widest"></span></div>
+        <div class="flex justify-between pb-2"><span class="text-gray-500 tracking-widest text-xs">戶名</span><span id="pinfo-name" class="text-white"></span></div>
+        <p class="text-[10px] text-gray-500 pt-2 border-t border-slate-800">匯款完成後請點「回報匯款」填入帳號末 5 碼</p>
+      </div>
+      <div class="p-4 bg-darkbg border-t border-white/5">
+        <button onclick="document.getElementById('payment-info-modal').classList.replace('flex','hidden')" class="w-full py-3 bg-slate-800 text-neoncyan font-bold tech-clip hover:bg-white hover:text-black transition tracking-widest text-sm uppercase">我已了解</button>
+      </div>
+    </div>
+  </div>
+  <!-- 回報匯款 modal -->
+  <div id="report-payment-modal" class="fixed inset-0 bg-black/90 z-[105] hidden items-center justify-center p-4 backdrop-blur-sm">
+    <div class="bg-panelbg border-t-4 border-neoncyan w-full max-w-sm tech-clip shadow-[0_0_30px_rgba(0,243,255,0.2)]">
+      <div class="p-5 flex justify-between items-center border-b border-white/10">
+        <h3 class="font-bold text-neoncyan tracking-widest text-sm"><i class="fa-solid fa-paper-plane mr-2"></i>回報匯款</h3>
+        <button onclick="document.getElementById('report-payment-modal').classList.replace('flex','hidden')" class="text-gray-400 hover:text-white transition"><i class="fa-solid fa-xmark text-xl"></i></button>
+      </div>
+      <div class="p-6 space-y-4">
+        <p class="text-xs text-gray-400">請輸入您匯款帳號的末 5 碼，以便客服核對款項。</p>
+        <input id="report-last5-input" type="text" maxlength="5" inputmode="numeric" placeholder="帳號末 5 碼" class="w-full bg-darkbg border border-slate-700 text-white p-3 tech-clip text-sm outline-none focus:border-neoncyan transition tracking-widest text-center font-tech text-lg">
+        <p id="report-last5-error" class="text-neonred text-[10px] hidden">請輸入正確的 5 位數字</p>
+      </div>
+      <div class="p-4 bg-darkbg border-t border-white/5 flex gap-3">
+        <button onclick="document.getElementById('report-payment-modal').classList.replace('flex','hidden')" class="flex-1 py-3 bg-slate-800 text-gray-300 font-bold tech-clip hover:bg-slate-700 transition tracking-widest text-sm">取消</button>
+        <button id="report-payment-confirm-btn" class="flex-1 py-3 bg-neoncyan text-black font-bold tech-clip hover:bg-white transition tracking-widest text-sm">確認送出</button>
+      </div>
+    </div>
+  </div>
+  <div id="terms-modal" class="fixed inset-0 bg-black/90 z-[100] hidden items-center justify-center p-4 backdrop-blur-sm" onclick="closeTerms(event)"><div class="bg-panelbg border-t-4 border-neoncyan w-full max-w-lg tech-clip flex flex-col max-h-[85vh] overflow-hidden shadow-[0_0_30px_rgba(0,243,255,0.2)]" onclick="event.stopPropagation()"><div class="p-5 flex justify-between items-center border-b border-white/10 shrink-0"><h3 id="modal-title" class="font-bold text-neoncyan tracking-widest text-lg"></h3><button onclick="closeTerms()" class="text-gray-400 hover:text-white transition"><i class="fa-solid fa-xmark text-xl"></i></button></div><div id="modal-content" class="p-6 overflow-y-auto space-y-4 text-sm text-gray-300 leading-relaxed custom-scrollbar font-sans"></div><div class="p-4 bg-darkbg border-t border-white/5 shrink-0"><button onclick="closeTerms()" class="w-full py-4 bg-slate-800 text-neoncyan font-bold tech-clip hover:bg-white hover:text-black transition tracking-widest uppercase">我已了解關閉</button></div></div></div>
+  <div id="auth-modal" class="fixed inset-0 bg-black/95 z-[80] hidden items-center justify-center p-4 backdrop-blur-sm"><div class="bg-panelbg border-t-2 border-neoncyan w-full max-w-sm tech-clip overflow-hidden shadow-[0_0_30px_rgba(0,243,255,0.2)]"><div class="p-4 flex justify-between items-center border-b border-white/5"><h3 class="font-bold text-neoncyan tracking-widest font-esport text-lg flex items-center gap-2"><i class="fa-solid fa-fingerprint"></i> <span id="auth-title">SYSTEM LOGIN</span></h3><button onclick="closeAuth()" class="text-gray-400 hover:text-white transition"><i class="fa-solid fa-xmark text-xl"></i></button></div><div id="auth-view-login" class="p-6"><div class="space-y-4"><input id="login-account" type="text" placeholder="手機 或 信箱 PHONE / EMAIL" class="w-full bg-darkbg border border-slate-700 text-white p-3 tech-clip text-sm outline-none focus:border-neoncyan transition"><input id="login-password" type="password" placeholder="登入密碼 PASSWORD" class="w-full bg-darkbg border border-slate-700 text-white p-3 tech-clip text-sm outline-none focus:border-neoncyan transition"></div><button onclick="window._fbLogin?window._fbLogin():simLogin('登入成功')" class="w-full py-4 bg-neoncyan text-black font-bold tech-clip mt-6 text-sm tracking-widest shadow-[0_0_15px_rgba(0,243,255,0.2)] hover:bg-white transition">登入系統 CONNECT</button><div class="relative flex items-center my-6"><div class="flex-grow border-t border-slate-800"></div><span class="px-3 text-[10px] text-gray-500 tracking-widest uppercase">快速連線 SSO</span><div class="flex-grow border-t border-slate-800"></div></div><div class="space-y-3"><button onclick="window._fbGoogleLogin?window._fbGoogleLogin():simLogin('Google 授權成功')" class="w-full py-3 bg-darkbg border border-gray-600 text-gray-300 font-bold tech-clip flex justify-center items-center gap-2 hover:bg-white/5 transition"><i class="fa-brands fa-google text-lg"></i> GOOGLE</button><button onclick="window._lineLogin?window._lineLogin():showToast('LINE 登入準備中')" class="w-full py-3 bg-darkbg border border-[#06C755] text-[#06C755] font-bold tech-clip flex justify-center items-center gap-2 hover:bg-[#06C755]/10 transition"><i class="fa-brands fa-line text-lg"></i> LINE</button></div><div class="text-center mt-6 text-xs text-gray-500 space-y-2"><div>尚未加入？ <button onclick="switchAuth('register')" class="text-neoncyan font-bold hover:underline">建立帳號 REGISTER</button></div><div><button onclick="switchAuth('forgot')" class="text-gray-400 hover:text-white transition">忘記密碼？ FORGOT PASSWORD</button></div></div></div><div id="auth-view-register" class="p-6 hidden overflow-y-auto max-h-[80vh] custom-scrollbar"><div class="space-y-3">
+  <input id="reg-name" type="text" placeholder="真實姓名（取件核對用，請勿亂填）" class="w-full bg-darkbg border border-slate-700 text-white p-3 tech-clip text-sm outline-none focus:border-neoncyan transition">
+  <input id="reg-phone" type="tel" placeholder="手機號碼（登入帳號之一）" class="w-full bg-darkbg border border-slate-700 text-white p-3 tech-clip text-sm outline-none focus:border-neoncyan transition">
+  <input id="reg-email" type="email" placeholder="信箱（登入帳號之一）" class="w-full bg-darkbg border border-slate-700 text-white p-3 tech-clip text-sm outline-none focus:border-neoncyan transition">
+  <div>
+    <input id="reg-password" type="password" placeholder="設定密碼（大寫+小寫+數字，至少8碼）" class="w-full bg-darkbg border border-slate-700 text-white p-3 tech-clip text-sm outline-none focus:border-neoncyan transition" oninput="checkRegPass()">
+    <div id="reg-pass-hint" class="text-[10px] mt-1 text-gray-500 tracking-wide hidden">
+      <span id="rph-len" class="mr-2">✗ 至少8碼</span><span id="rph-upper" class="mr-2">✗ 大寫</span><span id="rph-lower" class="mr-2">✗ 小寫</span><span id="rph-num">✗ 數字</span>
+    </div>
+  </div>
+  <div class="border border-amber-500/40 bg-amber-500/5 p-3 tech-clip">
+    <p class="text-[10px] text-amber-400 font-bold tracking-wide mb-2">⚠ 生日填寫後<span class="text-neonred">無法修改</span>，當月享有專屬優惠</p>
+    <div class="flex gap-2">
+      <select id="reg-birth-year" class="flex-1 bg-darkbg border border-amber-500/50 text-amber-300 p-2 tech-clip text-xs outline-none focus:border-amber-400 transition" onchange="updateRegBirthDays()"><option value="">年</option></select>
+      <select id="reg-birth-month" class="flex-1 bg-darkbg border border-amber-500/50 text-amber-300 p-2 tech-clip text-xs outline-none focus:border-amber-400 transition" onchange="updateRegBirthDays()"><option value="">月</option></select>
+      <select id="reg-birth-day" class="flex-1 bg-darkbg border border-amber-500/50 text-amber-300 p-2 tech-clip text-xs outline-none focus:border-amber-400 transition"><option value="">日</option></select>
+    </div>
+  </div>
+  <input id="reg-address" type="text" placeholder="地址（結帳時自動預填）" class="w-full bg-darkbg border border-slate-700 text-white p-3 tech-clip text-sm outline-none focus:border-neoncyan transition">
+</div>
+<p id="reg-error" class="text-neonred text-xs mt-3 hidden"></p>
+<button onclick="validateAndRegister()" class="w-full py-4 bg-neoncyan text-black font-bold tech-clip mt-4 text-sm tracking-widest shadow-[0_0_15px_rgba(0,243,255,0.2)] hover:bg-white transition">加入會員 REGISTER</button>
+<div class="text-center mt-4 text-xs text-gray-500">已有帳號？ <button onclick="switchAuth('login')" class="text-neoncyan font-bold hover:underline">返回登入 LOGIN</button></div></div><div id="auth-view-forgot" class="p-6 hidden"><p class="text-[10px] text-gray-500 tracking-widest mb-4 leading-relaxed">輸入您的註冊信箱，系統將寄送密碼重設連結。</p><input id="forgot-email" type="email" placeholder="註冊信箱 EMAIL" class="w-full bg-darkbg border border-slate-700 text-white p-3 tech-clip text-sm outline-none focus:border-neoncyan transition"><button onclick="window._fbSendPasswordReset?window._fbSendPasswordReset():showToast('功能暫不可用')" class="w-full py-4 bg-neoncyan text-black font-bold tech-clip mt-6 text-sm tracking-widest shadow-[0_0_15px_rgba(0,243,255,0.2)] hover:bg-white transition">發送重設信 SEND RESET</button><div class="text-center mt-6 text-xs text-gray-500"><button onclick="switchAuth('login')" class="text-gray-400 hover:text-white transition">返回登入 LOGIN</button></div></div></div></div>
+  <div class="overlay fixed inset-0 bg-black/60 z-[50]" onclick="closeAllDrawers()"></div>
+  <div class="cart-drawer drawer-transition bg-panelbg border-l border-neoncyan fixed inset-y-0 right-0 w-full md:w-[400px] z-[60] flex flex-col shadow-2xl"><div class="p-5 border-b border-slate-800 flex justify-between items-center shrink-0"><h2 class="font-bold text-white tracking-widest">CART</h2><button onclick="closeAllDrawers()" class="text-neoncyan transition hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button></div><div class="flex-grow p-4 space-y-3 overflow-y-auto" id="cart-items"></div><div class="p-5 bg-darkbg border-t border-slate-800 shrink-0"><div class="flex justify-between text-white font-bold mb-4"><span>總計金額</span><span id="cart-total" class="text-goldlight font-tech text-lg">NT$ 0</span></div><button onclick="checkout()" class="w-full py-4 mb-3 bg-blue-600 text-white font-bold tech-clip hover:bg-blue-500 transition">結帳 CHECKOUT</button><button onclick="closeAllDrawers()" class="w-full py-4 bg-transparent border border-slate-700 text-gray-400 font-bold tech-clip transition">繼續購物 CONTINUE</button></div></div>
+  <div id="prod-modal" class="fixed inset-0 bg-black/80 z-[90] hidden items-center justify-center p-4 backdrop-blur-sm" onclick="closeProdModal()">
+    <div class="bg-panelbg border-t-4 border-neoncyan w-full max-w-sm tech-clip flex flex-col shadow-[0_0_30px_rgba(0,243,255,0.2)] relative" onclick="event.stopPropagation()">
+      <button onclick="closeProdModal()" class="absolute top-3 right-3 z-10 w-9 h-9 flex items-center justify-center bg-darkbg border border-slate-700 text-gray-400 hover:text-white hover:border-neoncyan transition tech-btn"><i class="fa-solid fa-xmark text-base"></i></button>
+      <div class="p-5 border-b border-white/10 shrink-0 pr-12">
+        <h3 class="font-bold text-neoncyan tracking-widest text-lg">商品資訊</h3>
+      </div>
+      <div class="p-5 space-y-4 overflow-y-auto custom-scrollbar">
+        <div id="prod-modal-img" class="flex justify-center"></div>
+        <div>
+          <p id="prod-modal-name" class="text-white font-bold text-base tracking-wide"></p>
+          <p id="prod-modal-price" class="text-goldlight font-tech text-lg mt-1"></p>
+        </div>
+        <p id="prod-modal-desc" class="text-gray-300 text-sm leading-relaxed"></p>
+      </div>
+      <div class="p-4 bg-darkbg border-t border-white/5 shrink-0">
+        <button id="prod-modal-add-btn" class="w-full py-4 bg-neoncyan text-black font-bold tech-clip hover:bg-white transition tracking-widest uppercase text-sm">加入購物車 ADD TO CART</button>
+      </div>
+    </div>
+  </div>
+  <div id="toast" class="fixed bottom-10 left-1/2 transform -translate-x-1/2 bg-neoncyan text-black px-6 py-3 font-bold tech-clip z-[100] opacity-0 transition-opacity whitespace-nowrap shadow-2xl"></div>
+  <script>
+    let products=[];
+    let categories=[];
+    const twData={'台北市':['中正區','大同區','中山區','松山區','大安區','萬華區','信義區','士林區','北投區','內湖區','南港區','文山區'],'新北市':['板橋區','三重區','中和區','永和區','新莊區','新店區','樹林區','鶯歌區','三峽區','淡水區','汐止區','瑞芳區','土城區','蘆洲區','五股區','泰山區','林口區','深坑區','石碇區','坪林區','三芝區','石門區','八里區','平溪區','雙溪區','貢寮區','金山區','萬里區','烏來區'],'台中市':['中區','東區','南區','西區','北區','北屯區','西屯區','南屯區','太平區','大里區','霧峰區','烏日區','豐原區','後里區','石岡區','東勢區','和平區','新社區','潭子區','大雅區','神岡區','大肚區','沙鹿區','龍井區','梧棲區','清水區','大甲區','外埔區','大安區'],'高雄市':['新興區','前金區','苓雅區','鹽埕區','鼓山區','旗津區','前鎮區','三民區','楠梓區','小港區','左營區','仁武區','大社區','岡山區','路竹區','阿蓮區','田寮區','燕巢區','橋頭區','梓官區','彌陀區','永安區','湖內區','鳳山區','大寮區','林園區','鳥松區','大樹區','旗山區','美濃區','六龜區','內門區','杉林區','甲仙區','桃源區','那瑪夏區','茂林區','茄萣區'],'台南市':['中西區','東區','南區','北區','安平區','安南區','永康區','歸仁區','新化區','left鎮區','玉井區','楠西區','南化區','仁德區','關廟區','龍崎區','官田區','麻豆區','佳里區','西港區','七股區','將軍區','學甲區','北門區','新營區','後壁區','白河區','東山區','六甲區','下營區','柳營區','鹽水區','善化區','大內區','山上區','新市區','安定區'],'桃園市':['中壢區','平鎮區','龍潭區','楊梅區','新屋區','觀音區','桃園區','龜山區','八德區','大溪區','復興區','大園區','蘆竹區'],'基隆市':['仁愛區','信義區','中正區','中山區','安樂區','暖暖區','七堵區'],'新竹市':['東區','北區','香山區'],'新竹縣':['竹北市','竹東鎮','新埔鎮','關西鎮','湖口鄉','新豐鄉','芎林鄉','橫山鄉','北埔鄉','寶山鄉','峨眉鄉','尖石鄉','五峰鄉'],'苗栗縣':['苗栗市','通霄鎮','苑裡鎮','竹南鎮','頭份市','後龍鎮','卓蘭鎮','大湖鄉','公館鄉','銅鑼鄉','南庄鄉','頭屋鄉','三義鄉','西湖鄉','造橋鄉','三灣鄉','獅潭鄉','泰安鄉'],'彰化縣':['彰化市','鹿港鎮','和美鎮','線西鄉','伸港鄉','福興鄉','秀水鄉','花壇鄉','芬園鄉','員林市','溪湖鎮','田中鎮','大村鄉','埔鹽鄉','埔心鄉','永靖鄉','社頭鄉','二水鄉','北斗鎮','二林鎮','田尾鄉','埤頭鄉','芳苑鄉','大城鄉','竹塘鄉','溪州鄉'],'屏東縣':['屏東市','東港鎮','潮州鎮','恆春鎮','萬丹鄉','長治鄉','麟洛鄉','九如鄉','里港鄉','高樹鄉','鹽埔鄉','內埔鄉','竹田鄉','新園鄉','枋寮鄉','琉球鄉'],'宜蘭縣':['宜蘭市','羅東鎮','蘇澳鎮','頭城鎮','礁溪鄉','壯圍鄉','員山鄉','冬山鄉','五結鄉','三星鄉','大同鄉','南澳鄉'],'花蓮縣':['花蓮市','新城鄉','秀林鄉','吉安鄉','壽豐鄉','鳳林鎮','光復鄉','豐濱鄉','瑞穗鄉','萬榮鄉','玉里鎮','卓溪鄉','富里鄉'],'台東縣':['台東市','綠島鄉','蘭嶼鄉','延平鄉','卑南鄉','鹿野鄉','關山鎮','海端鄉','池上鄉','東河鄉','成功鎮','長濱鄉','太麻里鄉','金峰鄉','大武鄉','達仁鄉'],'南投縣':['南投市','埔里鎮','草屯鎮','竹山鎮','集集鎮','名間鄉','鹿谷鄉','中寮鄉','魚池鄉','國姓鄉','信義鄉','仁愛鄉','水里鄉'],'雲林縣':['斗六市','斗南鎮','虎尾鎮','西螺鎮','土庫鎮','北港鎮','古坑鄉','大埤鄉','莿桐鄉','林內鄉','二崙鄉','崙背鄉','麥寮鄉','東勢鄉','褒忠鄉','台西鄉','元長鄉','四湖鄉','口湖鄉','水林鄉'],'嘉義市':['東區','西區'],'嘉義縣':['太保市','朴子市','布袋鎮','大林鎮','民雄鄉','溪口鄉','新港鄉','六腳鄉','東石鄉','義竹鄉','鹿草鄉','水上鄉','中埔鄉','竹崎鄉','梅山鄉','番路鄉','大埔鄉','阿里山鄉'],'澎湖縣':['馬公市','湖西鄉','白沙鄉','西嶼鄉','望安鄉','七美鄉'],'金門縣':['金城鎮','金湖鎮','金沙鎮','金寧鄉','烈嶼鄉','烏坵鄉'],'連江縣':['南竿鄉','北竿鄉','莒光鄉','東引鄉']};
+    const termsData={payment:{title:'付款資訊',content:'...'},shipping:{title:'配送取件',content:'...'},tracking:{title:'進度查詢',content:'...'},returns:{title:'退換貨政策',content:'...'},warranty:{title:'維修保固',content:'...'},terms:{title:'服務條款',content:'...'},member:{title:'會員條款',content:'...'}};
+    /* ── 運費設定（預設值，Firebase store/settings 載入後會覆蓋）── */
+    let SHIPPING_CONFIG = {
+      freeThreshold: 699,
+      cvs:   { fee: 0,   label: '超商取貨' },
+      home:  { mainlandFee: 100, islandFee: 200, label: '宅配到府' },
+      store: { fee: 0,   label: '門市自取' }
+    };
+    let siteSettings = {};
+    // 目前取貨方式（'cvs' | 'home' | 'store' | ''）
+    let currentShipping = '';
+    let coupons = [];
+    let appliedCoupon = null;
+
+    let cart=[];
+    let orders=[];
+    let isLoggedIn=false;
+    window._memberProfile = null;
+    function toggleMenu(){document.querySelector('.menu-drawer').classList.toggle('open');document.querySelector('.overlay').classList.toggle('open');}
+    function toggleCart(){document.querySelector('.cart-drawer').classList.toggle('open');document.querySelector('.overlay').classList.toggle('open');}
+    function closeAllDrawers(){document.querySelector('.menu-drawer').classList.remove('open');document.querySelector('.cart-drawer').classList.remove('open');document.querySelector('.overlay').classList.remove('open');}
+    function showToast(msg){const t=document.getElementById('toast');t.innerText=msg;t.classList.replace('opacity-0','opacity-100');setTimeout(()=>t.classList.replace('opacity-100','opacity-0'),2000);}
+    function showSection(id){['home-view','product-view','member-view','checkout-view','order-success-view'].forEach(v=>document.getElementById(v).classList.add('hidden'));document.getElementById(id+'-view').classList.remove('hidden');closeAllDrawers();window.scrollTo(0,0);if(id==='member'){switchMemberTab('profile');renderMemberStats();}}
+    function _getLatestProducts(){return products;}
+    function renderFrontCategories(){const cats=categories;const sidebarEl=document.getElementById('front-cat-list');if(sidebarEl)renderSidebarMenu(cats);const gridEl=document.getElementById('home-cat-grid');if(gridEl){if(cats.length===0){gridEl.innerHTML='<div class="col-span-2 text-center py-10 text-gray-500 text-xs tracking-widest">載入分類中...</div>';}else{gridEl.innerHTML=cats.map(c=>`<div class="bg-darkbg border border-slate-800 p-6 tech-clip text-center cursor-pointer hover:border-neoncyan transition group" onclick="applyFilter('${c.name}')"><i class="fa-solid fa-tag text-4xl text-slate-600 mb-3 group-hover:text-neoncyan transition"></i><h3 class="font-bold text-white text-sm">${c.name}</h3></div>`).join('')+`<div class="bg-slate-900 border border-slate-700 p-6 tech-clip text-center cursor-pointer hover:border-goldlight transition col-span-2 group" onclick="applyFilter('all')"><i class="fa-solid fa-globe text-4xl text-slate-500 mb-3 group-hover:text-goldlight transition"></i><h3 class="font-bold text-gold-gradient text-sm">瀏覽全部 <span class="en-sub block mt-1">VIEW ALL</span></h3></div>`;}}}
+
+    function renderSidebarMenu(catsArg){
+      const sidebarEl=document.getElementById('front-cat-list');
+      if(!sidebarEl)return;
+      sidebarEl.innerHTML=catsArg.map(c=>{
+        const hasBrands=c.brands&&c.brands.length>0;
+        return`<div class="sidebar-item" id="sidebar-item-${c.id}">
+          <button onclick="${hasBrands?`sidebarToggleItem(${c.id})`:`applyFilter('${c.name}')`}" class="w-full text-left p-4 bg-darkbg border border-neoncyan/20 text-gray-400 font-bold tech-clip transition uppercase hover:bg-white/5 hover:border-neoncyan hover:text-white group flex justify-between items-center">
+            <span><i class="fa-solid fa-tag mr-2 text-neoncyan/50 group-hover:text-neoncyan transition"></i>${c.name}</span>
+            ${hasBrands?`<i class="fa-solid fa-chevron-right text-xs text-neoncyan/40 transition" id="sidebar-arrow-${c.id}"></i>`:''}
+          </button>
+          ${hasBrands?`<div class="hidden pl-2 space-y-1 mt-1" id="sidebar-brands-${c.id}">${c.brands.map(b=>{
+            const hasSeries=b.series&&b.series.length>0;
+            return`<div id="sidebar-brand-${c.id}-${b.id}">
+              <button onclick="${hasSeries?`sidebarToggleBrand(${c.id},${b.id})`:`applyFilter('${c.name}')`}" class="w-full text-left px-4 py-2 text-sm text-gray-400 hover:text-neoncyan transition flex justify-between items-center">
+                <span><i class="fa-solid fa-chevron-right text-[10px] mr-2 text-neoncyan/30"></i>${b.name}</span>
+                ${hasSeries?`<i class="fa-solid fa-chevron-right text-xs text-neoncyan/30 transition" id="sidebar-arrow-${c.id}-${b.id}"></i>`:''}
+              </button>
+              ${hasSeries?`<div class="hidden pl-4 space-y-1" id="sidebar-series-${c.id}-${b.id}">${b.series.map(s=>`
+                <button onclick="sidebarSelectSeries(${c.id},'${c.name}',${b.id},'${b.name}',${s.id},'${s.name}')" class="w-full text-left px-4 py-2 text-xs text-gray-500 hover:text-white hover:bg-white/5 transition rounded">
+                  <i class="fa-solid fa-minus text-[8px] mr-2 text-neoncyan/20"></i>${s.name}
+                </button>`).join('')}</div>`:''}
+            </div>`;
+          }).join('')}</div>`:''}
+        </div>`;
+      }).join('');
+    }
+    function sidebarToggleItem(itemId){
+      const brandsEl=document.getElementById('sidebar-brands-'+itemId);
+      const arrowEl=document.getElementById('sidebar-arrow-'+itemId);
+      if(!brandsEl)return;
+      const isOpen=!brandsEl.classList.contains('hidden');
+      // 關閉其他已展開的分類
+      document.querySelectorAll('[id^="sidebar-brands-"]').forEach(el=>{el.classList.add('hidden');});
+      document.querySelectorAll('[id^="sidebar-arrow-"]:not([id*="-"],[id*="--"])').forEach(el=>{el.style.transform='';});
+      if(!isOpen){
+        brandsEl.classList.remove('hidden');
+        if(arrowEl)arrowEl.style.transform='rotate(90deg)';
+        sidebarOpenItemId=itemId;
+      } else {
+        sidebarOpenItemId=null;
+      }
+      sidebarOpenBrandId=null;
+    }
+    function sidebarToggleBrand(itemId,brandId){
+      const seriesEl=document.getElementById(`sidebar-series-${itemId}-${brandId}`);
+      const arrowEl=document.getElementById(`sidebar-arrow-${itemId}-${brandId}`);
+      if(!seriesEl)return;
+      const isOpen=!seriesEl.classList.contains('hidden');
+      // 關閉同分類下其他品牌
+      const brandsEl=document.getElementById('sidebar-brands-'+itemId);
+      if(brandsEl){brandsEl.querySelectorAll('[id^="sidebar-series-"]').forEach(el=>el.classList.add('hidden'));brandsEl.querySelectorAll('[id^="sidebar-arrow-"]').forEach(el=>{el.style.transform='';});}
+      if(!isOpen){
+        seriesEl.classList.remove('hidden');
+        if(arrowEl)arrowEl.style.transform='rotate(90deg)';
+        sidebarOpenBrandId=brandId;
+      } else {
+        sidebarOpenBrandId=null;
+      }
+    }
+    function sidebarSelectSeries(itemId,itemName,brandId,brandName,seriesId,seriesName){
+      frontPath=[{id:itemId,name:itemName},{id:brandId,name:brandName},{id:seriesId,name:seriesName}];
+      const list=document.getElementById('product-list');
+      if(!list)return;
+      const allProds=_getLatestProducts();
+      const active=allProds.filter(p=>p.active!==false);
+      const filtered=active.filter(p=>p.seriesId==seriesId);
+      document.getElementById('current-view-title').innerText=seriesName;
+      list.innerHTML=filtered.map(_prodCard).join('')||`<p class="col-span-2 lg:col-span-4 text-center py-10 text-gray-500 text-sm tracking-widest">${seriesName} 尚無商品</p>`;
+      showSection('product');
+      closeAllDrawers();
+    }
+    let frontPath=[];
+    let sidebarOpenItemId=null;
+    let sidebarOpenBrandId=null;
+    function _getFrontCats(){return categories.length>0?categories:[{id:1,name:'手機殼',brands:[{id:101,name:'Apple',series:[{id:1001,name:'iPhone 16系列'},{id:1002,name:'iPhone 15系列'}]}]},{id:2,name:'維修服務',brands:[]},{id:3,name:'保護貼',brands:[]}];}
+    function _prodCard(p){const imgHtml=p.image?`<img src="${p.image}" class="h-20 w-full object-contain mb-3">`:`<div class="h-24 flex items-center justify-center text-4xl text-slate-600 mb-3 group-hover:text-neoncyan transition"><i class="fa-solid ${p.img||'fa-box'}"></i></div>`;return`<div class="bg-darkbg border border-slate-800 p-4 tech-clip flex flex-col text-center hover:border-neoncyan transition group">${imgHtml}<h4 class="text-xs font-bold text-white mb-2 line-clamp-1">${p.name}</h4><div class="text-goldlight font-tech text-sm mb-4">${p.price===0?(p.tag||'現場報價'):'NT$ '+p.price}</div><div class="flex gap-2 mt-auto"><button onclick="openProdModal(${p.id})" class="flex-1 py-3 bg-slate-800 text-neoncyan text-[10px] font-bold rounded hover:bg-slate-700 hover:text-white transition uppercase tracking-widest">商品資訊</button><button onclick="addToCart(${p.id})" class="flex-1 py-3 bg-neoncyan text-black text-[10px] font-bold rounded hover:bg-white transition uppercase tracking-widest">加入購物車</button></div></div>`;}
+    function navFrontBack(){if(frontPath.length>=3){applyFilter(frontPath[0].name);}else{frontPath=[];showSection('home');}}
+    function renderFrontDrill(){/* ... */}
+    function applyFilter(cat){
+      sidebarOpenItemId=null;
+      sidebarOpenBrandId=null;
+      frontPath=[];
+      if(cat!=='all'){
+        const cats=_getFrontCats();
+        const item=cats.find(c=>c.name===cat);
+        if(item && item.brands && item.brands.length > 0){
+          frontPath=[{id:item.id,name:item.name}];
+          // 若有子分類則可選用鑽入式介面，但依需求不阻斷下方商品渲染
+          if(typeof renderFrontDrill === 'function' && renderFrontDrill.toString().indexOf('/*') === -1) {
+            renderFrontDrill();
+          }
+        }
+      }
+      const list=document.getElementById('product-list');
+      if(!list) return;
+      list.innerHTML='';
+      const allProds=_getLatestProducts();
+      const active=allProds.filter(p=>p.active!==false);
+      const filtered=cat==='all'?active:active.filter(p=>p.cat===cat);
+      document.getElementById('current-view-title').innerText=cat==='all'?'全部商品與服務':cat;
+      list.innerHTML=filtered.map(_prodCard).join('')||'<p class="col-span-2 lg:col-span-4 text-center py-10 text-gray-500 text-sm tracking-widest">尚無商品</p>';
+      showSection('product');
+      closeAllDrawers();
+    }
+    function openProdModal(id){const p=_getLatestProducts().find(p=>p.id==id);if(!p)return;const imgEl=document.getElementById('prod-modal-img');imgEl.innerHTML=p.image?`<img src="${p.image}" class="max-h-48 object-contain rounded">`:`<div class="h-32 flex items-center justify-center text-6xl text-slate-600"><i class="fa-solid ${p.img||'fa-box'}"></i></div>`;document.getElementById('prod-modal-name').innerText=p.name||'';document.getElementById('prod-modal-price').innerText=p.price===0?(p.tag||'現場報價'):'NT$ '+p.price;const descEl=document.getElementById('prod-modal-desc');descEl.innerText=(p.description&&p.description.trim())?p.description.trim():'';document.getElementById('prod-modal-add-btn').onclick=()=>{addToCart(id);};const modal=document.getElementById('prod-modal');modal.classList.remove('hidden');modal.classList.add('flex');}
+    function closeProdModal(){const modal=document.getElementById('prod-modal');modal.classList.add('hidden');modal.classList.remove('flex');}
+    function addToCart(id){const p=_getLatestProducts().find(p=>p.id==id);if(!p)return;const exist=cart.find(c=>c.id==id);if(exist){exist.qty++;}else{cart.push({...p,qty:1});}renderCart();showToast('已加入購物車');}
+    function removeFromCart(index){if(cart[index].qty>1){cart[index].qty--;}else{cart.splice(index,1);}renderCart();}
+    function renderCart(){const countBadge=document.getElementById('cart-count'),cartContainer=document.getElementById('cart-items'),totalEl=document.getElementById('cart-total');const totalQty=cart.reduce((s,i)=>s+i.qty,0);countBadge.innerText=totalQty;if(totalQty>0)countBadge.classList.remove('scale-0');else countBadge.classList.add('scale-0');if(cart.length===0){cartContainer.innerHTML='<div class="flex h-full items-center justify-center text-gray-500 font-bold tracking-widest uppercase">EMPTY</div>';totalEl.innerText='NT$ 0';_syncCheckoutItems();return;}let total=0;cartContainer.innerHTML=cart.map((item,index)=>{const lineTotal=item.price*item.qty;total+=lineTotal;return`<div class="bg-darkbg p-4 border border-slate-700 flex justify-between items-center rounded tech-clip"><div class="text-left"><div class="text-white text-sm font-bold">${item.name}${item.qty>1?` ×${item.qty}`:''}</div><div class="text-goldlight font-tech text-sm">NT$ ${lineTotal}</div></div><button onclick="removeFromCart(${index})" class="text-slate-500 hover:text-neonred p-2 transition text-lg"><i class="fa-solid fa-trash-can"></i></button></div>`}).join('');totalEl.innerText='NT$ '+total;try{localStorage.setItem('apple911_cart',JSON.stringify(cart));}catch(e){}_syncCheckoutItems();}
+    function _syncCheckoutItems(){const cv=document.getElementById('checkout-view');if(!cv||cv.classList.contains('hidden'))return;if(cart.length===0){showSection('home');return;}const container=document.getElementById('checkout-cart-items');if(container)container.innerHTML=cart.map(i=>`<div class="flex justify-between items-center text-sm"><span class="text-white">${i.name}${i.qty>1?` ×${i.qty}`:''}</span><span class="text-goldlight font-tech">NT$ ${i.price*i.qty}</span></div>`).join('');updateCheckoutTotal();}
+    function checkout(){
+      if(cart.length===0)return showToast('購物車為空');
+      if(!isLoggedIn){showToast('請先登入');document.getElementById('auth-modal').classList.replace('hidden','flex');return;}
+      closeAllDrawers();
+      showSection('checkout');
+      // 購物清單
+      const container=document.getElementById('checkout-cart-items');
+      if(container){
+        container.innerHTML=cart.map(i=>`<div class="flex justify-between items-center text-sm"><span class="text-white">${i.name}${i.qty>1?` ×${i.qty}`:''}</span><span class="text-goldlight font-tech">NT$ ${i.price*i.qty}</span></div>`).join('');
+      }
+      // 重置取貨卡片 & 欄位狀態
+      currentShipping='';
+      document.querySelectorAll('.ship-card').forEach(c=>c.classList.remove('selected'));
+      ['cvs','home','store'].forEach(m=>{
+        const el=document.getElementById('ship-'+m+'-fields');
+        if(el) el.classList.add('hidden');
+      });
+      const placeholder=document.getElementById('ship-fields-placeholder');
+      if(placeholder) placeholder.classList.remove('hidden');
+      const hintBox=document.getElementById('shipping-fee-hint');
+      if(hintBox) hintBox.classList.add('hidden');
+      // 付款卡片重置
+      document.querySelectorAll('.pay-card').forEach(c=>c.classList.remove('selected'));
+      const payInput=document.getElementById('pay-method');
+      if(payInput) payInput.value='';
+      const payPlaceholder=document.getElementById('pay-placeholder');
+      if(payPlaceholder) payPlaceholder.classList.remove('hidden');
+      const payCards=document.getElementById('pay-cards');
+      if(payCards) payCards.classList.add('hidden');
+      // 重置優惠碼
+      appliedCoupon=null;
+      const cpInput=document.getElementById('coupon-code-input');
+      if(cpInput) cpInput.value='';
+      const discRow=document.getElementById('checkout-discount-row');
+      if(discRow) discRow.classList.add('hidden');
+      renderCheckoutCoupons();
+      // 金額更新
+      updateCheckoutTotal();
+      initCities();
+      prefillCheckout();
+    }
+    function initCities(){
+      const cityEl=document.getElementById('cvs-city');
+      if(!cityEl)return;
+      cityEl.innerHTML='<option value="">請選擇縣市</option>';
+      Object.keys(twData).forEach(city=>{
+        const o=document.createElement('option');
+        o.value=city; o.textContent=city;
+        cityEl.appendChild(o);
+      });
+    }
+    function updateDistricts(){
+      const city=document.getElementById('cvs-city')?.value;
+      const distEl=document.getElementById('cvs-district');
+      if(!distEl)return;
+      distEl.innerHTML='<option value="">請選擇區域</option>';
+      if(!city||!twData[city])return;
+      twData[city].forEach(d=>{
+        const o=document.createElement('option');
+        o.value=d; o.textContent=d;
+        distEl.appendChild(o);
+      });
+    }
+    /* 計算運費（單獨抽出，方便維護） */
+    function calcShippingFee(method, subtotal){
+      if(method==='store') return 0;
+      if(method==='cvs'){
+        // 超商：滿免運門檻免運，否則免運（依條款超商本身無額外運費，統一先付款）
+        return 0;
+      }
+      if(method==='home'){
+        if(subtotal >= SHIPPING_CONFIG.freeThreshold) return 0;
+        // 簡單預設本島，使用者可在備註補充離島
+        return SHIPPING_CONFIG.home.mainlandFee;
+      }
+      return 0;
+    }
+    /* 更新結帳頁小計 / 運費 / 折扣 / 總計 */
+    function updateCheckoutTotal(){
+      const subtotal = cart.reduce((s,i)=>s+(i.price||0)*i.qty,0);
+      const fee = calcShippingFee(currentShipping, subtotal);
+      let discount = 0;
+      if(appliedCoupon){
+        if(appliedCoupon.type==='fixed'){ discount=Math.min(appliedCoupon.value,subtotal); }
+        else if(appliedCoupon.type==='percent'){ discount=Math.floor(subtotal*appliedCoupon.value/100); }
+      }
+      const total = Math.max(0, subtotal + fee - discount);
+      const subEl=document.getElementById('checkout-subtotal');
+      const feeEl=document.getElementById('checkout-shipping-fee');
+      const discRow=document.getElementById('checkout-discount-row');
+      const discEl=document.getElementById('checkout-discount');
+      const discLabel=document.getElementById('checkout-discount-label');
+      const totEl=document.getElementById('checkout-total');
+      if(subEl) subEl.textContent='NT$ '+subtotal;
+      if(feeEl){
+        if(!currentShipping){ feeEl.textContent='—'; }
+        else if(fee===0){ feeEl.textContent='免運費'; }
+        else{ feeEl.textContent='NT$ '+fee; }
+      }
+      if(discRow && discEl){
+        if(appliedCoupon && discount>0){
+          discRow.classList.remove('hidden');
+          if(discLabel) discLabel.textContent=`優惠折抵（${appliedCoupon.code}）`;
+          discEl.textContent='-NT$ '+discount;
+        } else {
+          discRow.classList.add('hidden');
+        }
+      }
+      if(totEl) totEl.textContent='NT$ '+total;
+    }
+    function applyCoupon(){
+      const code=document.getElementById('coupon-code-input')?.value.trim().toUpperCase();
+      if(!code){ showToast('請輸入優惠碼'); return; }
+      const subtotal=cart.reduce((s,i)=>s+(i.price||0)*i.qty,0);
+      const coupon=coupons.find(c=>c.code===code);
+      if(!coupon){ showToast('優惠碼無效'); return; }
+      if(!coupon.active){ showToast('此優惠碼已停用'); return; }
+      if(coupon.expiry && Date.now()>coupon.expiry){ showToast('此優惠碼已過期'); return; }
+      if(coupon.usageLimit>0 && (coupon.usedCount||0)>=coupon.usageLimit){ showToast('此優惠碼已達使用上限'); return; }
+      if(coupon.minOrder>0 && subtotal<coupon.minOrder){ showToast(`須消費滿 NT$${coupon.minOrder} 才可使用`); return; }
+      if(coupon.sentTo&&coupon.sentTo.length>0){
+        const _uid=window._fbCurrentUser?.uid;
+        const _phone=window._memberProfile?.phone||'';
+        const _email=window._memberProfile?.email||window._fbCurrentUser?.email||'';
+        if(!_uid){showToast('此優惠券需要登入才能使用');return;}
+        const _ok=coupon.sentTo.includes(_uid)||(_phone&&coupon.sentTo.includes(_phone))||(_email&&coupon.sentTo.includes(_email));
+        if(!_ok){showToast('此優惠券不適用於此會員');return;}
+      }
+      appliedCoupon=coupon;
+      showToast('優惠碼套用成功');
+      updateCheckoutTotal();
+    }
+    function renderCheckoutCoupons(){
+      const el=document.getElementById('checkout-coupon-list');
+      if(!el)return;
+      const uid=window._fbCurrentUser?.uid;
+      const phone=window._memberProfile?.phone||'';
+      const email=window._memberProfile?.email||window._fbCurrentUser?.email||'';
+      if(!uid){el.innerHTML='';return;}
+      const subtotal=cart.reduce((s,i)=>s+(i.price||0)*i.qty,0);
+      const myCoupons=coupons.filter(c=>{
+        if(!c.active)return false;
+        if(c.expiry&&Date.now()>c.expiry)return false;
+        if(c.usageLimit>0&&(c.usedCount||0)>=c.usageLimit)return false;
+        const st=c.sentTo;
+        if(!st||st.length===0)return false;
+        return st.includes(uid)||(phone&&st.includes(phone))||(email&&st.includes(email));
+      });
+      if(myCoupons.length===0){el.innerHTML='';return;}
+      el.innerHTML='<p class="text-[10px] text-gray-500 tracking-widest font-bold mt-1">我的優惠券</p>'+
+        myCoupons.map(c=>{
+          const typeLabel=c.type==='percent'?`${c.value}% 折扣`:`折抵 NT$${c.value}`;
+          const minLabel=c.minOrder>0?`，滿 NT$${c.minOrder} 可用`:'';
+          const unavail=c.minOrder>0&&subtotal<c.minOrder;
+          return `<div class="flex items-center justify-between bg-darkbg border border-slate-700 px-3 py-2 rounded gap-2">
+            <div class="flex-1 min-w-0">
+              <span class="font-tech font-bold text-neoncyan text-xs">${c.code}</span>
+              <span class="text-[10px] text-gray-400 ml-1.5">${typeLabel}${minLabel}</span>
+            </div>
+            <button onclick="applyCheckoutCoupon('${c.code}')" class="px-3 py-1 text-[10px] font-bold tech-btn shrink-0 transition ${unavail?'bg-slate-800 text-gray-600 cursor-not-allowed':'bg-neoncyan/10 text-neoncyan hover:bg-neoncyan hover:text-black'}" ${unavail?'disabled':''}>使用</button>
+          </div>`;
+        }).join('');
+    }
+    function applyCheckoutCoupon(code){
+      const cpInput=document.getElementById('coupon-code-input');
+      if(cpInput)cpInput.value=code;
+      applyCoupon();
+    }
+    /* 卡片點選：更新取貨狀態、切換欄位、切換付款卡片 */
+    function selectShipping(method){
+      currentShipping=method;
+      // ── 取貨卡片視覺（只對 ship-card-* 三張）
+      ['cvs','home','store'].forEach(m=>{
+        const c=document.getElementById('ship-card-'+m);
+        if(c) c.classList.remove('selected');
+      });
+      const card=document.getElementById('ship-card-'+method);
+      if(card) card.classList.add('selected');
+      // ── 顧客資料欄位切換
+      ['cvs','home','store'].forEach(m=>{
+        const el=document.getElementById('ship-'+m+'-fields');
+        if(el) el.classList.add('hidden');
+      });
+      const placeholder=document.getElementById('ship-fields-placeholder');
+      if(placeholder) placeholder.classList.add('hidden');
+      const target=document.getElementById('ship-'+method+'-fields');
+      if(target) target.classList.remove('hidden');
+      // ── 付款卡片：重置選取狀態、清空隱藏值
+      document.querySelectorAll('.pay-card').forEach(c=>c.classList.remove('selected'));
+      const payInput=document.getElementById('pay-method');
+      if(payInput) payInput.value='';
+      // ── 顯示付款卡片組，控制「到店付款」是否出現
+      const payPlaceholder=document.getElementById('pay-placeholder');
+      const payCards=document.getElementById('pay-cards');
+      const onsiteCard=document.getElementById('pay-card-onsite');
+      if(payPlaceholder) payPlaceholder.classList.add('hidden');
+      if(payCards) payCards.classList.remove('hidden');
+      if(onsiteCard){
+        if(method==='store') onsiteCard.classList.remove('hidden');
+        else onsiteCard.classList.add('hidden');
+      }
+      // ── 運費提示
+      const hintBox=document.getElementById('shipping-fee-hint');
+      const hintText=document.getElementById('shipping-fee-hint-text');
+      if(hintBox && hintText){
+        const subtotal=cart.reduce((s,i)=>s+(i.price||0)*i.qty,0);
+        const fee=calcShippingFee(method,subtotal);
+        if(method==='store'){
+          hintText.textContent='到店自取免運費';
+        } else if(method==='cvs'){
+          hintText.textContent='超商取貨免運費（需先付款）';
+        } else if(method==='home'){
+          if(fee===0){
+            hintText.textContent=`本島 NT$${SHIPPING_CONFIG.home.mainlandFee} / 離島 NT$${SHIPPING_CONFIG.home.islandFee}（滿 NT$${SHIPPING_CONFIG.freeThreshold} 免運，目前已達免運門檻）`;
+          } else {
+            hintText.textContent=`本島 NT$${SHIPPING_CONFIG.home.mainlandFee} / 離島 NT$${SHIPPING_CONFIG.home.islandFee}（滿 NT$${SHIPPING_CONFIG.freeThreshold} 免運）`;
+          }
+        }
+        hintBox.classList.remove('hidden');
+      }
+      updateCheckoutTotal();
+    }
+    /* 付款卡片點選 */
+    function selectPayment(method){
+      document.querySelectorAll('.pay-card').forEach(c=>c.classList.remove('selected'));
+      const card=document.getElementById('pay-card-'+method);
+      if(card) card.classList.add('selected');
+      const payInput=document.getElementById('pay-method');
+      if(payInput) payInput.value=method;
+    }
+    /* 舊名相容 */
+    function handleShippingChange(){ /* 已由 selectShipping() 取代 */ }
+    function setFieldError(el){el.classList.add('border-red-500','ring-1','ring-red-500');const ev=el.tagName==='SELECT'||el.tagName==='TEXTAREA'?'change':'input';el.addEventListener(ev,()=>clearFieldError(el),{once:true});}
+    function clearFieldError(el){el.classList.remove('border-red-500','ring-1','ring-red-500');}
+    window.setFieldError=setFieldError;
+    window.clearFieldError=clearFieldError;
+    function validateCheckoutFields(){
+      if(!currentShipping){ showToast('請選擇取貨方式'); return false; }
+      const pay=document.getElementById('pay-method')?.value;
+      if(!pay){ showToast('請選擇付款方式'); return false; }
+      if(currentShipping==='home'){
+        const name=document.getElementById('home-name');
+        const phone=document.getElementById('home-phone');
+        const addr=document.getElementById('home-addr');
+        let ok=true;
+        if(!name?.value.trim()){ setFieldError(name); ok=false; }
+        if(!phone?.value.trim()){ setFieldError(phone); ok=false; }
+        if(!addr?.value.trim()){ setFieldError(addr); ok=false; }
+        if(!ok){ showToast('請填寫宅配必填資料'); return false; }
+      }
+      if(currentShipping==='cvs'){
+        const name=document.getElementById('cvs-name');
+        const phone=document.getElementById('cvs-phone');
+        const type=document.getElementById('cvs-type');
+        const city=document.getElementById('cvs-city');
+        const district=document.getElementById('cvs-district');
+        const store=document.getElementById('cvs-store');
+        let ok=true;
+        if(!name?.value.trim()){ setFieldError(name); ok=false; }
+        if(!phone?.value.trim()){ setFieldError(phone); ok=false; }
+        if(!type?.value){ setFieldError(type); ok=false; }
+        if(!city?.value){ setFieldError(city); ok=false; }
+        if(!district?.value){ setFieldError(district); ok=false; }
+        if(!store?.value.trim()){ setFieldError(store); ok=false; }
+        if(!ok){ showToast('請填寫超商取貨必填資料'); return false; }
+      }
+      if(currentShipping==='store'){
+        const name=document.getElementById('store-name');
+        const phone=document.getElementById('store-phone');
+        let ok=true;
+        if(!name?.value.trim()){ setFieldError(name); ok=false; }
+        if(!phone?.value.trim()){ setFieldError(phone); ok=false; }
+        if(!ok){ showToast('請填寫取件人姓名與手機'); return false; }
+      }
+      return true;
+    }
+    function validateCartItemsBeforeSubmit(){if(products.length===0){showToast('商品資料尚未載入完成，請稍後再試');return false;}const validIds=new Set(products.filter(p=>p&&p.active!==false).map(p=>p.id));const before=cart.length;cart=cart.filter(item=>validIds.has(item.id));if(cart.length!==before){try{localStorage.setItem('apple911_cart',JSON.stringify(cart));}catch(e){}renderCart();showToast('部分商品已下架，已從購物車移除，請重新確認訂單');return false;}return true;}
+    async function submitOrder(){
+      if(!document.getElementById('agree-terms').checked){
+        showToast('請先閱讀並同意購物與服務條款');
+        return;
+      }
+      if(!validateCheckoutFields()) return;
+      if(!validateCartItemsBeforeSubmit()) return;
+      const subtotal=cart.reduce((s,i)=>s+(i.price||0)*i.qty,0);
+      const shippingFee=calcShippingFee(currentShipping,subtotal);
+      let discount=0;
+      if(appliedCoupon){
+        if(appliedCoupon.type==='fixed'){ discount=Math.min(appliedCoupon.value,subtotal); }
+        else if(appliedCoupon.type==='percent'){ discount=Math.floor(subtotal*appliedCoupon.value/100); }
+      }
+      const orderTotal=Math.max(0,subtotal+shippingFee-discount);
+      const paymentMethod=document.getElementById('pay-method')?.value||'';
+      // 組合 shippingInfo
+      let shippingInfo={};
+      let note='';
+      if(currentShipping==='home'){
+        shippingInfo={
+          name:document.getElementById('home-name')?.value.trim()||'',
+          phone:document.getElementById('home-phone')?.value.trim()||'',
+          address:document.getElementById('home-addr')?.value.trim()||''
+        };
+        note=document.getElementById('home-note')?.value.trim()||'';
+      } else if(currentShipping==='cvs'){
+        shippingInfo={
+          name:document.getElementById('cvs-name')?.value.trim()||'',
+          phone:document.getElementById('cvs-phone')?.value.trim()||'',
+          cvsType:document.getElementById('cvs-type')?.value||'',
+          city:document.getElementById('cvs-city')?.value||'',
+          district:document.getElementById('cvs-district')?.value||'',
+          storeName:document.getElementById('cvs-store')?.value.trim()||'',
+          storeId:document.getElementById('cvs-id')?.value.trim()||''
+        };
+        note=document.getElementById('cvs-note')?.value.trim()||'';
+      } else if(currentShipping==='store'){
+        shippingInfo={
+          name:document.getElementById('store-name')?.value.trim()||'',
+          phone:document.getElementById('store-phone')?.value.trim()||'',
+          pickupDate:document.getElementById('store-date')?.value||''
+        };
+        note=document.getElementById('store-note')?.value.trim()||'';
+      }
+      const orderId='ORD-'+Date.now();
+      const newOrder={
+        id: orderId,
+        userId: window._fbCurrentUser?.uid||'guest',
+        items: cart.map(i=>({id:i.id,name:i.name,price:i.price,qty:i.qty})),
+        subtotal,
+        shippingFee,
+        discount,
+        couponCode: appliedCoupon?.code||'',
+        orderTotal,
+        total: orderTotal,
+        shippingMethod: currentShipping,
+        paymentMethod,
+        shippingInfo,
+        note,
+        status: paymentMethod==='onsite'?'待取貨':'未付款',
+        time: Date.now(),
+        lineUserId: window._fbCurrentUser?.uid?.startsWith('line_') ? window._fbCurrentUser.uid.replace('line_','') : ''
+      };
+      // 存進 Firebase（先寫入，失敗則中止）
+      if(window._fbAddOrder){
+        const btn=document.getElementById('submit-order-btn');
+        if(btn)btn.disabled=true;
+        try{ await window._fbAddOrder(newOrder); }
+        catch(e){ showToast('訂單送出失敗，請重試'); if(btn)btn.disabled=false; return; }
+        if(btn)btn.disabled=false;
+        // 通知官方賴（fire-and-forget，不影響下單流程）
+        fetch('/api/line-notify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({order:newOrder})}).catch(()=>{});
+      } else {
+        showToast('系統尚未就緒，請稍後重試'); return;
+      }
+      // 存進本地 orders
+      orders.unshift(newOrder);
+      // 顯示成功頁
+      showSection('order-success');
+      document.getElementById('success-order-id').textContent=orderId;
+      // 需要付款才顯示付款說明
+      const payBox=document.getElementById('payment-instruction-box');
+      const payText=document.getElementById('payment-details-text');
+      if(payBox && payText){
+        if(paymentMethod==='transfer'){
+          payBox.classList.remove('hidden');
+          const _pay=siteSettings.payment||{};
+          const _bankInfo=_pay.bank?`${_pay.bank}${_pay.branch?' '+_pay.branch:''} ${_pay.account}`:'（請洽客服取得轉帳帳號）';
+          const _payNote=_pay.note||'請於 24 小時內完成付款，並回傳末 5 碼截圖';
+          payText.innerHTML=`<p>${_payNote}</p><p class="mt-2 text-neoncyan font-bold font-tech">${_bankInfo}</p><p class="mt-2">訂單金額：<span class="text-goldlight font-tech font-bold">NT$ ${orderTotal}</span></p>`;
+        } else if(paymentMethod==='linepay'){
+          payBox.classList.remove('hidden');
+          payText.innerHTML=`<p>請透過 LINE Pay 付款後，截圖回傳給客服確認。</p><p class="mt-2">訂單金額：<span class="text-goldlight font-tech font-bold">NT$ ${orderTotal}</span></p>`;
+        } else {
+          payBox.classList.add('hidden');
+        }
+      }
+      // 累計優惠碼使用次數
+      if(appliedCoupon && window._fbIncrementCouponUsage){
+        const _usedCouponId = appliedCoupon.id;
+        coupons = coupons.map(c => c.id === _usedCouponId ? {...c, usedCount:(c.usedCount||0)+1} : c);
+        window._fbIncrementCouponUsage(_usedCouponId);
+      }
+      // 清空購物車與結帳狀態
+      cart=[];
+      currentShipping='';
+      appliedCoupon=null;
+      try{localStorage.removeItem('apple911_cart');}catch(e){}
+      renderCart();
+    }
+    function cancelOrder(orderId){
+      const modal=document.getElementById('cancel-order-modal');
+      modal.classList.replace('hidden','flex');
+      document.getElementById('cancel-order-confirm-btn').onclick=function(){
+        modal.classList.replace('flex','hidden');
+        if(window._fbUpdateOrder){
+          window._fbUpdateOrder(orderId,{status:'已取消'}).then(()=>{
+            showToast('訂單已取消');
+            const o=orders.find(x=>x.id===orderId);
+            if(o) o.status='已取消';
+            renderOrders();
+          },()=>showToast('取消失敗，請稍後再試'));
+        }
+      };
+    }
+    function showPaymentInfo(){
+      const bankInfo=window._bankInfo||{bank:'玉山銀行',account:'808-0123456789012',name:'蘋果九一一有限公司'};
+      document.getElementById('pinfo-bank').textContent=bankInfo.bank;
+      document.getElementById('pinfo-account').textContent=bankInfo.account;
+      document.getElementById('pinfo-name').textContent=bankInfo.name;
+      document.getElementById('payment-info-modal').classList.replace('hidden','flex');
+    }
+    function reportPayment(orderId){
+      const modal=document.getElementById('report-payment-modal');
+      const input=document.getElementById('report-last5-input');
+      const errMsg=document.getElementById('report-last5-error');
+      input.value='';
+      errMsg.classList.add('hidden');
+      modal.classList.replace('hidden','flex');
+      document.getElementById('report-payment-confirm-btn').onclick=function(){
+        const val=input.value.trim();
+        if(!/^\d{5}$/.test(val)){errMsg.classList.remove('hidden');return;}
+        errMsg.classList.add('hidden');
+        modal.classList.replace('flex','hidden');
+        if(window._fbUpdateOrder){
+          window._fbUpdateOrder(orderId,{status:'已付款待確認',paymentLast5:val}).then(()=>{
+            showToast('已回報匯款，待客服確認');
+            const o=orders.find(x=>x.id===orderId);
+            if(o){o.status='已付款待確認';o.paymentLast5=val;}
+            renderOrders();
+          }).catch(()=>showToast('回報失敗，請稍後再試'));
+        }
+      };
+    }
+    function renderOrders(){
+      const container=document.getElementById('orders-container');
+      if(!container)return;
+      const shipMap={'cvs':'超商取貨','home':'宅配到府','store':'到店取貨'};
+      const payMap={'transfer':'銀行轉帳','linepay':'LINE Pay','onsite':'到店付款'};
+      function _doRender(list){
+        if(!list||list.length===0){
+          const _msg=window._fbCurrentUser?'尚無訂單記錄':'請先登入以查看訂單';
+          container.innerHTML=`<div class="text-center py-10 text-gray-500 text-xs tracking-widest">${_msg}</div>`;
+          return;
+        }
+        container.innerHTML=list.map(o=>{
+          const _ship=o.shippingMethod||o.ship||'';
+          const _pay=o.paymentMethod||o.pay||'';
+          const shipLabel=shipMap[_ship]||_ship||'-';
+          const payLabel=payMap[_pay]||_pay||'-';
+          const total=o.total||o.orderTotal||0;
+          const timeStr=o.time?new Date(o.time).toLocaleString('zh-TW'):'-';
+          const items=(o.items||[]).map(i=>i.name).join('、')||'-';
+          const statusColor=o.status==='已完成'?'text-green-400':o.status==='已取消'?'text-gray-500':o.status==='已出貨'?'text-blue-400':o.status==='已付款'?'text-neoncyan':o.status==='已付款待確認'?'text-yellow-400':o.status==='處理中'?'text-yellow-400':'text-neonred';
+          const isUnpaid = o.status==='未付款';
+          const isTransfer = _pay==='transfer';
+          const btnCancel = isUnpaid
+            ? `<button onclick="cancelOrder('${o.id}')" class="text-[10px] px-3 py-1.5 border border-neonred text-neonred tech-clip hover:bg-neonred hover:text-black transition tracking-widest">取消訂單</button>`
+            : '';
+          const btnPayInfo = isUnpaid && isTransfer
+            ? `<button onclick="showPaymentInfo()" class="text-[10px] px-3 py-1.5 border border-slate-500 text-gray-300 tech-clip hover:bg-slate-600 hover:text-white transition tracking-widest">查看匯款資訊</button>`
+            : '';
+          const btnReport = isUnpaid && isTransfer
+            ? `<button onclick="reportPayment('${o.id}')" class="text-[10px] px-3 py-1.5 border border-neoncyan text-neoncyan tech-clip hover:bg-neoncyan hover:text-black transition tracking-widest">回報匯款</button>`
+            : '';
+          const btns = (btnPayInfo||btnReport||btnCancel)
+            ? `<div class="flex gap-2 flex-wrap pt-2 border-t border-white/5">${btnPayInfo}${btnReport}${btnCancel}</div>`
+            : '';
+          const cardBorder = isUnpaid
+            ? 'border-neoncyan/60 shadow-[0_0_12px_rgba(0,243,255,0.15)]'
+            : o.status==='已完成'
+            ? 'border-green-500/40 shadow-[0_0_8px_rgba(74,222,128,0.1)]'
+            : o.status==='已取消'
+            ? 'border-slate-700 opacity-60'
+            : o.status==='已出貨'
+            ? 'border-blue-500/40 shadow-[0_0_8px_rgba(96,165,250,0.1)]'
+            : 'border-yellow-500/40 shadow-[0_0_8px_rgba(250,204,21,0.1)]';
+          return`<div class="bg-darkbg border ${cardBorder} tech-clip p-4 space-y-3">
+          <div class="flex justify-between items-start gap-2">
+            <div class="min-w-0">
+              <p class="text-[10px] text-neoncyan/60 font-tech tracking-widest">${o.id}</p>
+              <p class="text-sm text-white font-bold mt-1 leading-snug">${items}</p>
+            </div>
+            <div class="text-right shrink-0">
+              <span class="text-xs font-bold tracking-widest ${statusColor}">${o.status||'-'}</span>
+              <p class="text-goldlight font-tech text-base font-bold mt-1">NT$ ${total.toLocaleString()}</p>
+            </div>
+          </div>
+          <div class="flex justify-between text-[11px] text-gray-400 border-t border-white/5 pt-2">
+            <span class="text-neoncyan/80 tracking-wide">${shipLabel} · ${payLabel}</span>
+            <span class="text-gray-500">${timeStr}</span>
+          </div>
+          ${btns}
+        </div>`;
+        }).join('');
+      }
+      _doRender(orders);
+      renderMemberStats();
+    }
+    function switchMemberTab(tab){document.getElementById('member-tab-orders').classList.add('hidden');document.getElementById('member-tab-profile').classList.add('hidden');document.getElementById('member-tab-coupons').classList.add('hidden');document.getElementById('tab-btn-orders').classList.remove('member-tab-active');document.getElementById('tab-btn-profile').classList.remove('member-tab-active');document.getElementById('tab-btn-coupons').classList.remove('member-tab-active');document.getElementById('member-tab-'+tab).classList.remove('hidden');document.getElementById('tab-btn-'+tab).classList.add('member-tab-active');if(tab==='profile')loadProfile();if(tab==='orders'){const _oc=document.getElementById('orders-container');if(_oc)_oc.innerHTML='<div class="text-center py-10 text-gray-500 text-xs tracking-widest">載入中...</div>';if(window._fbWatchOrders){window._fbWatchOrders(list=>{orders=list;renderOrders();},()=>{if(orders.length===0&&_oc)_oc.innerHTML='<div class="text-center py-10 text-gray-500 text-xs tracking-widest">載入失敗，請稍後再試</div>';});}else{renderOrders();}}else{if(window._fbUnwatchOrders)window._fbUnwatchOrders();if(tab==='profile'){if(window._fbGetOrders){window._fbGetOrders().then(list=>{orders=list;renderProfileRecentOrders();},()=>renderProfileRecentOrders());}else{renderProfileRecentOrders();}}}if(tab==='coupons')renderCoupons();}
+    function renderProfileRecentOrders(){
+      const container=document.getElementById('profile-recent-orders');
+      if(!container)return;
+      if(orders.length===0){
+        container.innerHTML='<p class="text-xs text-gray-500 text-center py-4">尚無訂單記錄</p>';
+        return;
+      }
+      const recent=orders.slice(0,3);
+      container.innerHTML=recent.map(o=>{
+        const total=o.total||o.orderTotal||0;
+        const timeStr=o.time?new Date(o.time).toLocaleDateString('zh-TW'):'-';
+        const items=(o.items||[]).map(i=>i.name).join('、')||'-';
+        const statusColor=o.status==='已完成'?'text-green-400':o.status==='已取消'?'text-gray-500':o.status==='已出貨'?'text-blue-400':o.status==='已付款'?'text-neoncyan':o.status==='已付款待確認'?'text-yellow-400':o.status==='處理中'?'text-yellow-400':'text-neonred';
+        return`<div class="flex justify-between items-center py-2 border-b border-slate-800 last:border-0 text-xs">
+          <div class="min-w-0 mr-2">
+            <p class="text-gray-300 truncate">${items}</p>
+            <p class="text-gray-600 text-[10px] mt-0.5">${timeStr}</p>
+          </div>
+          <div class="text-right shrink-0">
+            <p class="text-goldlight font-tech font-bold">NT$ ${total}</p>
+            <p class="text-[10px] ${statusColor} font-bold">${o.status||'-'}</p>
+          </div>
+        </div>`;
+      }).join('');
+    }
+    function renderCoupons(){
+      const container=document.getElementById('coupons-container');
+      if(!container)return;
+      const uid=window._fbCurrentUser?.uid;
+      const phone=window._memberProfile?.phone||'';
+      const email=window._memberProfile?.email||window._fbCurrentUser?.email||'';
+      if(!uid){container.innerHTML='<div class="text-center py-10 text-gray-500 text-xs tracking-widest">請先登入以查看優惠券</div>';return;}
+      const myCoupons=coupons.filter(c=>{
+        const st=c.sentTo;
+        if(!st||st.length===0)return false;
+        return st.includes(uid)||(phone&&st.includes(phone))||(email&&st.includes(email));
+      });
+      if(myCoupons.length===0){container.innerHTML='<div class="text-center py-10 text-gray-500 text-xs tracking-widest">目前尚無優惠券</div>';return;}
+      container.innerHTML=myCoupons.map(c=>{
+        const expired=c.expiry&&Date.now()>c.expiry;
+        const typeLabel=c.type==='percent'?`折扣 ${c.value}%`:`折抵 NT$${c.value}`;
+        const expiryLabel=c.expiry?new Date(c.expiry).toLocaleDateString('zh-TW'):'永久有效';
+        const statusText=!c.active?'已停用':expired?'已過期':'可使用';
+        const statusColor=!c.active?'text-gray-500':expired?'text-neonred':'text-neoncyan';
+        return `<div class="bg-darkbg border border-slate-700 p-4 rounded space-y-2${expired||!c.active?' opacity-50':''}">
+          <div class="flex items-center justify-between">
+            <span class="font-tech font-bold text-neoncyan tracking-widest text-sm">${c.code}</span>
+            <span class="text-[10px] font-bold ${statusColor}">${statusText}</span>
+          </div>
+          <p class="text-sm text-white font-bold">${typeLabel}</p>
+          <div class="text-[10px] text-gray-500 space-y-0.5">
+            ${c.minOrder>0?`<p>最低消費 NT$${c.minOrder}</p>`:''}
+            <p>到期日：${expiryLabel}</p>
+          </div>
+        </div>`;
+      }).join('');
+    }
+    function applySettings(s){
+      siteSettings=s||{};
+      // 更新運費設定
+      if(s.shipping){
+        SHIPPING_CONFIG.freeThreshold=s.shipping.freeThreshold||699;
+        SHIPPING_CONFIG.home.mainlandFee=s.shipping.homeFee||100;
+        SHIPPING_CONFIG.home.islandFee=s.shipping.islandFee||200;
+      }
+      // 跑馬燈
+      const bar=document.getElementById('marquee-bar');
+      const track=document.getElementById('marquee-track');
+      if(bar&&track){
+        if(s.marquee?.enabled&&s.marquee?.text){
+          const t=s.marquee.text+' ✦ ';
+          track.textContent=t.repeat(6);
+          bar.classList.remove('hidden');
+        } else { bar.classList.add('hidden'); }
+      }
+      // 首頁公告
+      const annoBar=document.getElementById('announcement-bar');
+      const annoText=document.getElementById('announcement-text');
+      const annoIcon=document.getElementById('announcement-icon');
+      if(annoBar&&annoText){
+        if(s.announcement?.enabled&&s.announcement?.text){
+          annoText.textContent=s.announcement.text;
+          const typeMap={
+            info:        {cls:'bg-neoncyan/10 text-neoncyan border border-neoncyan/30',   icon:'fa-circle-info'},
+            maintenance: {cls:'bg-blue-900/30 text-blue-300 border border-blue-500/30',   icon:'fa-wrench'},
+            warning:     {cls:'bg-orange-900/30 text-orange-300 border border-orange-500/30', icon:'fa-triangle-exclamation'},
+            hours:       {cls:'bg-goldlight/10 text-goldlight border border-goldlight/30', icon:'fa-clock'}
+          };
+          const t=typeMap[s.announcement.type]||typeMap.info;
+          annoBar.className=`mb-4 px-4 py-3 rounded flex items-center gap-2 text-xs font-bold ${t.cls}`;
+          if(annoIcon) annoIcon.className=`fa-solid ${t.icon} shrink-0`;
+          annoBar.classList.remove('hidden');
+        } else { annoBar.classList.add('hidden'); }
+      }
+      // Popup
+      if(s.popup?.enabled&&s.popup?.content){
+        const key='apple911_popup_'+(s.updatedAt||0);
+        if(s.popup.everyTime||!sessionStorage.getItem(key)){
+          sessionStorage.setItem(key,'1');
+          showSitePopup(s.popup);
+        }
+      }
+    }
+    function showSitePopup(p){
+      const modal=document.getElementById('site-popup-modal');
+      if(!modal)return;
+      const t=document.getElementById('site-popup-title');
+      const c=document.getElementById('site-popup-content');
+      if(t)t.textContent=p.title||'';
+      if(c)c.textContent=p.content||'';
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+    function closeSitePopup(){
+      const modal=document.getElementById('site-popup-modal');
+      if(modal){modal.classList.add('hidden');modal.classList.remove('flex');}
+    }
+    function toggleCoupons(){/* ... */}
+    function openPaymentInfo(){/* ... */}
+    function openTerms(type){
+      const data={
+        payment:{
+          title:'付款資訊',
+          content:`<div class="space-y-4 text-xs text-gray-300 leading-relaxed">
+            <p>本網站採「先付款後出貨」制度（到店取貨除外），請詳閱以下說明：</p>
+            <div class="bg-darkbg border border-slate-700 p-4 rounded space-y-1">
+              <h4 class="text-neoncyan font-bold mb-2">付款方式</h4>
+              <p>1. 銀行轉帳</p>
+              <p>2. LINE Pay</p>
+              <p>3. 到店付款（限到店取貨）</p>
+            </div>
+            <div class="bg-darkbg border border-slate-700 p-4 rounded space-y-1">
+              <h4 class="text-neoncyan font-bold mb-2">付款規則</h4>
+              <p>・超商取貨 / 宅配到府訂單，需完成付款後才會出貨</p>
+              <p>・訂單成立後請於 24 小時內完成付款</p>
+              <p>・未於期限內付款，本店有權自動取消訂單，不另行通知</p>
+            </div>
+            <div class="bg-darkbg border border-slate-700 p-4 rounded space-y-1">
+              <h4 class="text-neoncyan font-bold mb-2">付款確認</h4>
+              <p>・請上傳付款截圖或填寫帳號末五碼</p>
+              <p>・若未提供付款證明，將無法確認訂單並安排出貨</p>
+            </div>
+            <div class="bg-darkbg border border-slate-700 p-4 rounded space-y-1">
+              <h4 class="text-neoncyan font-bold mb-2">缺貨與付款處理</h4>
+              <p>・若付款後遇商品缺貨，本店會主動聯繫客戶</p>
+              <p>・客戶可選擇等待補貨、更換其他商品，或申請退款</p>
+              <p>・若因缺貨導致訂單無法成立，本店將協助退款，不另行賠償</p>
+            </div>
+            <div class="bg-darkbg border border-slate-700 p-4 rounded space-y-1">
+              <h4 class="text-neoncyan font-bold mb-2">付款異常說明</h4>
+              <p>・若因銀行系統、LINE Pay 或第三方支付異常導致付款延遲，本店不負相關責任</p>
+              <p>・訂單將以實際入帳時間為準進行處理與出貨安排</p>
+            </div>
+            <div class="bg-darkbg border border-neonred/30 p-4 rounded space-y-1">
+              <h4 class="text-neonred font-bold mb-2">重要聲明</h4>
+              <p>・若因填寫錯誤或未回傳付款資訊導致出貨延誤，本店不負相關責任</p>
+            </div>
+          </div>`
+        },
+        shipping:{
+          title:'配送取件',
+          content:`<div class="space-y-4 text-xs text-gray-300 leading-relaxed">
+            <div class="bg-darkbg border border-slate-700 p-4 rounded space-y-1">
+              <h4 class="text-neoncyan font-bold mb-2">配送方式</h4>
+              <p>1. 超商取貨（需先付款）</p>
+              <p>2. 宅配到府（需先付款）</p>
+              <p>3. 到店取貨（可現場付款）</p>
+            </div>
+            <div class="bg-darkbg border border-slate-700 p-4 rounded space-y-1">
+              <h4 class="text-neoncyan font-bold mb-2">運費說明</h4>
+              <p>・到店取貨：免運費</p>
+              <p>・宅配：本島 NT$100 / 離島 NT$200</p>
+              <p>・滿 NT$699 免運</p>
+              <p>・實際運費以結帳頁面顯示為準</p>
+            </div>
+            <div class="bg-darkbg border border-slate-700 p-4 rounded space-y-1">
+              <h4 class="text-neoncyan font-bold mb-2">出貨時間</h4>
+              <p>・付款完成且確認有庫存後，約 1～3 個工作天內安排出貨</p>
+              <p>・若遇商品缺貨、供應商延遲、物流繁忙、天災或不可抗力因素，出貨時間將順延</p>
+              <p>・若商品需調貨或預購，實際出貨時間以客服通知為準</p>
+            </div>
+            <div class="bg-darkbg border border-slate-700 p-4 rounded space-y-1">
+              <h4 class="text-neoncyan font-bold mb-2">配送責任</h4>
+              <p>・商品一經交由物流公司後，配送時間與狀況由物流業者負責</p>
+              <p>・若因地址填寫錯誤、電話錯誤、無人收件、拒收等原因導致配送失敗，相關費用需由訂購人自行負擔</p>
+              <p>・若因物流延誤導致到貨時間延後，本店不負賠償責任</p>
+            </div>
+            <div class="bg-darkbg border border-slate-700 p-4 rounded space-y-1">
+              <h4 class="text-neoncyan font-bold mb-2">物流風險說明</h4>
+              <p>・商品交由物流公司後，其運送過程風險由物流業者負責</p>
+              <p>・若商品於運送過程中損壞或遺失，將依物流公司規範協助處理</p>
+              <p>・本店不負運送期間造成之直接或間接損失賠償責任</p>
+            </div>
+            <div class="bg-darkbg border border-slate-700 p-4 rounded space-y-1">
+              <h4 class="text-neoncyan font-bold mb-2">到店取貨</h4>
+              <p>・商品備妥後，本店會通知客戶取貨</p>
+              <p>・商品保留 3 日，逾期未取，本店有權取消訂單</p>
+              <p>・若已付款訂單逾期未取，請聯繫客服協助後續處理</p>
+            </div>
+            <div class="bg-darkbg border border-neonred/30 p-4 rounded space-y-1">
+              <h4 class="text-neonred font-bold mb-2">未取貨與拒收處理</h4>
+              <p>・超商取貨未領取或宅配拒收，導致商品退回，本店有權暫停該帳號訂單服務</p>
+              <p>・若需重新寄送，需由客戶自行負擔來回運費</p>
+              <p>・多次未取貨或拒收紀錄，本店有權拒絕未來訂單</p>
+            </div>
+          </div>`
+        },
+        tracking:{
+          title:'進度查詢',
+          content:`<div class="space-y-4 text-xs text-gray-300 leading-relaxed">
+            <div class="bg-darkbg border border-slate-700 p-4 rounded space-y-1">
+              <h4 class="text-neoncyan font-bold mb-2">訂單狀態說明</h4>
+              <p>・<span class="text-yellow-400 font-bold">未付款</span>：尚未完成付款</p>
+              <p>・<span class="text-blue-400 font-bold">已付款</span>：已確認款項</p>
+              <p>・<span class="text-purple-400 font-bold">理貨中</span>：訂單確認中或備貨中</p>
+              <p>・<span class="text-orange-400 font-bold">缺貨通知</span>：商品暫時缺貨，客服將協助處理</p>
+              <p>・<span class="text-neoncyan font-bold">已出貨</span>：商品已寄出</p>
+              <p>・<span class="text-green-400 font-bold">已完成</span>：訂單已結案</p>
+              <p>・<span class="text-goldlight font-bold">待取貨</span>：可至門市取件</p>
+            </div>
+            <div class="bg-darkbg border border-slate-700 p-4 rounded space-y-1">
+              <h4 class="text-neoncyan font-bold mb-2">訂單修改</h4>
+              <p>・未付款或未出貨前可申請修改</p>
+              <p>・已出貨後恕無法變更配送資料</p>
+              <p>・若需修改商品、數量、收件資訊，請盡快聯繫客服</p>
+            </div>
+            <div class="bg-darkbg border border-slate-700 p-4 rounded space-y-1">
+              <h4 class="text-neoncyan font-bold mb-2">缺貨處理</h4>
+              <p>・若訂單商品缺貨，本店會主動通知客戶</p>
+              <p>・客戶可選擇等待補貨、更換商品、取消缺貨商品或取消整筆訂單</p>
+              <p>・若訂單中部分商品缺貨，本店會與客戶確認是否分批出貨或調整訂單</p>
+            </div>
+            <div class="bg-darkbg border border-neonred/30 p-4 rounded space-y-1">
+              <h4 class="text-neonred font-bold mb-2">重要提醒</h4>
+              <p>・本店不保證訂單成立後一定出貨</p>
+              <p>・若遇缺貨、停產、價格錯誤、供應異常或系統異常，本店保留取消訂單或調整訂單之權利</p>
+            </div>
+          </div>`
+        },
+        returns:{
+          title:'退換貨政策',
+          content:`<div class="space-y-4 text-xs text-gray-300 leading-relaxed">
+            <p>退換貨申請：請於收到商品後 <span class="text-neonred font-bold">3 日內</span>聯繫客服並提供照片證明。</p>
+            <div class="bg-darkbg border border-slate-700 p-4 rounded space-y-1">
+              <h4 class="text-neoncyan font-bold mb-2">可退換貨情況</h4>
+              <p>・商品瑕疵</p>
+              <p>・商品寄錯</p>
+              <p>・商品缺件</p>
+              <p>・商品於運送過程中明顯受損</p>
+            </div>
+            <div class="bg-darkbg border border-slate-700 p-4 rounded space-y-1">
+              <h4 class="text-neoncyan font-bold mb-2">退貨條件</h4>
+              <p>・商品須為全新未使用</p>
+              <p>・包裝、配件、贈品需完整</p>
+              <p>・不得有安裝、拆封、使用、刮傷或人為損壞痕跡</p>
+            </div>
+            <div class="bg-darkbg border border-neonred/30 p-4 rounded space-y-1">
+              <h4 class="text-neonred font-bold mb-2">以下情況不接受退貨</h4>
+              <p>・商品已使用或安裝（包含手機殼、保護貼、線材、充電器等）</p>
+              <p>・人為損壞（摔傷、刮傷、泡水、擠壓）</p>
+              <p>・包裝、配件、贈品不完整</p>
+              <p>・非本店販售商品</p>
+              <p>・個人主觀因素（不喜歡、不適用、買錯型號但已拆封使用）</p>
+              <p>・客製化、代訂、預購或特殊規格商品，除商品本身瑕疵外，不接受取消或退貨</p>
+            </div>
+            <div class="bg-darkbg border border-slate-700 p-4 rounded space-y-1">
+              <h4 class="text-neoncyan font-bold mb-2">優惠與活動說明</h4>
+              <p>・訂單優惠、滿額活動與贈品，需於訂單成立時符合條件方適用</p>
+              <p>・若因退貨、取消或分批出貨導致未達優惠門檻，本店有權調整優惠內容或補收差額</p>
+              <p>・贈品如未一併退回，本店有權依市價扣除相關費用</p>
+            </div>
+            <div class="bg-darkbg border border-neonred/30 p-4 rounded space-y-1">
+              <h4 class="text-neonred font-bold mb-2">重要聲明</h4>
+              <p>・3C 產品非試用商品，鑑賞期非試用期</p>
+              <p>・退貨商品若不符合條件，本店有權拒絕退貨</p>
+              <p>・若因退貨後未達免運或活動門檻，退款金額將扣除原優惠、運費或活動差額</p>
+            </div>
+          </div>`
+        },
+        warranty:{
+          title:'維修保固',
+          content:`<div class="space-y-4 text-xs text-gray-300 leading-relaxed">
+            <div class="bg-darkbg border border-slate-700 p-4 rounded space-y-1">
+              <h4 class="text-neoncyan font-bold mb-2">維修說明</h4>
+              <p>・維修前皆會提供報價</p>
+              <p>・確認報價後才會進行維修</p>
+              <p>・部分維修需收訂金或檢測費</p>
+              <p>・若需訂料、特殊零件或代訂料件，確認後恕無法任意取消</p>
+            </div>
+            <div class="bg-darkbg border border-slate-700 p-4 rounded space-y-1">
+              <h4 class="text-neoncyan font-bold mb-2">維修風險說明</h4>
+              <p>・維修過程中可能因機器老化、摔傷、泡水、主機板異常或先前維修紀錄導致其他問題</p>
+              <p>・本店將盡力處理，但不保證可完全避免風險</p>
+              <p>・若維修前已告知風險，客戶同意後進行維修，後續不接受以已告知風險為由要求退費或賠償</p>
+            </div>
+            <div class="bg-darkbg border border-slate-700 p-4 rounded space-y-1">
+              <h4 class="text-neoncyan font-bold mb-2">保固範圍</h4>
+              <p>・維修項目於保固期間內，如非人為問題可協助處理</p>
+              <p>・保固僅限原維修項目，不包含其他未維修部位</p>
+            </div>
+            <div class="bg-darkbg border border-neonred/30 p-4 rounded space-y-1">
+              <h4 class="text-neonred font-bold mb-2">不在保固範圍</h4>
+              <p>・摔落、泡水、外力損壞</p>
+              <p>・自行拆機或他人維修</p>
+              <p>・使用不當造成故障</p>
+              <p>・外觀刮傷、耗材老化、正常耗損</p>
+              <p>・非原維修項目之故障</p>
+            </div>
+            <div class="bg-darkbg border border-slate-700 p-4 rounded space-y-1">
+              <h4 class="text-neoncyan font-bold mb-2">資料與設備風險聲明</h4>
+              <p>・維修過程中可能涉及資料移除、系統重置或零件更換，建議客戶事先備份資料</p>
+              <p>・若因設備狀況（如無法開機、主機板損壞）導致資料無法保留，本店不負資料遺失責任</p>
+              <p>・客戶送修即表示同意上述風險</p>
+            </div>
+            <div class="bg-darkbg border border-slate-700 p-4 rounded space-y-1">
+              <h4 class="text-neoncyan font-bold mb-2">取件逾期說明</h4>
+              <p>・維修完成後本店將通知取件</p>
+              <p>・若逾期未取且未主動聯繫，本店有權不負保管責任或酌收保管費</p>
+            </div>
+            <div class="bg-darkbg border border-neonred/30 p-4 rounded space-y-1">
+              <h4 class="text-neonred font-bold mb-2">重要聲明</h4>
+              <p>・維修屬技術服務，一經確認施作恕不接受退費</p>
+              <p>・若設備本身存在多重故障，單項維修完成不代表整機所有問題皆已排除</p>
+            </div>
+          </div>`
+        },
+        terms:{
+          title:'服務條款',
+          content:`<div class="space-y-4 text-xs text-gray-300 leading-relaxed">
+            <p>當您使用本網站，即表示同意以下內容：</p>
+            <div class="bg-darkbg border border-slate-700 p-4 rounded space-y-1">
+              <h4 class="text-neoncyan font-bold mb-2">訂單權利</h4>
+              <p>・本店保留是否接受訂單與出貨之權利</p>
+              <p>・若遇商品缺貨、停產、價格錯誤、成本異動、供應商異常或系統錯誤，本店有權取消訂單、延後出貨或與客戶協商更換商品</p>
+              <p>・訂單成立通知不代表商品一定可出貨，實際出貨仍需依庫存、供應狀況與付款確認為準</p>
+            </div>
+            <div class="bg-darkbg border border-slate-700 p-4 rounded space-y-1">
+              <h4 class="text-neoncyan font-bold mb-2">付款後缺貨說明</h4>
+              <p>・即使訂單已完成付款，仍可能因庫存誤差、供應商異常或系統延遲導致缺貨情況</p>
+              <p>・本店不保證所有已付款訂單皆可出貨</p>
+            </div>
+            <div class="bg-darkbg border border-slate-700 p-4 rounded space-y-1">
+              <h4 class="text-neoncyan font-bold mb-2">退款處理</h4>
+              <p>・若因缺貨導致無法出貨，客戶可選擇取消訂單並申請退款</p>
+              <p>・退款將於確認後依原付款方式辦理，實際入帳時間依銀行或支付平台作業時間為準</p>
+            </div>
+            <div class="bg-darkbg border border-slate-700 p-4 rounded space-y-1">
+              <h4 class="text-neoncyan font-bold mb-2">分批出貨說明</h4>
+              <p>・若訂單中部分商品缺貨，本店有權與客戶協商後進行分批出貨</p>
+              <p>・若分批出貨導致優惠條件改變，本店保留調整訂單金額之權利</p>
+            </div>
+            <div class="bg-darkbg border border-slate-700 p-4 rounded space-y-1">
+              <h4 class="text-neoncyan font-bold mb-2">異常訂單處理</h4>
+              <p>・若訂單出現異常情況（包含但不限於大量下單、異常金額、系統錯誤、價格異常等），本店有權暫停、取消或調整該訂單</p>
+              <p>・若因系統錯誤或價格異常導致訂單成立，本店有權取消訂單並進行退款處理</p>
+            </div>
+            <div class="bg-darkbg border border-slate-700 p-4 rounded space-y-1">
+              <h4 class="text-neoncyan font-bold mb-2">資料責任</h4>
+              <p>・會員或訂購人需提供正確資料</p>
+              <p>・若因資料錯誤、電話無法聯繫、地址錯誤、門市資料錯誤導致延誤、退件或損失，由訂購人自行負責</p>
+            </div>
+            <div class="bg-darkbg border border-neonred/30 p-4 rounded space-y-1">
+              <h4 class="text-neonred font-bold mb-2">拒絕服務</h4>
+              <p>本店有權拒絕以下情況之訂單或服務：</p>
+              <p>・惡意棄單</p>
+              <p>・多次未取貨</p>
+              <p>・無故拒收</p>
+              <p>・惡意退貨</p>
+              <p>・對客服或工作人員有不當言語或行為</p>
+              <p>・影響本店正常營運之行為</p>
+            </div>
+            <div class="bg-darkbg border border-slate-700 p-4 rounded space-y-1">
+              <h4 class="text-neoncyan font-bold mb-2">隱私權</h4>
+              <p>・個人資料僅用於訂單處理、付款確認、配送與客服聯繫</p>
+              <p>・本店不會任意提供給無關第三方</p>
+            </div>
+            <div class="bg-darkbg border border-slate-700 p-4 rounded space-y-1">
+              <h4 class="text-neoncyan font-bold mb-2">責任限制</h4>
+              <p>・本網站對於系統錯誤、付款延遲、物流延誤、缺貨、供應商異常、天災或不可抗力因素不負賠償責任</p>
+              <p>・若因上述情況導致訂單無法完成，本店將以退款、換貨或協商方式處理</p>
+            </div>
+            <div class="bg-darkbg border border-slate-700 p-4 rounded space-y-1">
+              <h4 class="text-neoncyan font-bold mb-2">物流風險說明</h4>
+              <p>・商品交由物流公司後，其運送過程風險由物流業者負責</p>
+              <p>・若商品於運送過程中損壞或遺失，將依物流公司規範協助處理</p>
+              <p>・本店不負運送期間造成之直接或間接損失賠償責任</p>
+            </div>
+            <div class="bg-darkbg border border-slate-700 p-4 rounded space-y-1">
+              <h4 class="text-neoncyan font-bold mb-2">爭議處理</h4>
+              <p>・若有交易爭議，雙方應先以客服協商方式處理</p>
+              <p>・本網站交易依中華民國法律規範</p>
+              <p>・如需法律途徑，雙方同意以台灣高雄地方法院為第一審管轄法院</p>
+            </div>
+            <div class="bg-darkbg border border-slate-700 p-4 rounded space-y-1">
+              <h4 class="text-neoncyan font-bold mb-2">條款變更</h4>
+              <p>・本店保留修改服務內容與條款之權利</p>
+              <p>・條款更新後將公告於網站，不另行個別通知</p>
+            </div>
+          </div>`
+        },
+        member:{
+          title:'會員條款',
+          content:`<div class="space-y-4 text-xs text-gray-300 leading-relaxed">
+            <p>完成註冊並使用本網站服務，即表示同意本會員條款。</p>
+          </div>`
+        }
+      };
+      const d=data[type];
+      if(!d)return;
+      document.getElementById('modal-title').innerHTML=d.title;
+      document.getElementById('modal-content').innerHTML=d.content;
+      document.getElementById('modal-content').scrollTop=0;
+      document.body.style.overflow='hidden';
+      const modal=document.getElementById('terms-modal');
+      modal.classList.replace('hidden','flex');
+    }
+    function closeTerms(){document.getElementById('terms-modal').classList.replace('flex','hidden');document.body.style.overflow='auto';}
+    function checkRegPass(){
+      const val=document.getElementById('reg-password')?.value||'';
+      const hint=document.getElementById('reg-pass-hint');
+      if(!hint)return;
+      hint.classList.remove('hidden');
+      const hasLen=val.length>=8;
+      const hasUpper=/[A-Z]/.test(val);
+      const hasLower=/[a-z]/.test(val);
+      const hasNum=/[0-9]/.test(val);
+      const set=(id,ok)=>{const el=document.getElementById(id);if(!el)return;el.textContent=(ok?'✓':'✗')+el.textContent.slice(1);el.style.color=ok?'#4ade80':'';};
+      set('rph-len',hasLen);
+      set('rph-upper',hasUpper);
+      set('rph-lower',hasLower);
+      set('rph-num',hasNum);
+    }
+    function updateRegBirthDays(){const y=parseInt(document.getElementById('reg-birth-year').value)||0;const m=parseInt(document.getElementById('reg-birth-month').value)||0;const dEl=document.getElementById('reg-birth-day');if(!dEl)return;const prev=dEl.value;const days=y&&m?new Date(y,m,0).getDate():31;dEl.innerHTML='<option value="">日</option>';for(let i=1;i<=days;i++){const o=document.createElement('option');o.value=i;o.textContent=i;dEl.appendChild(o);}if(prev&&parseInt(prev)<=days)dEl.value=prev;}
+    function initRegBirthSelects(){const currentYear=new Date().getFullYear();const yEl=document.getElementById('reg-birth-year');const mEl=document.getElementById('reg-birth-month');if(!yEl||!mEl)return;for(let y=currentYear;y>=1940;y--){const o=document.createElement('option');o.value=y;o.textContent=y;yEl.appendChild(o);}for(let m=1;m<=12;m++){const o=document.createElement('option');o.value=m;o.textContent=m;mEl.appendChild(o);}}
+    function handleUserClick(){if(isLoggedIn)showSection('member');else document.getElementById('auth-modal').classList.replace('hidden','flex');}
+    function closeAuth(){document.getElementById('auth-modal').classList.replace('flex','hidden');}
+    function switchAuth(view){['auth-view-login','auth-view-register','auth-view-forgot'].forEach(id=>document.getElementById(id)?.classList.add('hidden'));document.getElementById(`auth-view-${view}`)?.classList.remove('hidden');const _titles={login:'SYSTEM LOGIN',register:'NEW REGISTRATION',forgot:'RESET PASSWORD'};document.getElementById('auth-title').innerText=_titles[view]||'SYSTEM LOGIN';}
+    function simLogin(msg){isLoggedIn=true;document.getElementById('user-status-dot').classList.replace('bg-slate-600','bg-neoncyan');closeAuth();showToast(msg||'登入成功');}
+    function validateAndRegister(){
+      const nameEl=document.getElementById('reg-name');
+      const phoneEl=document.getElementById('reg-phone');
+      const emailEl=document.getElementById('reg-email');
+      const passEl=document.getElementById('reg-password');
+      const byEl=document.getElementById('reg-birth-year');
+      const bmEl=document.getElementById('reg-birth-month');
+      const bdEl=document.getElementById('reg-birth-day');
+      const addrEl=document.getElementById('reg-address');
+      let ok=true;
+      [nameEl,phoneEl,emailEl,passEl,addrEl].forEach(el=>{if(el&&!el.value.trim()){setFieldError(el);ok=false;}});
+      [byEl,bmEl,bdEl].forEach(el=>{if(el&&!el.value){setFieldError(el);ok=false;}});
+      if(!ok){showToast('請填寫完整資料');return;}
+      if(window._fbRegister){window._fbRegister();}else{simLogin('註冊成功');}
+    }
+    function _logoutUI(){isLoggedIn=false;window._memberProfile=null;document.getElementById('user-status-dot').classList.replace('bg-neoncyan','bg-slate-600');showSection('home');}
+    function logout(){showToast('系統尚未就緒，請稍後再試');}
+    function toggleSubmenu(id){document.getElementById(id).classList.toggle('open');}
+    function toggleFab(){const m=document.getElementById('fab-menu'),i=document.getElementById('fab-icon');m.classList.toggle('open');if(m.classList.contains('open')){i.classList.replace('fa-headset','fa-xmark');i.parentElement.classList.remove('animate-pulse');}else{i.classList.replace('fa-xmark','fa-headset');i.parentElement.classList.add('animate-pulse');}}
+    function updateBirthDays(){const y=parseInt(document.getElementById('profile-birth-year').value)||0;const m=parseInt(document.getElementById('profile-birth-month').value)||0;const dEl=document.getElementById('profile-birth-day');if(!dEl)return;const prev=dEl.value;const days=y&&m?new Date(y,m,0).getDate():31;dEl.innerHTML='<option value="">日</option>';for(let i=1;i<=days;i++){const o=document.createElement('option');o.value=i;o.textContent=i;dEl.appendChild(o);}if(prev&&parseInt(prev)<=days)dEl.value=prev;}function initBirthSelects(){const currentYear=new Date().getFullYear();const yEl=document.getElementById('profile-birth-year');const mEl=document.getElementById('profile-birth-month');if(!yEl||!mEl)return;for(let y=currentYear;y>=1920;y--){const o=document.createElement('option');o.value=y;o.textContent=y;yEl.appendChild(o);}for(let m=1;m<=12;m++){const o=document.createElement('option');o.value=m;o.textContent=m;mEl.appendChild(o);}yEl.removeEventListener('change',updateBirthDays);mEl.removeEventListener('change',updateBirthDays);yEl.addEventListener('change',updateBirthDays);mEl.addEventListener('change',updateBirthDays);}
+    function renderMemberStats(){const totalSpend=orders.reduce((s,o)=>s+(o.total||0),0);const el=id=>document.getElementById(id);if(el('stat-spend'))el('stat-spend').textContent='NT$'+totalSpend.toLocaleString();if(el('stat-total'))el('stat-total').textContent=orders.length;if(el('stat-completed'))el('stat-completed').textContent=orders.filter(o=>o.status==='已完成').length;if(el('stat-pending'))el('stat-pending').textContent=orders.filter(o=>o.status==='未付款').length;}
+    function toggleProfileEdit(editing){const editBtn=document.getElementById('profile-edit-btn');const saveBtns=document.getElementById('profile-save-btns');const viewRows=document.getElementById('profile-view-rows');const editFields=document.getElementById('profile-edit-fields');if(editBtn)editBtn.classList.toggle('hidden',editing);if(saveBtns)saveBtns.classList.toggle('hidden',!editing);if(viewRows)viewRows.classList.toggle('hidden',editing);if(editFields)editFields.classList.toggle('hidden',!editing);if(editing){const p=window._memberProfile||{};['name','phone','email','address'].forEach(k=>{const el=document.getElementById('profile-'+k);if(el)el.value=p[k]||'';});}}
+    function saveProfile(){if(!window._fbCurrentUser){showToast('請先登入');return;}const p=window._memberProfile||{};const _by=document.getElementById('profile-birth-year').value;const _bm=document.getElementById('profile-birth-month').value;const _bd=document.getElementById('profile-birth-day').value;const birthday=p.birthday||(_by&&_bm&&_bd?`${_by}-${String(_bm).padStart(2,'0')}-${String(_bd).padStart(2,'0')}`:'');const profile={uid:window._fbCurrentUser.uid,email:window._fbCurrentUser.email,name:document.getElementById('profile-name')?.value.trim()||'',phone:document.getElementById('profile-phone')?.value.trim()||'',address:document.getElementById('profile-address')?.value.trim()||'',birthday:birthday,updatedAt:Date.now()};window._memberProfile=profile;if(window._fbUpdateProfile){window._fbUpdateProfile(profile).then(()=>{showToast('雲端資料已同步');loadProfile();toggleProfileEdit(false);}).catch(e=>{console.error(e);showToast('儲存失敗');});}else{showToast('同步功能尚未就緒');}if(profile.name)document.getElementById('member-name').innerText=profile.name;}
+    function loadProfile(){const p=window._memberProfile;if(!p)return;['name','phone','email','address'].forEach(k=>{const el=document.getElementById('profile-'+k);if(el)el.value=p[k]||'';});const email=p.email||window._fbCurrentUser?.email||'';const emailDisplay=document.getElementById('member-email-display');if(emailDisplay)emailDisplay.textContent=email;const vEl=id=>document.getElementById(id);if(vEl('view-email'))vEl('view-email').textContent=email||'—';if(vEl('view-name'))vEl('view-name').textContent=p.name||'—';if(vEl('view-phone'))vEl('view-phone').textContent=p.phone||'—';if(vEl('view-address'))vEl('view-address').textContent=p.address||'—';if(p.name){const mn=document.getElementById('member-name');if(mn)mn.innerText=p.name;}if(p.birthday){const _parts=p.birthday.split('-');const bYear=_parts[0];const bMonth=parseInt(_parts[1]);const bDay=parseInt(_parts[2]);if(vEl('view-birthday'))vEl('view-birthday').textContent=`${bYear} 年 ${bMonth} 月 ${bDay} 日`;const _yEl=document.getElementById('profile-birth-year');const _mEl=document.getElementById('profile-birth-month');const _dEl=document.getElementById('profile-birth-day');if(_yEl){_yEl.value=_parts[0];_yEl.disabled=true;}if(_mEl){_mEl.value=String(bMonth);_mEl.disabled=true;}updateBirthDays();if(_dEl){_dEl.value=String(bDay);_dEl.disabled=true;}}}
+    function prefillCheckout(){
+      const p=window._memberProfile;
+      if(!p)return;
+      // 宅配
+      ['home-name'].forEach(id=>{const el=document.getElementById(id);if(el&&!el.value)el.value=p.name||'';});
+      ['home-phone'].forEach(id=>{const el=document.getElementById(id);if(el&&!el.value)el.value=p.phone||'';});
+      const addr=document.getElementById('home-addr');if(addr&&!addr.value)addr.value=p.address||'';
+      // 超商
+      ['cvs-name'].forEach(id=>{const el=document.getElementById(id);if(el&&!el.value)el.value=p.name||'';});
+      ['cvs-phone'].forEach(id=>{const el=document.getElementById(id);if(el&&!el.value)el.value=p.phone||'';});
+      // 門市自取
+      const sname=document.getElementById('store-name');if(sname&&!sname.value)sname.value=p.name||'';
+      const sphone=document.getElementById('store-phone');if(sphone&&!sphone.value)sphone.value=p.phone||'';
+    }
+
+    window.onload=function(){try{const saved=localStorage.getItem('apple911_cart');if(saved)cart=JSON.parse(saved);}catch(e){}renderCart();renderFrontCategories();initBirthSelects();initRegBirthSelects();loadProfile();if(isLoggedIn)document.getElementById('user-status-dot').classList.replace('bg-slate-600','bg-neoncyan');document.getElementById('agree-terms').addEventListener('change',function(){document.getElementById('submit-order-btn').disabled=!this.checked;});document.getElementById('submit-order-btn').addEventListener('mousedown',function(){if(!document.getElementById('agree-terms').checked)showToast('請先閱讀並同意購物與服務條款');});const _urlp=new URLSearchParams(window.location.search);const _lt=_urlp.get('lineToken');const _le=_urlp.get('lineError');if(_lt){window.history.replaceState({},'','/');if(window._fbSignInWithCustomToken){showToast('LINE 登入中...');window._fbSignInWithCustomToken(_lt,{lineName:_urlp.get('lineName')||'',lineUserId:_urlp.get('lineUserId')||'',linePicture:_urlp.get('linePicture')||''});}}else if(_le){window.history.replaceState({},'','/');showToast('LINE 登入失敗，請再試一次');}};
+  </script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
+import { getFirestore, doc, getDoc, setDoc, collection, query, where, getDocs, orderBy, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, sendPasswordResetEmail, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
+const _fbCfg = { apiKey: "AIzaSyDpasiFnj0UQpNKndmya4__C1J8bJxGN4g", authDomain: "apple911-shop.firebaseapp.com", projectId: "apple911-shop", storageBucket: "apple911-shop.firebasestorage.app", messagingSenderId: "335224055176", appId: "1:335224055176:web:62f37cdf81f6233c16063d" };
+const _fbApp      = initializeApp(_fbCfg);
+const _fbDb       = getFirestore(_fbApp);
+const _fbAuth     = getAuth(_fbApp);
+const _fbProdsRef    = doc(_fbDb, 'store', 'products');
+const _fbCatRef      = doc(_fbDb, 'store', 'categories');
+const _fbCouponsRef  = doc(_fbDb, 'store', 'coupons');
+const _fbSettingsRef = doc(_fbDb, 'store', 'settings');
+onAuthStateChanged(_fbAuth, async (user) => {
+  if (user) {
+    window._fbCurrentUser = { uid: user.uid, email: user.email };
+    try {
+      const snap = await getDoc(doc(_fbDb, 'members', user.uid));
+      if (snap.exists()) {
+        window._memberProfile = snap.data();
+      } else {
+        window._memberProfile = { email: user.email, uid: user.uid };
+      }
+    } catch(e) { console.error('[Firebase] 同步個人資料失敗:', e.message); }
+    isLoggedIn = true;
+    document.getElementById('user-status-dot')?.classList.replace('bg-slate-600','bg-neoncyan');
+    if (typeof closeAuth === 'function') closeAuth();
+    if (typeof loadProfile === 'function') loadProfile();
+  } else {
+    window._fbCurrentUser = null; window._memberProfile = null;
+    if (isLoggedIn && typeof _logoutUI === 'function') _logoutUI();
+  }
+});
+window._fbLogin = async function() {
+  const account  = document.getElementById('login-account')?.value.trim();
+  const password = document.getElementById('login-password')?.value;
+  if (!account || !password) { if(typeof showToast==='function') showToast('請輸入帳號與密碼'); return; }
+  let emailToUse = account;
+  if (!account.includes('@')) {
+    try {
+      const q = query(collection(_fbDb, 'members'), where('phone', '==', account));
+      const snap = await getDocs(q);
+      if (snap.empty) { if(typeof showToast==='function') showToast('此手機號碼尚未註冊'); return; }
+      emailToUse = snap.docs[0].data().email;
+    } catch(e) { if(typeof showToast==='function') showToast('查詢失敗'); return; }
+  }
+  try {
+    await signInWithEmailAndPassword(_fbAuth, emailToUse, password);
+    if (typeof closeAuth === 'function') closeAuth();
+    if (typeof showToast === 'function') showToast('登入成功');
+  } catch(e) { if (typeof showToast === 'function') showToast('登入失敗'); }
+};
+window._fbRegister = async function() {
+  const nameEl    = document.getElementById('reg-name');
+  const phoneEl   = document.getElementById('reg-phone');
+  const emailEl   = document.getElementById('reg-email');
+  const passEl    = document.getElementById('reg-password');
+  const byEl      = document.getElementById('reg-birth-year');
+  const bmEl      = document.getElementById('reg-birth-month');
+  const bdEl      = document.getElementById('reg-birth-day');
+  const addrEl    = document.getElementById('reg-address');
+  const name      = nameEl?.value.trim();
+  const phone     = phoneEl?.value.trim();
+  const email     = emailEl?.value.trim();
+  const password  = passEl?.value;
+  const by        = byEl?.value;
+  const bm        = bmEl?.value;
+  const bd        = bdEl?.value;
+  const address   = addrEl?.value.trim();
+  // 紅框驗證
+  let ok = true;
+  const sf = window.setFieldError || (()=>{});
+  if(!name)    { sf(nameEl);  ok=false; }
+  if(!phone)   { sf(phoneEl); ok=false; }
+  if(!email)   { sf(emailEl); ok=false; }
+  if(!password){ sf(passEl);  ok=false; }
+  if(!by)      { sf(byEl);    ok=false; }
+  if(!bm)      { sf(bmEl);    ok=false; }
+  if(!bd)      { sf(bdEl);    ok=false; }
+  if(!address) { sf(addrEl);  ok=false; }
+  if(!ok){ if(typeof showToast==='function') showToast('請填寫完整資料'); return; }
+  try {
+    const cred = await createUserWithEmailAndPassword(_fbAuth, email, password);
+    const memberData = { uid: cred.user.uid, name, phone, email, birthday: `${by}-${String(bm).padStart(2,'0')}-${String(bd).padStart(2,'0')}`, address, registeredAt: Date.now() };
+    await setDoc(doc(_fbDb, 'members', cred.user.uid), memberData);
+    window._memberProfile = memberData;
+    if(typeof closeAuth==='function') closeAuth();
+    if(typeof showToast==='function') showToast('註冊成功，歡迎加入！');
+  } catch(e) {
+    const msg = e.code==='auth/email-already-in-use'?'此信箱已註冊':e.code==='auth/weak-password'?'密碼強度不足（至少6碼）':'註冊失敗，請稍後再試';
+    if(typeof showToast==='function') showToast(msg);
+  }
+};
+window._fbGoogleLogin = async function() {
+  try {
+    const cred = await signInWithPopup(_fbAuth, new GoogleAuthProvider());
+    const ref = doc(_fbDb, 'members', cred.user.uid);
+    const snap = await getDoc(ref);
+    let memberData;
+    if (!snap.exists()) {
+      memberData = { uid: cred.user.uid, name: cred.user.displayName||'', phone: '', email: cred.user.email, birthday: '', address: '', registeredAt: Date.now() };
+      await setDoc(ref, memberData);
+    } else { memberData = snap.data(); }
+    window._memberProfile = memberData;
+    if (typeof closeAuth === 'function') closeAuth();
+    if (typeof showToast === 'function') showToast('Google 登入成功');
+    if (typeof loadProfile === 'function') loadProfile();
+  } catch(e) { if(typeof showToast==='function') showToast('Google 登入失敗'); }
+};
+window.logout = async function() { if(!isLoggedIn)return; try { await signOut(_fbAuth); } catch(e) {} window._fbCurrentUser=null; if(typeof _logoutUI==='function')_logoutUI(); };
+window._lineLogin = function() {
+  const state = Math.random().toString(36).substring(2);
+  sessionStorage.setItem('line_state', state);
+  const params = new URLSearchParams({
+    response_type: 'code',
+    client_id: '2010039482',
+    redirect_uri: 'https://apple911-shop.vercel.app/api/line-callback',
+    state,
+    scope: 'profile openid',
+  });
+  window.location.href = 'https://access.line.me/oauth2/v2.1/authorize?' + params.toString();
+};
+window._fbSignInWithCustomToken = async function(token, lineProfile) {
+  try {
+    const result = await signInWithCustomToken(_fbAuth, token);
+    const user = result.user;
+    const memberRef = doc(_fbDb, 'members', user.uid);
+    const snap = await getDoc(memberRef);
+    if (snap.exists()) {
+      window._memberProfile = snap.data();
+    } else {
+      const newMember = { uid: user.uid, lineUid: lineProfile.lineUserId || '', name: lineProfile.lineName || '', picture: lineProfile.linePicture || '', loginMethod: 'line', createdAt: Date.now(), updatedAt: Date.now() };
+      await setDoc(memberRef, newMember);
+      window._memberProfile = newMember;
+    }
+  } catch(e) { console.error('LINE 自訂 token 登入失敗:', e); if(typeof showToast==='function') showToast('LINE 登入失敗，請再試一次'); }
+};
+window._fbSendPasswordReset = async function() {
+  const email = document.getElementById('forgot-email')?.value.trim();
+  if(!email){ if(typeof showToast==='function') showToast('請輸入信箱'); return; }
+  try {
+    await sendPasswordResetEmail(_fbAuth, email);
+    if(typeof showToast==='function') showToast('重設信已發送，請查收信箱');
+    if(typeof switchAuth==='function') switchAuth('login');
+  } catch(e) {
+    const msg = e.code==='auth/user-not-found'?'此信箱未註冊':e.code==='auth/invalid-email'?'信箱格式錯誤':'發送失敗，請稍後再試';
+    if(typeof showToast==='function') showToast(msg);
+  }
+};
+window._fbAddOrder = async function(newOrder) {
+  try {
+    await setDoc(doc(_fbDb, 'orders', newOrder.id), newOrder);
+  } catch(e) {
+    console.error('Firebase 訂單寫入失敗:', e.code, e.message);
+    throw e;
+  }
+};
+window._fbGetOrders = async function() {
+  if (!window._fbCurrentUser) return [];
+  try {
+    const q = query(collection(_fbDb, 'orders'), where('userId', '==', window._fbCurrentUser.uid), orderBy('time', 'desc'));
+    const snap = await getDocs(q);
+    const list = []; snap.forEach(doc => list.push(doc.data())); return list;
+  } catch(e) {
+    console.error('_fbGetOrders 失敗:', e.code, e.message);
+    return [];
+  }
+};
+let _ordersUnsub = null;
+window._fbWatchOrders = function(cb, errCb) {
+  if (_ordersUnsub) { _ordersUnsub(); _ordersUnsub = null; }
+  if (!window._fbCurrentUser) { if(errCb) errCb(); return; }
+  const q = query(collection(_fbDb, 'orders'), where('userId', '==', window._fbCurrentUser.uid), orderBy('time', 'desc'));
+  _ordersUnsub = onSnapshot(q, (snap) => {
+    const list = []; snap.forEach(d => list.push(d.data())); cb(list);
+  }, (e) => { console.error('_fbWatchOrders 失敗:', e.message); if(errCb) errCb(); });
+};
+window._fbUnwatchOrders = function() {
+  if (_ordersUnsub) { _ordersUnsub(); _ordersUnsub = null; }
+};
+window._fbUpdateOrder = async function(orderId, data) { try { await updateDoc(doc(_fbDb, 'orders', orderId), data); } catch(e) { throw e; } };
+window._fbUpdateProfile = async function(profile) { if (!window._fbCurrentUser) return; try { await setDoc(doc(_fbDb, 'members', window._fbCurrentUser.uid), profile, { merge: true }); } catch(e) { throw e; } };
+onSnapshot(_fbProdsRef, (snap) => {
+  if (snap.exists()) { products = snap.data().list || []; }
+  if (typeof renderFrontCategories === 'function') renderFrontCategories();
+});
+onSnapshot(_fbCatRef, (snap) => {
+  if (snap.exists()) { categories = snap.data().list || []; }
+  if (typeof renderFrontCategories === 'function') renderFrontCategories();
+});
+onSnapshot(_fbCouponsRef, (snap) => {
+  if (snap.exists()) { coupons = snap.data().list || []; }
+});
+onSnapshot(_fbSettingsRef, (snap) => {
+  if (snap.exists() && typeof applySettings === 'function') applySettings(snap.data());
+});
+window._fbIncrementCouponUsage = async function(couponId) {
+  try {
+    const snap = await getDoc(_fbCouponsRef);
+    if(snap.exists()){
+      const list = snap.data().list || [];
+      const updated = list.map(c=>c.id===couponId?{...c,usedCount:(c.usedCount||0)+1}:c);
+      await setDoc(_fbCouponsRef, {list:updated, updatedAt:Date.now()});
+    }
+  } catch(e){ console.error('[Firebase] 優惠券使用次數更新失敗:', e.message); }
+};
+setTimeout(()=>{if(categories.length===0){categories=_getFrontCats();renderFrontCategories();}},5000);
+</script>
+<!-- Popup 彈窗 -->
+<div id="site-popup-modal" class="hidden fixed inset-0 bg-black/80 z-[120] flex items-center justify-center p-4 backdrop-blur-sm">
+  <div class="bg-panelbg border border-neoncyan/50 tech-clip w-full max-w-sm shadow-[0_0_30px_rgba(0,243,255,0.15)] p-6 space-y-4">
+    <div class="flex items-center justify-between">
+      <h3 id="site-popup-title" class="font-bold text-neoncyan tracking-widest text-sm"></h3>
+      <button onclick="closeSitePopup()" class="text-gray-400 hover:text-white transition"><i class="fa-solid fa-xmark text-lg"></i></button>
+    </div>
+    <div id="site-popup-content" class="text-sm text-gray-300 leading-relaxed whitespace-pre-line"></div>
+    <button onclick="closeSitePopup()" class="w-full py-3 bg-neoncyan text-black font-bold tech-clip text-xs hover:bg-white transition tracking-widest">了解了 OK</button>
+  </div>
+</div>
+</body>
+</html>
