@@ -854,6 +854,8 @@
         try{ await window._fbAddOrder(newOrder); }
         catch(e){ showToast('訂單送出失敗，請重試'); if(btn)btn.disabled=false; return; }
         if(btn)btn.disabled=false;
+        // 通知官方賴（fire-and-forget，不影響下單流程）
+        fetch('/api/line-notify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({order:newOrder})}).catch(()=>{});
       } else {
         showToast('系統尚未就緒，請稍後重試'); return;
       }
