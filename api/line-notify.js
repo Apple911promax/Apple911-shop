@@ -229,6 +229,29 @@ function buildStatusCustomerFlex(order, newStatus) {
   const emoji = statusEmoji[newStatus] || '🔔';
   const color = statusColor[newStatus] || '#9ca3af';
   const msg = customerMsg[newStatus] || '您的訂單狀態已更新，如有疑問請聯繫客服。';
+
+  const ti = order.trackingInfo;
+  const trackingContents = (newStatus === '已出貨' && ti && ti.trackingNo) ? [
+    { type: 'separator', color: '#0a0f18', margin: 'md' },
+    { type: 'text', text: '物流資訊', color: '#00f3ff', size: 'xs', weight: 'bold', margin: 'md' },
+    { type: 'box', layout: 'vertical', backgroundColor: '#0a0f18', paddingAll: '12px', cornerRadius: '4px', margin: 'sm', contents: [
+      { type: 'box', layout: 'horizontal', paddingBottom: '6px', contents: [
+        { type: 'text', text: '物流公司', color: '#9ca3af', size: 'sm', flex: 1 },
+        { type: 'text', text: ti.carrier || '—', color: '#ffffff', size: 'sm', flex: 2, align: 'end' },
+      ]},
+      { type: 'box', layout: 'horizontal', contents: [
+        { type: 'text', text: '單號', color: '#9ca3af', size: 'sm', flex: 1 },
+        { type: 'text', text: ti.trackingNo, color: '#e2c78e', size: 'sm', flex: 2, align: 'end', wrap: true },
+      ]},
+    ]},
+  ] : [];
+
+  const footerContents = (newStatus === '已出貨' && ti && ti.trackingUrl) ? [{
+    type: 'button',
+    action: { type: 'uri', label: '查詢貨物狀態', uri: ti.trackingUrl },
+    style: 'primary', color: '#00f3ff', height: 'sm',
+  }] : [];
+
   return {
     type: 'flex', altText: `${emoji} Apple911 訂單狀態更新`,
     contents: {
@@ -256,9 +279,14 @@ function buildStatusCustomerFlex(order, newStatus) {
           { type: 'box', layout: 'vertical', backgroundColor: '#0a0f18', paddingAll: '12px', cornerRadius: '4px', margin: 'md', contents: [
             { type: 'text', text: msg, color: '#9ca3af', size: 'sm', wrap: true },
           ]},
+          ...trackingContents,
           { type: 'text', text: 'Apple911  配件怪獸 × 專業維修', color: '#9ca3af', size: 'xxs', align: 'center', margin: 'xl' },
         ],
       },
+      ...(footerContents.length ? { footer: {
+        type: 'box', layout: 'vertical', backgroundColor: '#0a0f18', paddingAll: '12px',
+        contents: footerContents,
+      }} : {}),
     },
   };
 }
