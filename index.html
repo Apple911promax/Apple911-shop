@@ -1610,6 +1610,14 @@ const _fbCouponsRef  = doc(_fbDb, 'store', 'coupons');
 const _fbSettingsRef = doc(_fbDb, 'store', 'settings');
 onAuthStateChanged(_fbAuth, async (user) => {
   if (user) {
+    try {
+      const adminSnap = await getDoc(doc(_fbDb, 'admins', user.uid));
+      if (adminSnap.exists()) {
+        console.warn('[Firebase] 管理員帳號不可作為前台會員登入，自動登出');
+        await signOut(_fbAuth);
+        return;
+      }
+    } catch(e) { console.error('[Firebase] admins 檢查失敗:', e.message); }
     window._fbCurrentUser = { uid: user.uid, email: user.email };
     try {
       const snap = await getDoc(doc(_fbDb, 'members', user.uid));

@@ -2583,8 +2583,16 @@ window._fbAdminSignOut = async function() {
 // ── Auth 狀態監聽 ──
 let _ordersUnsub = null;
 let _membersUnsub = null;
-onAuthStateChanged(_fbAuth, (user) => {
+onAuthStateChanged(_fbAuth, async (user) => {
   if (user) {
+    const adminSnap = await getDoc(doc(_fbDb, 'admins', user.uid)).catch(() => null);
+    if (!adminSnap || !adminSnap.exists()) {
+      console.warn('[Firebase Auth] 非管理員帳號，拒絕進入後台:', user.email);
+      await signOut(_fbAuth).catch(() => {});
+      const errEl = document.getElementById('login-error');
+      if (errEl) { errEl.textContent = '此帳號無後台管理權限'; errEl.classList.remove('hidden'); }
+      return;
+    }
     console.log('[Firebase Auth] 後台已登入:', user.email);
     if (typeof _doShowAdmin === 'function') _doShowAdmin();
     // 確認登入後才啟動監聽，避免初始化競態
