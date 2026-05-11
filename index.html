@@ -1610,13 +1610,36 @@ const _fbCouponsRef  = doc(_fbDb, 'store', 'coupons');
 const _fbSettingsRef = doc(_fbDb, 'store', 'settings');
 onAuthStateChanged(_fbAuth, async (user) => {
   if (user) {
+    try {
+      const adminSnap = await getDoc(doc(_fbDb, 'admins', user.uid));
+      if (adminSnap.exists()) {
+        console.warn('[Firebase] 管理員帳號不可作為前台會員登入，自動登出');
+        await signOut(_fbAuth);
+        return;
+      }
+    } catch(e) { console.error('[Firebase] admins 檢查失敗:', e.message); }
     window._fbCurrentUser = { uid: user.uid, email: user.email };
     try {
       const snap = await getDoc(doc(_fbDb, 'members', user.uid));
+      const now = Date.now();
       if (snap.exists()) {
-        window._memberProfile = snap.data();
+        const existing = snap.data();
+        const missing = {};
+        if (!('phone'     in existing)) missing.phone     = '';
+        if (!('address'   in existing)) missing.address   = '';
+        if (!('birthday'  in existing)) missing.birthday  = '';
+        if (!('status'    in existing)) missing.status    = '正常';
+        if (!('tags'      in existing)) missing.tags      = '';
+        if (!('adminNote' in existing)) missing.adminNote = '';
+        if (Object.keys(missing).length > 0) {
+          missing.updatedAt = now;
+          await setDoc(doc(_fbDb, 'members', user.uid), missing, { merge: true });
+        }
+        window._memberProfile = { ...existing, ...missing };
       } else {
-        window._memberProfile = { email: user.email, uid: user.uid };
+        const newMember = { uid: user.uid, email: user.email || '', name: '', phone: '', address: '', birthday: '', status: '正常', tags: '', adminNote: '', registeredAt: now, createdAt: now, updatedAt: now };
+        await setDoc(doc(_fbDb, 'members', user.uid), newMember);
+        window._memberProfile = newMember;
       }
     } catch(e) { console.error('[Firebase] 同步個人資料失敗:', e.message); }
     isLoggedIn = true;
