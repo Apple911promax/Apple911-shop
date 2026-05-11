@@ -1608,7 +1608,7 @@ window._fbSignInWithCustomToken = async function(token, lineProfile) {
     if (snap.exists()) {
       window._memberProfile = snap.data();
     } else {
-      const newMember = { uid: user.uid, lineId: lineProfile.lineUserId || '', name: lineProfile.lineName || '', picture: lineProfile.linePicture || '', loginMethod: 'line', createdAt: Date.now(), updatedAt: Date.now() };
+      const newMember = { uid: user.uid, lineUid: lineProfile.lineUserId || '', name: lineProfile.lineName || '', picture: lineProfile.linePicture || '', loginMethod: 'line', createdAt: Date.now(), updatedAt: Date.now() };
       await setDoc(memberRef, newMember);
       window._memberProfile = newMember;
     }
