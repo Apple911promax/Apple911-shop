@@ -2,15 +2,12 @@ function buildOrderFlexMessage(order) {
   const shippingMap = { home: '宅配', cvs: '超商取貨', store: '門市自取' };
   const shippingLabel = shippingMap[order.shippingMethod] || order.shippingMethod || '—';
   const timeStr = new Date(order.time).toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' });
-
   const items = order.items || [];
   const displayItems = items.slice(0, 5);
   const extraCount = items.length - displayItems.length;
-
   const statusColor =
     (order.status === '已付款' || order.status === '已付款待確認') ? '#00f3ff' :
     order.status === '未付款' ? '#ff003c' : '#9ca3af';
-
   const itemRows = displayItems.map(i => ({
     type: 'box', layout: 'horizontal', paddingTop: '6px', paddingBottom: '6px',
     contents: [
@@ -19,26 +16,19 @@ function buildOrderFlexMessage(order) {
       { type: 'text', text: `NT$${i.price * i.qty}`, color: '#e2c78e', size: 'sm', flex: 2, align: 'end' },
     ],
   }));
-  if (extraCount > 0) {
-    itemRows.push({ type: 'text', text: `另有 ${extraCount} 項商品`, color: '#9ca3af', size: 'xs', paddingTop: '4px' });
-  }
-
+  if (extraCount > 0) itemRows.push({ type: 'text', text: `另有 ${extraCount} 項商品`, color: '#9ca3af', size: 'xs', paddingTop: '4px' });
   const amountRows = [{ label: '小計', value: `NT$${order.subtotal}`, color: '#ffffff' }];
   if (order.discount > 0) amountRows.push({ label: '折扣', value: `-NT$${order.discount}`, color: '#ff003c' });
   amountRows.push({ label: '運費', value: order.shippingFee > 0 ? `NT$${order.shippingFee}` : '免費', color: '#9ca3af' });
-
   const noteContents = order.note ? [{
-    type: 'box', layout: 'vertical', backgroundColor: '#0a0f18', paddingAll: '10px',
-    cornerRadius: '4px', margin: 'md',
+    type: 'box', layout: 'vertical', backgroundColor: '#0a0f18', paddingAll: '10px', cornerRadius: '4px', margin: 'md',
     contents: [
       { type: 'text', text: '備註', color: '#9ca3af', size: 'xs', weight: 'bold' },
       { type: 'text', text: order.note, color: '#ffffff', size: 'sm', wrap: true, margin: 'sm' },
     ],
   }] : [];
-
   return {
-    type: 'flex',
-    altText: `🛒 Apple911 新訂單 ${order.id}`,
+    type: 'flex', altText: `🛒 Apple911 新訂單 ${order.id}`,
     contents: {
       type: 'bubble', size: 'giga',
       header: {
@@ -122,7 +112,6 @@ function buildCustomerConfirmFlex(order) {
   const items = order.items || [];
   const displayItems = items.slice(0, 5);
   const extraCount = items.length - displayItems.length;
-
   const itemRows = displayItems.map(i => ({
     type: 'box', layout: 'horizontal', paddingTop: '4px', paddingBottom: '4px',
     contents: [
@@ -131,15 +120,10 @@ function buildCustomerConfirmFlex(order) {
       { type: 'text', text: `NT$${i.price * i.qty}`, color: '#e2c78e', size: 'sm', flex: 2, align: 'end' },
     ],
   }));
-  if (extraCount > 0) {
-    itemRows.push({ type: 'text', text: `另有 ${extraCount} 項商品`, color: '#9ca3af', size: 'xs', paddingTop: '4px' });
-  }
-
+  if (extraCount > 0) itemRows.push({ type: 'text', text: `另有 ${extraCount} 項商品`, color: '#9ca3af', size: 'xs', paddingTop: '4px' });
   const isPending = order.status === '未付款';
-
   return {
-    type: 'flex',
-    altText: `✅ Apple911 訂單確認 ${order.id}`,
+    type: 'flex', altText: `✅ Apple911 訂單確認 ${order.id}`,
     contents: {
       type: 'bubble', size: 'giga',
       header: {
@@ -175,6 +159,110 @@ function buildCustomerConfirmFlex(order) {
   };
 }
 
+function buildStatusOwnerFlex(order, newStatus) {
+  const statusEmoji = { '已付款': '✅', '已出貨': '📦', '已完成': '🎉', '已取消': '❌', '處理中': '🔧', '待取貨': '🏪', '已付款待確認': '⏳', '未付款': '⚠️' };
+  const statusColor = { '已付款': '#00f3ff', '已出貨': '#60a5fa', '已完成': '#4ade80', '已取消': '#9ca3af', '處理中': '#facc15', '待取貨': '#facc15', '已付款待確認': '#facc15', '未付款': '#ff003c' };
+  const emoji = statusEmoji[newStatus] || '🔔';
+  const color = statusColor[newStatus] || '#9ca3af';
+  return {
+    type: 'flex', altText: `${emoji} 訂單狀態變更：${newStatus}`,
+    contents: {
+      type: 'bubble', size: 'giga',
+      header: {
+        type: 'box', layout: 'vertical', backgroundColor: '#0a0f18', paddingAll: '16px',
+        contents: [
+          { type: 'text', text: `${emoji}  訂單狀態變更`, color: '#00f3ff', size: 'lg', weight: 'bold', align: 'center' },
+        ],
+      },
+      body: {
+        type: 'box', layout: 'vertical', backgroundColor: '#050505', paddingAll: '16px', spacing: 'none',
+        contents: [
+          { type: 'box', layout: 'vertical', backgroundColor: '#0a0f18', paddingAll: '14px', cornerRadius: '4px', contents: [
+            { type: 'box', layout: 'horizontal', paddingBottom: '8px', contents: [
+              { type: 'text', text: '訂單編號', color: '#9ca3af', size: 'sm', flex: 1 },
+              { type: 'text', text: order.id, color: '#e2c78e', size: 'sm', flex: 2, align: 'end', wrap: true },
+            ]},
+            { type: 'box', layout: 'horizontal', paddingBottom: '8px', contents: [
+              { type: 'text', text: '客人姓名', color: '#9ca3af', size: 'sm', flex: 1 },
+              { type: 'text', text: order.shippingInfo?.name || '—', color: '#ffffff', size: 'sm', flex: 2, align: 'end' },
+            ]},
+            { type: 'box', layout: 'horizontal', paddingBottom: '8px', contents: [
+              { type: 'text', text: '電話', color: '#9ca3af', size: 'sm', flex: 1 },
+              { type: 'text', text: order.shippingInfo?.phone || '—', color: '#ffffff', size: 'sm', flex: 2, align: 'end' },
+            ]},
+            { type: 'separator', color: '#1e293b', margin: 'sm' },
+            { type: 'box', layout: 'horizontal', paddingTop: '8px', contents: [
+              { type: 'text', text: '新狀態', color: '#9ca3af', size: 'sm', flex: 1 },
+              { type: 'text', text: newStatus, color: color, size: 'md', weight: 'bold', flex: 2, align: 'end' },
+            ]},
+            { type: 'box', layout: 'horizontal', paddingTop: '6px', contents: [
+              { type: 'text', text: '訂單金額', color: '#9ca3af', size: 'sm', flex: 1 },
+              { type: 'text', text: `NT$${order.orderTotal || order.total || 0}`, color: '#e2c78e', size: 'sm', flex: 2, align: 'end' },
+            ]},
+          ]},
+          { type: 'text', text: 'Apple911  配件怪獸 × 專業維修', color: '#9ca3af', size: 'xxs', align: 'center', margin: 'xl' },
+        ],
+      },
+      footer: {
+        type: 'box', layout: 'vertical', backgroundColor: '#0a0f18', paddingAll: '12px',
+        contents: [{
+          type: 'button',
+          action: { type: 'uri', label: '前往後台訂單', uri: 'https://apple911-shop.vercel.app/admin.html' },
+          style: 'primary', color: '#00f3ff', height: 'sm',
+        }],
+      },
+    },
+  };
+}
+
+function buildStatusCustomerFlex(order, newStatus) {
+  const statusEmoji = { '已付款': '✅', '已出貨': '📦', '已完成': '🎉', '已取消': '❌', '處理中': '🔧', '待取貨': '🏪' };
+  const statusColor = { '已付款': '#00f3ff', '已出貨': '#60a5fa', '已完成': '#4ade80', '已取消': '#9ca3af', '處理中': '#facc15', '待取貨': '#facc15' };
+  const customerMsg = {
+    '已付款': '我們已確認您的付款，將盡快為您處理訂單！',
+    '已出貨': '您的商品已出貨，請留意配送通知，感謝您的耐心等候！',
+    '已完成': '感謝您的購買，歡迎再次光臨 Apple911！',
+    '已取消': '您的訂單已取消，如有疑問請聯繫客服，感謝您的理解。',
+    '處理中': '我們正在處理您的訂單，將盡快完成，感謝您的等候！',
+    '待取貨': '您的商品已備妥，歡迎前來取貨！',
+  };
+  const emoji = statusEmoji[newStatus] || '🔔';
+  const color = statusColor[newStatus] || '#9ca3af';
+  const msg = customerMsg[newStatus] || '您的訂單狀態已更新，如有疑問請聯繫客服。';
+  return {
+    type: 'flex', altText: `${emoji} Apple911 訂單狀態更新`,
+    contents: {
+      type: 'bubble', size: 'giga',
+      header: {
+        type: 'box', layout: 'vertical', backgroundColor: '#0a0f18', paddingAll: '16px',
+        contents: [
+          { type: 'text', text: `${emoji}  訂單狀態更新`, color: '#00f3ff', size: 'lg', weight: 'bold', align: 'center' },
+        ],
+      },
+      body: {
+        type: 'box', layout: 'vertical', backgroundColor: '#050505', paddingAll: '16px', spacing: 'none',
+        contents: [
+          { type: 'box', layout: 'vertical', backgroundColor: '#0a0f18', paddingAll: '14px', cornerRadius: '4px', contents: [
+            { type: 'box', layout: 'horizontal', paddingBottom: '8px', contents: [
+              { type: 'text', text: '訂單編號', color: '#9ca3af', size: 'sm', flex: 1 },
+              { type: 'text', text: order.id, color: '#e2c78e', size: 'sm', flex: 2, align: 'end', wrap: true },
+            ]},
+            { type: 'separator', color: '#1e293b', margin: 'sm' },
+            { type: 'box', layout: 'horizontal', paddingTop: '8px', contents: [
+              { type: 'text', text: '目前狀態', color: '#9ca3af', size: 'sm', flex: 1 },
+              { type: 'text', text: newStatus, color: color, size: 'md', weight: 'bold', flex: 2, align: 'end' },
+            ]},
+          ]},
+          { type: 'box', layout: 'vertical', backgroundColor: '#0a0f18', paddingAll: '12px', cornerRadius: '4px', margin: 'md', contents: [
+            { type: 'text', text: msg, color: '#9ca3af', size: 'sm', wrap: true },
+          ]},
+          { type: 'text', text: 'Apple911  配件怪獸 × 專業維修', color: '#9ca3af', size: 'xxs', align: 'center', margin: 'xl' },
+        ],
+      },
+    },
+  };
+}
+
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method Not Allowed' });
@@ -192,12 +280,18 @@ module.exports = async function handler(req, res) {
     return res.status(200).json({ ok: false, reason: 'not_configured' });
   }
 
-  // 狀態變更通知（店主純文字 + 客人純文字）
+  const pushLine = (to, messages) => fetch('https://api.line.me/v2/bot/message/push', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+    body: JSON.stringify({ to, messages }),
+  });
+
+  // 狀態變更通知（店主 Flex + 客人 Flex，各自 fallback 純文字）
   if (type === 'status_change') {
     const statusEmoji = { '已付款': '✅', '已出貨': '📦', '已完成': '🎉', '已取消': '❌', '處理中': '🔧', '待取貨': '🏪' };
     const emoji = statusEmoji[newStatus] || '🔔';
-    const ownerText = `${emoji} 訂單狀態變更\n訂單編號：${order.id}\n新狀態：${newStatus}\n客人：${order.shippingInfo?.name || '—'}`;
-    const customerMsgMap = {
+    const ownerFallback = `${emoji} 訂單狀態變更\n訂單編號：${order.id}\n新狀態：${newStatus}\n客人：${order.shippingInfo?.name || '—'}`;
+    const customerFallbackMap = {
       '已付款': `✅ 您的訂單已確認付款\n訂單編號：${order.id}\n我們將盡快為您處理，感謝您的購買！`,
       '已出貨': `📦 您的訂單已出貨\n訂單編號：${order.id}\n請留意配送通知，感謝您的耐心等候！`,
       '已完成': `🎉 訂單已完成\n訂單編號：${order.id}\n感謝您的購買，歡迎再次光臨 Apple911！`,
@@ -206,34 +300,35 @@ module.exports = async function handler(req, res) {
       '待取貨': `🏪 您的訂單已備妥，可前來取貨\n訂單編號：${order.id}`,
     };
 
-    const pushPromises = [
-      fetch('https://api.line.me/v2/bot/message/push', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ to: ownerId, messages: [{ type: 'text', text: ownerText }] }),
-      }),
-    ];
-
-    if (order.lineUserId && customerMsgMap[newStatus]) {
-      pushPromises.push(
-        fetch('https://api.line.me/v2/bot/message/push', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-          body: JSON.stringify({ to: order.lineUserId, messages: [{ type: 'text', text: customerMsgMap[newStatus] }] }),
-        })
-      );
-    }
-
+    // 店主 Flex（失敗 fallback 純文字）
     try {
-      const results = await Promise.all(pushPromises);
-      for (const r of results) {
-        if (!r.ok) { const d = await r.json(); console.error('LINE push failed:', d); }
+      const r = await pushLine(ownerId, [buildStatusOwnerFlex(order, newStatus)]);
+      if (!r.ok) {
+        const err = await r.json();
+        console.warn('Owner status flex failed:', err);
+        await pushLine(ownerId, [{ type: 'text', text: ownerFallback }]).catch(() => {});
       }
-      return res.status(200).json({ ok: true });
     } catch (e) {
-      console.error('LINE notify error:', e);
-      return res.status(200).json({ ok: false, reason: e.message });
+      console.warn('Owner status flex error:', e.message);
+      await pushLine(ownerId, [{ type: 'text', text: ownerFallback }]).catch(() => {});
     }
+
+    // 客人 Flex（失敗 fallback 純文字）
+    if (order.lineUserId && customerFallbackMap[newStatus]) {
+      try {
+        const r = await pushLine(order.lineUserId, [buildStatusCustomerFlex(order, newStatus)]);
+        if (!r.ok) {
+          const err = await r.json();
+          console.warn('Customer status flex failed:', err);
+          await pushLine(order.lineUserId, [{ type: 'text', text: customerFallbackMap[newStatus] }]).catch(() => {});
+        }
+      } catch (e) {
+        console.warn('Customer status flex error:', e.message);
+        await pushLine(order.lineUserId, [{ type: 'text', text: customerFallbackMap[newStatus] }]).catch(() => {});
+      }
+    }
+
+    return res.status(200).json({ ok: true });
   }
 
   // 新訂單：店主 Flex（fallback 純文字）+ 客人 Flex 確認（LINE 登入才有）
@@ -241,8 +336,7 @@ module.exports = async function handler(req, res) {
   const shippingLabel = shippingMap[order.shippingMethod] || order.shippingMethod || '—';
   const itemLines = (order.items || []).map(i => `  • ${i.name} ×${i.qty}  NT$${i.price * i.qty}`).join('\n');
   const fallbackText = [
-    '🛒 新訂單通知',
-    `訂單編號：${order.id}`,
+    '🛒 新訂單通知', `訂單編號：${order.id}`,
     `時間：${new Date(order.time).toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' })}`,
     '', '【商品】', itemLines, '',
     `小計：NT$${order.subtotal}`,
@@ -259,37 +353,21 @@ module.exports = async function handler(req, res) {
 
   // 店主通知（Flex，失敗 fallback 純文字）
   try {
-    const flexMsg = buildOrderFlexMessage(order);
-    const flexRes = await fetch('https://api.line.me/v2/bot/message/push', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-      body: JSON.stringify({ to: ownerId, messages: [flexMsg] }),
-    });
-    if (!flexRes.ok) {
-      const flexErr = await flexRes.json();
-      console.warn('Flex failed, fallback to text:', flexErr);
-      await fetch('https://api.line.me/v2/bot/message/push', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ to: ownerId, messages: [{ type: 'text', text: fallbackText }] }),
-      }).catch(e => console.error('Fallback failed:', e.message));
+    const r = await pushLine(ownerId, [buildOrderFlexMessage(order)]);
+    if (!r.ok) {
+      const err = await r.json();
+      console.warn('Order flex failed, fallback to text:', err);
+      await pushLine(ownerId, [{ type: 'text', text: fallbackText }]).catch(e => console.error('Fallback failed:', e.message));
     }
   } catch (e) {
-    console.warn('Flex error, fallback to text:', e.message);
-    await fetch('https://api.line.me/v2/bot/message/push', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-      body: JSON.stringify({ to: ownerId, messages: [{ type: 'text', text: fallbackText }] }),
-    }).catch(() => {});
+    console.warn('Order flex error, fallback to text:', e.message);
+    await pushLine(ownerId, [{ type: 'text', text: fallbackText }]).catch(() => {});
   }
 
   // 客人下單確認通知（LINE 登入才有 lineUserId）
   if (order.lineUserId) {
-    fetch('https://api.line.me/v2/bot/message/push', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-      body: JSON.stringify({ to: order.lineUserId, messages: [buildCustomerConfirmFlex(order)] }),
-    }).catch(e => console.error('Customer confirm notify failed:', e.message));
+    pushLine(order.lineUserId, [buildCustomerConfirmFlex(order)])
+      .catch(e => console.error('Customer confirm notify failed:', e.message));
   }
 
   return res.status(200).json({ ok: true });
