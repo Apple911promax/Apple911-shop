@@ -229,6 +229,29 @@ function buildStatusCustomerFlex(order, newStatus) {
   const emoji = statusEmoji[newStatus] || '🔔';
   const color = statusColor[newStatus] || '#9ca3af';
   const msg = customerMsg[newStatus] || '您的訂單狀態已更新，如有疑問請聯繫客服。';
+
+  const ti = order.trackingInfo;
+  const trackingContents = (newStatus === '已出貨' && ti && ti.trackingNo) ? [
+    { type: 'separator', color: '#0a0f18', margin: 'md' },
+    { type: 'text', text: '物流資訊', color: '#00f3ff', size: 'xs', weight: 'bold', margin: 'md' },
+    { type: 'box', layout: 'vertical', backgroundColor: '#0a0f18', paddingAll: '12px', cornerRadius: '4px', margin: 'sm', contents: [
+      { type: 'box', layout: 'horizontal', paddingBottom: '6px', contents: [
+        { type: 'text', text: '物流公司', color: '#9ca3af', size: 'sm', flex: 1 },
+        { type: 'text', text: ti.carrier || '—', color: '#ffffff', size: 'sm', flex: 2, align: 'end' },
+      ]},
+      { type: 'box', layout: 'horizontal', contents: [
+        { type: 'text', text: '單號', color: '#9ca3af', size: 'sm', flex: 1 },
+        { type: 'text', text: ti.trackingNo, color: '#e2c78e', size: 'sm', flex: 2, align: 'end', wrap: true },
+      ]},
+    ]},
+  ] : [];
+
+  const footerContents = (newStatus === '已出貨' && ti && ti.trackingUrl) ? [{
+    type: 'button',
+    action: { type: 'uri', label: '查詢貨物狀態', uri: ti.trackingUrl },
+    style: 'primary', color: '#00f3ff', height: 'sm',
+  }] : [];
+
   return {
     type: 'flex', altText: `${emoji} Apple911 訂單狀態更新`,
     contents: {
@@ -256,9 +279,14 @@ function buildStatusCustomerFlex(order, newStatus) {
           { type: 'box', layout: 'vertical', backgroundColor: '#0a0f18', paddingAll: '12px', cornerRadius: '4px', margin: 'md', contents: [
             { type: 'text', text: msg, color: '#9ca3af', size: 'sm', wrap: true },
           ]},
+          ...trackingContents,
           { type: 'text', text: 'Apple911  配件怪獸 × 專業維修', color: '#9ca3af', size: 'xxs', align: 'center', margin: 'xl' },
         ],
       },
+      ...(footerContents.length ? { footer: {
+        type: 'box', layout: 'vertical', backgroundColor: '#0a0f18', paddingAll: '12px',
+        contents: footerContents,
+      }} : {}),
     },
   };
 }
@@ -286,7 +314,6 @@ module.exports = async function handler(req, res) {
     body: JSON.stringify({ to, messages }),
   });
 
-  // 狀態變更通知（店主 Flex + 客人 Flex，各自 fallback 純文字）
   if (type === 'status_change') {
     const statusEmoji = { '已付款': '✅', '已出貨': '📦', '已完成': '🎉', '已取消': '❌', '處理中': '🔧', '待取貨': '🏪' };
     const emoji = statusEmoji[newStatus] || '🔔';
@@ -300,7 +327,6 @@ module.exports = async function handler(req, res) {
       '待取貨': `🏪 您的訂單已備妥，可前來取貨\n訂單編號：${order.id}`,
     };
 
-    // 店主 Flex（失敗 fallback 純文字）
     try {
       const r = await pushLine(ownerId, [buildStatusOwnerFlex(order, newStatus)]);
       if (!r.ok) {
@@ -313,7 +339,6 @@ module.exports = async function handler(req, res) {
       await pushLine(ownerId, [{ type: 'text', text: ownerFallback }]).catch(() => {});
     }
 
-    // 客人 Flex（失敗 fallback 純文字）
     if (order.lineUserId && customerFallbackMap[newStatus]) {
       try {
         const r = await pushLine(order.lineUserId, [buildStatusCustomerFlex(order, newStatus)]);
@@ -331,7 +356,6 @@ module.exports = async function handler(req, res) {
     return res.status(200).json({ ok: true });
   }
 
-  // 新訂單：店主 Flex（fallback 純文字）+ 客人 Flex 確認（LINE 登入才有）
   const shippingMap = { home: '宅配', cvs: '超商取貨', store: '門市自取' };
   const shippingLabel = shippingMap[order.shippingMethod] || order.shippingMethod || '—';
   const itemLines = (order.items || []).map(i => `  • ${i.name} ×${i.qty}  NT$${i.price * i.qty}`).join('\n');
@@ -351,7 +375,6 @@ module.exports = async function handler(req, res) {
     return true;
   }).join('\n').trim();
 
-  // 店主通知（Flex，失敗 fallback 純文字）
   try {
     const r = await pushLine(ownerId, [buildOrderFlexMessage(order)]);
     if (!r.ok) {
@@ -364,7 +387,6 @@ module.exports = async function handler(req, res) {
     await pushLine(ownerId, [{ type: 'text', text: fallbackText }]).catch(() => {});
   }
 
-  // 客人下單確認通知（LINE 登入才有 lineUserId）
   if (order.lineUserId) {
     pushLine(order.lineUserId, [buildCustomerConfirmFlex(order)])
       .catch(e => console.error('Customer confirm notify failed:', e.message));
