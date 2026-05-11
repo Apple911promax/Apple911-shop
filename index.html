@@ -845,7 +845,8 @@
         shippingInfo,
         note,
         status: paymentMethod==='onsite'?'待取貨':'未付款',
-        time: Date.now()
+        time: Date.now(),
+        lineUserId: window._fbCurrentUser?.uid?.startsWith('line_') ? window._fbCurrentUser.uid.replace('line_','') : ''
       };
       // 存進 Firebase（先寫入，失敗則中止）
       if(window._fbAddOrder){
