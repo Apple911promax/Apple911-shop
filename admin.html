@@ -1118,7 +1118,7 @@
         const _pay  = order.paymentMethod  || order.pay  || '';
         const shipLabel = _ship==='cvs'?'超商取貨':_ship==='home'?'宅配到府':_ship==='store'?'到店取貨':'—';
         const payLabel  = _pay==='transfer'?'銀行轉帳':_pay==='linepay'?'LINE Pay':_pay==='onsite'?'到店付款':_pay==='bank'?'銀行轉帳':_pay==='storepay'?'到店付款':_pay||'-';
-        const itemsText = (order.items||[]).map(i=>i.name).join('、') || '-';
+        const itemsText = (order.items||[]).map(i=>{const _v=[i.selectedColor,i.selectedSpec].filter(Boolean).join('/');return i.name+(_v?' ['+_v+']':'');}).join('、') || '-';
         const optHtml   = STATUS_LIST.map(s =>
           `<option value="${s}" ${order.status===s?'selected':''}>${s}</option>`).join('');
         const cName  = order.shippingInfo?.name  || order.customerName  || order.name  || order.customer  || order.buyerName  || '-';

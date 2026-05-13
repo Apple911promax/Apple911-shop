@@ -5,12 +5,15 @@ function buildCustomerHtml(order) {
   const shipping = SHIPPING_MAP[order.shippingMethod] || order.shippingMethod || '—';
   const payment  = PAYMENT_MAP[order.paymentMethod]  || order.paymentMethod  || '—';
 
-  const itemRows = (order.items || []).map(i => `
+  const itemRows = (order.items || []).map(i => {
+    const _v = [i.selectedColor, i.selectedSpec].filter(Boolean).join(' / ');
+    return `
     <tr>
-      <td style="padding:10px 14px;color:#e8eaf0;font-size:13px;border-bottom:1px solid #0d2233;line-height:1.5;">${i.name}</td>
+      <td style="padding:10px 14px;color:#e8eaf0;font-size:13px;border-bottom:1px solid #0d2233;line-height:1.5;">${i.name}${_v ? `<br><span style="color:#7ecfff;font-size:11px;">${_v}</span>` : ''}</td>
       <td style="padding:10px 14px;color:#7ecfff;font-size:13px;text-align:center;border-bottom:1px solid #0d2233;white-space:nowrap;">×${i.qty}</td>
       <td style="padding:10px 14px;color:#e2c78e;font-size:13px;text-align:right;border-bottom:1px solid #0d2233;white-space:nowrap;font-weight:bold;">NT$${(i.price * i.qty).toLocaleString()}</td>
-    </tr>`).join('');
+    </tr>`;
+  }).join('');
 
   return `<!DOCTYPE html>
 <html lang="zh-TW">
@@ -228,12 +231,15 @@ function buildAdminHtml(order, customerEmail) {
   const payment  = PAYMENT_MAP[order.paymentMethod]  || order.paymentMethod  || '—';
   const timeStr  = new Date(order.time).toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' });
 
-  const itemLines = (order.items || []).map(i => `
+  const itemLines = (order.items || []).map(i => {
+    const _v = [i.selectedColor, i.selectedSpec].filter(Boolean).join(' / ');
+    return `
     <tr>
-      <td style="padding:10px 14px;color:#e8eaf0;font-size:13px;border-bottom:1px solid #1a0808;line-height:1.5;">${i.name}</td>
+      <td style="padding:10px 14px;color:#e8eaf0;font-size:13px;border-bottom:1px solid #1a0808;line-height:1.5;">${i.name}${_v ? `<br><span style="color:#ff8888;font-size:11px;">${_v}</span>` : ''}</td>
       <td style="padding:10px 14px;color:#ff8888;font-size:13px;text-align:center;border-bottom:1px solid #1a0808;white-space:nowrap;">×${i.qty}</td>
       <td style="padding:10px 14px;color:#e2c78e;font-size:13px;text-align:right;border-bottom:1px solid #1a0808;white-space:nowrap;font-weight:bold;">NT$${(i.price * i.qty).toLocaleString()}</td>
-    </tr>`).join('');
+    </tr>`;
+  }).join('');
 
   return `<!DOCTYPE html>
 <html lang="zh-TW">
