@@ -210,18 +210,21 @@ module.exports = async function handler(req, res) {
     return res.status(200).json({ ok: false, reason: 'not_configured' });
   }
 
-  const sendEmail = (to, subject, html) =>
+  const fromCustomer = `Apple 911 配件怪獸 <${fromEmail}>`;
+  const fromAdmin    = `Apple 911 後台中心 <${fromEmail}>`;
+
+  const sendEmail = (to, subject, html, from) =>
     fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
-      body: JSON.stringify({ from: fromEmail, to: [to], subject, html }),
+      body: JSON.stringify({ from, to: [to], subject, html }),
     });
 
   const results = [];
 
   if (customerEmail) {
     try {
-      const r = await sendEmail(customerEmail, `Apple911 訂單成立通知 ${order.id}`, buildCustomerHtml(order));
+      const r = await sendEmail(customerEmail, `Apple911 訂單成立通知 ${order.id}`, buildCustomerHtml(order), fromCustomer);
       if (!r.ok) {
         const err = await r.json().catch(() => ({}));
         console.warn('[send-order-email] customer email failed:', err);
@@ -237,7 +240,7 @@ module.exports = async function handler(req, res) {
 
   if (adminEmail) {
     try {
-      const r = await sendEmail(adminEmail, `🛒 新訂單 ${order.id}｜NT$${order.orderTotal}`, buildAdminHtml(order, customerEmail));
+      const r = await sendEmail(adminEmail, `🛒 新訂單 ${order.id}｜NT$${order.orderTotal}`, buildAdminHtml(order, customerEmail), fromAdmin);
       if (!r.ok) {
         const err = await r.json().catch(() => ({}));
         console.warn('[send-order-email] admin email failed:', err);
