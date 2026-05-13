@@ -1118,7 +1118,7 @@
         const _pay  = order.paymentMethod  || order.pay  || '';
         const shipLabel = _ship==='cvs'?'超商取貨':_ship==='home'?'宅配到府':_ship==='store'?'到店取貨':'—';
         const payLabel  = _pay==='transfer'?'銀行轉帳':_pay==='linepay'?'LINE Pay':_pay==='onsite'?'到店付款':_pay==='bank'?'銀行轉帳':_pay==='storepay'?'到店付款':_pay||'-';
-        const itemsText = (order.items||[]).map(i=>i.name).join('、') || '-';
+        const itemsText = (order.items||[]).map(i=>{const _v=[i.selectedColor,i.selectedSpec].filter(Boolean).join('/');return i.name+(_v?' ['+_v+']':'');}).join('、') || '-';
         const optHtml   = STATUS_LIST.map(s =>
           `<option value="${s}" ${order.status===s?'selected':''}>${s}</option>`).join('');
         const cName  = order.shippingInfo?.name  || order.customerName  || order.name  || order.customer  || order.buyerName  || '-';
@@ -1534,6 +1534,14 @@
       if (fields && sel) fields.classList.toggle('hidden', sel.value !== 'multi');
     }
 
+    // trim + 去空白 + 去重複 + 限制上限，超過回傳 null 並 showToast
+    function _cleanOpts(raw, label, max) {
+      const vals   = (raw || '').split(',').map(s => s.trim()).filter(Boolean);
+      const unique = [...new Set(vals)];
+      if (unique.length > max) { showToast(label + '最多 ' + max + ' 個'); return null; }
+      return unique;
+    }
+
     function saveEditProduct(id) {
       const name        = document.getElementById('edit-name-'  + id)?.value.trim();
       const price       = parseInt(document.getElementById('edit-price-' + id)?.value) || 0;
@@ -1542,8 +1550,9 @@
       const img         = document.getElementById('edit-img-'   + id)?.value.trim() || 'fa-box';
       const productCode = document.getElementById('edit-productCode-' + id)?.value.trim() || '';
       const productMode = document.getElementById('edit-productMode-' + id)?.value || 'single';
-      const colors      = (document.getElementById('edit-colors-' + id)?.value || '').split(',').map(s=>s.trim()).filter(Boolean);
-      const specs       = (document.getElementById('edit-specs-'  + id)?.value || '').split(',').map(s=>s.trim()).filter(Boolean);
+      const colors      = _cleanOpts(document.getElementById('edit-colors-' + id)?.value || '', '顏色', 10);
+      const specs       = _cleanOpts(document.getElementById('edit-specs-'  + id)?.value || '', '規格', 10);
+      if (colors === null || specs === null) return;
       const fileInput = document.getElementById('edit-image-' + id);
       if (!name) return showToast('商品名稱不可為空');
       const doSave = (imageData) => {
@@ -1663,6 +1672,14 @@
       else _renderProdLevel(container);
     }
 
+    function filterProdDrillList(kw) {
+      const q = (kw || '').trim().toLowerCase();
+      document.querySelectorAll('#prod-drill-view .prod-drag-row').forEach(row => {
+        const s = (row.dataset.search || '').toLowerCase();
+        row.classList.toggle('hidden', q !== '' && !s.includes(q));
+      });
+    }
+
     function _getCatItems() {
       const cats = loadCategories();
       if (prodPath.length === 0) return { cats, items: cats };
@@ -1730,13 +1747,26 @@
       const filtered = prods.filter(p => p.seriesId === seriesId)
                             .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
 
-      const prodsHtml = filtered.map(p => `
-        <div class="prod-drag-row flex items-center gap-3 px-4 py-3 border-b border-slate-800 last:border-0 hover:bg-white/[0.02] transition" id="prod-row-${p.id}" draggable="true" data-prod-id="${p.id}">
+      const prodsHtml = filtered.map(p => {
+        const _pColors = Array.isArray(p.colors) ? p.colors : [];
+        const _pSpecs  = Array.isArray(p.specs)  ? p.specs  : [];
+        const _pCode   = p.productCode || '';
+        const _pMode   = p.productMode || 'single';
+        const _search  = [p.name, _pCode, ..._pColors, ..._pSpecs].join(' ').toLowerCase().replace(/"/g, '');
+        const _tags    = [
+          _pCode ? `<span class="text-[10px] text-gray-600 font-tech">#${_pCode}</span>` : '',
+          `<span class="text-[10px] text-gray-600">${_pMode === 'single' ? '單型號商品' : '系列商品'}</span>`,
+          ..._pColors.map(c => `<span class="text-[10px] bg-slate-800 text-gray-500 px-1 rounded">${c}</span>`),
+          ..._pSpecs.map(s  => `<span class="text-[10px] bg-slate-800 text-gray-400 px-1 rounded">${s}</span>`),
+        ].filter(Boolean).join('');
+        return `
+        <div class="prod-drag-row flex items-center gap-3 px-4 py-3 border-b border-slate-800 last:border-0 hover:bg-white/[0.02] transition" id="prod-row-${p.id}" draggable="true" data-prod-id="${p.id}" data-search="${_search}">
           <span class="drag-handle" title="拖曳排序"><i class="fa-solid fa-grip-vertical"></i></span>
           ${p.image ? `<img src="${p.image}" class="w-10 h-10 object-cover rounded border border-slate-700 shrink-0">` : `<i class="fa-solid ${p.img||'fa-box'} text-lg text-slate-500 shrink-0 w-10 text-center"></i>`}
           <div class="flex-1 min-w-0">
             <p class="text-sm font-bold text-white truncate">${p.name}</p>
             <p class="text-xs text-gray-500">${p.price===0?'現場報價':'NT$ '+p.price}${p.description?' · '+p.description:''}</p>
+            ${_tags ? `<div class="flex flex-wrap gap-1 mt-1">${_tags}</div>` : ''}
           </div>
           <div class="flex items-center gap-2 shrink-0">
             <span class="text-xs px-2 py-1 rounded font-bold ${p.active===false?'text-gray-600 bg-slate-900':'text-green-400 bg-green-900/20'}">${p.active===false?'下架':'上架'}</span>
@@ -1744,7 +1774,8 @@
             <button onclick="toggleProductActive('${p.id}')" class="text-xs text-gray-500 hover:text-neoncyan transition px-2 py-1 bg-slate-800 rounded font-bold">${p.active===false?'上架':'下架'}</button>
             <button onclick="deleteProduct('${p.id}')" class="text-slate-600 hover:text-neonred transition px-2"><i class="fa-solid fa-trash-can text-sm"></i></button>
           </div>
-        </div>`).join('');
+        </div>`;
+      }).join('');
 
       container.innerHTML = `
         <div class="flex items-center gap-2 flex-wrap">
@@ -1790,9 +1821,10 @@
           </div>
         </div>
         <div class="bg-panelbg border border-slate-700 tech-clip overflow-hidden">
-          <div class="flex items-center justify-between px-4 py-3 border-b border-slate-700">
-            <p class="text-xs font-bold text-neoncyan tracking-widest">商品列表</p>
-            <span class="text-[10px] text-gray-600">${filtered.length} 件商品</span>
+          <div class="flex items-center gap-3 px-4 py-3 border-b border-slate-700">
+            <p class="text-xs font-bold text-neoncyan tracking-widest shrink-0">商品列表</p>
+            <input type="text" placeholder="搜尋名稱 / 代號 / 顏色 / 規格" oninput="filterProdDrillList(this.value)" class="flex-1 bg-darkbg border border-slate-700 text-white text-xs px-2 py-1 focus:outline-none focus:border-neoncyan transition placeholder-gray-600 min-w-0">
+            <span class="text-[10px] text-gray-600 shrink-0">${filtered.length} 件商品</span>
           </div>
           ${filtered.length > 0 ? `<div id="prod-drag-list">${prodsHtml}</div><p class="drag-hint px-4 py-2"><i class="fa-solid fa-grip-vertical mr-1"></i>可拖曳 ☰ 調整排序</p>` : '<p class="text-xs text-gray-600 text-center py-8 tracking-widest">尚無商品，請新增</p>'}
         </div>`;
@@ -1878,8 +1910,9 @@
       const desc  = document.getElementById('prod-description')?.value.trim() || '';
       const productCode = document.getElementById('prod-productCode')?.value.trim() || '';
       const productMode = document.getElementById('prod-productMode')?.value || 'single';
-      const colors = (document.getElementById('prod-colors')?.value || '').split(',').map(s=>s.trim()).filter(Boolean);
-      const specs  = (document.getElementById('prod-specs')?.value  || '').split(',').map(s=>s.trim()).filter(Boolean);
+      const colors = _cleanOpts(document.getElementById('prod-colors')?.value || '', '顏色', 10);
+      const specs  = _cleanOpts(document.getElementById('prod-specs')?.value  || '', '規格', 10);
+      if (colors === null || specs === null) return;
       const fileInput = document.getElementById('prod-image-file');
       if (!name) return showToast('請輸入商品名稱');
       if (isNaN(price) || price < 0) return showToast('請輸入正確價格');
