@@ -1399,7 +1399,8 @@
           image: imageData, img: document.getElementById('prod-icon')?.value||'fa-box',
           active: active === true,
           sortOrder: 0,
-          createdAt: Date.now()
+          createdAt: Date.now(),
+          productCode: '', productMode: 'single', colors: [], specs: []
         });
         saveProducts(prods);
         ['prod-name','prod-price','prod-description'].forEach(id => document.getElementById(id).value = '');
@@ -1477,6 +1478,29 @@
             <input id="edit-desc-${id}" type="text" value="${prod.description||''}" class="w-full bg-panelbg border border-slate-600 text-white p-2 tech-clip text-sm focus:border-neoncyan transition">
           </div>
           <div>
+            <label class="text-xs text-gray-400 block mb-1">產品代號</label>
+            <input id="edit-productCode-${id}" type="text" value="${(prod.productCode||'').replace(/"/g,'&quot;')}" placeholder="選填，例如 SKU-001" class="w-full bg-panelbg border border-slate-600 text-white p-2 tech-clip text-sm focus:border-neoncyan transition">
+          </div>
+          <div>
+            <label class="text-xs text-gray-400 block mb-1">商品模式</label>
+            <select id="edit-productMode-${id}" onchange="toggleEditModeFields('${id}')" class="w-full bg-panelbg border border-slate-600 text-white p-2 tech-clip text-sm focus:border-neoncyan transition">
+              <option value="single" ${(prod.productMode||'single')==='single'?'selected':''}>單一規格</option>
+              <option value="multi" ${prod.productMode==='multi'?'selected':''}>多規格</option>
+            </select>
+          </div>
+          <div id="edit-multi-fields-${id}" class="md:col-span-2${prod.productMode==='multi'?'':' hidden'}">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div>
+                <label class="text-xs text-gray-400 block mb-1">顏色選項（逗號分隔）</label>
+                <input id="edit-colors-${id}" type="text" value="${(prod.colors||[]).join(', ')}" placeholder="例如：黑色, 白色, 藍色" class="w-full bg-panelbg border border-slate-600 text-white p-2 tech-clip text-sm focus:border-neoncyan transition">
+              </div>
+              <div>
+                <label class="text-xs text-gray-400 block mb-1">規格選項（逗號分隔）</label>
+                <input id="edit-specs-${id}" type="text" value="${(prod.specs||[]).join(', ')}" placeholder="例如：128GB, 256GB, 512GB" class="w-full bg-panelbg border border-slate-600 text-white p-2 tech-clip text-sm focus:border-neoncyan transition">
+              </div>
+            </div>
+          </div>
+          <div>
             <label class="text-xs text-gray-400 block mb-1">Icon（無圖片時顯示）</label>
             <input id="edit-img-${id}" type="text" value="${prod.img||'fa-box'}" placeholder="fa-box" class="w-full bg-panelbg border border-slate-600 text-white p-2 tech-clip text-sm focus:border-neoncyan transition">
             <p class="text-[10px] text-gray-600 mt-1">FontAwesome icon 名稱，例如 fa-mobile-screen、fa-shield-halved</p>
@@ -1499,12 +1523,27 @@
       if (editRow) editRow.remove();
     }
 
+    function toggleProdModeFields(sel) {
+      const fields = document.getElementById('prod-multi-fields');
+      if (fields) fields.classList.toggle('hidden', sel.value !== 'multi');
+    }
+
+    function toggleEditModeFields(id) {
+      const sel    = document.getElementById('edit-productMode-' + id);
+      const fields = document.getElementById('edit-multi-fields-' + id);
+      if (fields && sel) fields.classList.toggle('hidden', sel.value !== 'multi');
+    }
+
     function saveEditProduct(id) {
-      const name   = document.getElementById('edit-name-'  + id)?.value.trim();
-      const price  = parseInt(document.getElementById('edit-price-' + id)?.value) || 0;
-      const active = document.getElementById('edit-active-' + id)?.value === 'true';
-      const desc   = document.getElementById('edit-desc-'  + id)?.value.trim();
-      const img    = document.getElementById('edit-img-'   + id)?.value.trim() || 'fa-box';
+      const name        = document.getElementById('edit-name-'  + id)?.value.trim();
+      const price       = parseInt(document.getElementById('edit-price-' + id)?.value) || 0;
+      const active      = document.getElementById('edit-active-' + id)?.value === 'true';
+      const desc        = document.getElementById('edit-desc-'  + id)?.value.trim();
+      const img         = document.getElementById('edit-img-'   + id)?.value.trim() || 'fa-box';
+      const productCode = document.getElementById('edit-productCode-' + id)?.value.trim() || '';
+      const productMode = document.getElementById('edit-productMode-' + id)?.value || 'single';
+      const colors      = (document.getElementById('edit-colors-' + id)?.value || '').split(',').map(s=>s.trim()).filter(Boolean);
+      const specs       = (document.getElementById('edit-specs-'  + id)?.value || '').split(',').map(s=>s.trim()).filter(Boolean);
       const fileInput = document.getElementById('edit-image-' + id);
       if (!name) return showToast('商品名稱不可為空');
       const doSave = (imageData) => {
@@ -1516,6 +1555,10 @@
         prod.active      = active;
         prod.description = desc;
         prod.img         = img;
+        prod.productCode = productCode;
+        prod.productMode = productMode;
+        prod.colors      = colors;
+        prod.specs       = specs;
         prod.updatedAt   = Date.now();
         if (imageData !== null) prod.image = imageData;
         saveProducts(prods);
@@ -1723,6 +1766,21 @@
               <select id="prod-active" class="w-full bg-darkbg border border-slate-600 text-white p-3 tech-clip text-sm focus:border-neoncyan transition"><option value="true">上架</option><option value="false">下架</option></select></div>
             <div class="md:col-span-2"><label class="text-xs text-gray-400 block mb-1">商品說明</label>
               <input id="prod-description" type="text" placeholder="選填" class="w-full bg-darkbg border border-slate-600 text-white p-3 tech-clip text-sm focus:border-neoncyan transition"></div>
+            <div><label class="text-xs text-gray-400 block mb-1">產品代號</label>
+              <input id="prod-productCode" type="text" placeholder="選填，例如 SKU-001" class="w-full bg-darkbg border border-slate-600 text-white p-3 tech-clip text-sm focus:border-neoncyan transition"></div>
+            <div><label class="text-xs text-gray-400 block mb-1">商品模式</label>
+              <select id="prod-productMode" onchange="toggleProdModeFields(this)" class="w-full bg-darkbg border border-slate-600 text-white p-3 tech-clip text-sm focus:border-neoncyan transition">
+                <option value="single">單一規格</option>
+                <option value="multi">多規格</option>
+              </select></div>
+            <div id="prod-multi-fields" class="md:col-span-2 hidden">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div><label class="text-xs text-gray-400 block mb-1">顏色選項（逗號分隔）</label>
+                  <input id="prod-colors" type="text" placeholder="例如：黑色, 白色, 藍色" class="w-full bg-darkbg border border-slate-600 text-white p-3 tech-clip text-sm focus:border-neoncyan transition"></div>
+                <div><label class="text-xs text-gray-400 block mb-1">規格選項（逗號分隔）</label>
+                  <input id="prod-specs" type="text" placeholder="例如：128GB, 256GB, 512GB" class="w-full bg-darkbg border border-slate-600 text-white p-3 tech-clip text-sm focus:border-neoncyan transition"></div>
+              </div>
+            </div>
             <div class="md:col-span-2"><label class="text-xs text-gray-400 block mb-1">商品圖片</label>
               <input id="prod-image-file" type="file" accept="image/*" onchange="handleProdImage(this)" class="w-full bg-darkbg border border-slate-600 text-white p-3 tech-clip text-sm focus:border-neoncyan transition file:mr-3 file:py-1 file:px-3 file:border-0 file:bg-slate-700 file:text-neoncyan file:text-xs file:font-bold file:cursor-pointer">
               <div id="prod-image-preview" class="hidden mt-2"><img id="prod-img-thumb" class="h-20 object-contain rounded border border-slate-700"></div></div>
@@ -1818,6 +1876,10 @@
       const price = parseInt(document.getElementById('prod-price')?.value);
       const active = document.getElementById('prod-active')?.value === 'true';
       const desc  = document.getElementById('prod-description')?.value.trim() || '';
+      const productCode = document.getElementById('prod-productCode')?.value.trim() || '';
+      const productMode = document.getElementById('prod-productMode')?.value || 'single';
+      const colors = (document.getElementById('prod-colors')?.value || '').split(',').map(s=>s.trim()).filter(Boolean);
+      const specs  = (document.getElementById('prod-specs')?.value  || '').split(',').map(s=>s.trim()).filter(Boolean);
       const fileInput = document.getElementById('prod-image-file');
       if (!name) return showToast('請輸入商品名稱');
       if (isNaN(price) || price < 0) return showToast('請輸入正確價格');
@@ -1831,12 +1893,17 @@
         prods.push({ id: String(Date.now()), name, price, cat: item?.name||'',
           itemId: prodPath[0].id, brandId: prodPath[1].id, seriesId: prodPath[2].id,
           categoryName, description: desc, image: imageData, img: document.getElementById('prod-icon')?.value||'fa-box', active: active === true,
-          sortOrder: 0, createdAt: Date.now() });
+          sortOrder: 0, createdAt: Date.now(), productCode, productMode, colors, specs });
         saveProducts(prods);
         document.getElementById('prod-name').value = '';
         document.getElementById('prod-price').value = '';
         document.getElementById('prod-description').value = '';
         document.getElementById('prod-active').value = 'true';
+        const _pcEl = document.getElementById('prod-productCode'); if (_pcEl) _pcEl.value = '';
+        const _pmEl = document.getElementById('prod-productMode'); if (_pmEl) _pmEl.value = 'single';
+        const _pColEl = document.getElementById('prod-colors'); if (_pColEl) _pColEl.value = '';
+        const _pSpEl = document.getElementById('prod-specs'); if (_pSpEl) _pSpEl.value = '';
+        document.getElementById('prod-multi-fields')?.classList.add('hidden');
         if (fileInput) fileInput.value = '';
         document.getElementById('prod-image-preview')?.classList.add('hidden');
         document.getElementById('pdr-add-form')?.classList.add('hidden');
