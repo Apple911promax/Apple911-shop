@@ -1534,6 +1534,14 @@
       if (fields && sel) fields.classList.toggle('hidden', sel.value !== 'multi');
     }
 
+    // trim + 去空白 + 去重複 + 限制上限，超過回傳 null 並 showToast
+    function _cleanOpts(raw, label, max) {
+      const vals   = (raw || '').split(',').map(s => s.trim()).filter(Boolean);
+      const unique = [...new Set(vals)];
+      if (unique.length > max) { showToast(label + '最多 ' + max + ' 個'); return null; }
+      return unique;
+    }
+
     function saveEditProduct(id) {
       const name        = document.getElementById('edit-name-'  + id)?.value.trim();
       const price       = parseInt(document.getElementById('edit-price-' + id)?.value) || 0;
@@ -1542,8 +1550,9 @@
       const img         = document.getElementById('edit-img-'   + id)?.value.trim() || 'fa-box';
       const productCode = document.getElementById('edit-productCode-' + id)?.value.trim() || '';
       const productMode = document.getElementById('edit-productMode-' + id)?.value || 'single';
-      const colors      = (document.getElementById('edit-colors-' + id)?.value || '').split(',').map(s=>s.trim()).filter(Boolean);
-      const specs       = (document.getElementById('edit-specs-'  + id)?.value || '').split(',').map(s=>s.trim()).filter(Boolean);
+      const colors      = _cleanOpts(document.getElementById('edit-colors-' + id)?.value || '', '顏色', 10);
+      const specs       = _cleanOpts(document.getElementById('edit-specs-'  + id)?.value || '', '規格', 10);
+      if (colors === null || specs === null) return;
       const fileInput = document.getElementById('edit-image-' + id);
       if (!name) return showToast('商品名稱不可為空');
       const doSave = (imageData) => {
@@ -1878,8 +1887,9 @@
       const desc  = document.getElementById('prod-description')?.value.trim() || '';
       const productCode = document.getElementById('prod-productCode')?.value.trim() || '';
       const productMode = document.getElementById('prod-productMode')?.value || 'single';
-      const colors = (document.getElementById('prod-colors')?.value || '').split(',').map(s=>s.trim()).filter(Boolean);
-      const specs  = (document.getElementById('prod-specs')?.value  || '').split(',').map(s=>s.trim()).filter(Boolean);
+      const colors = _cleanOpts(document.getElementById('prod-colors')?.value || '', '顏色', 10);
+      const specs  = _cleanOpts(document.getElementById('prod-specs')?.value  || '', '規格', 10);
+      if (colors === null || specs === null) return;
       const fileInput = document.getElementById('prod-image-file');
       if (!name) return showToast('請輸入商品名稱');
       if (isNaN(price) || price < 0) return showToast('請輸入正確價格');
