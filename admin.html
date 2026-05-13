@@ -1803,16 +1803,6 @@
           <button onclick="document.getElementById('pdr-add-form').classList.toggle('hidden')" class="text-xs px-4 py-2 bg-neoncyan text-black font-bold tech-btn hover:bg-white transition"><i class="fa-solid fa-plus mr-1"></i>新增商品</button>
         </div>
         <div class="text-xs flex items-center flex-wrap gap-1">${_crumbHtml()}</div>
-        <div id="pdr-ai-block" class="bg-panelbg border border-slate-700 tech-clip p-4 space-y-3">
-          <p class="text-xs font-bold text-neoncyan tracking-widest"><i class="fa-solid fa-robot mr-1"></i>AI 上架助手</p>
-          <textarea id="ai-prod-input" rows="4" placeholder="貼上商品資料文字（供應商報價、商品描述、規格表等）&#10;AI 將自動解析並填入下方新增商品表單..." class="w-full bg-darkbg border border-slate-600 text-white p-3 tech-clip text-sm focus:border-neoncyan transition resize-none outline-none"></textarea>
-          <div><label class="text-xs text-gray-500 block mb-1">來源網址（選填，僅記錄用，不會自動抓取內容）</label>
-            <input id="ai-prod-url" type="text" placeholder="https://..." class="w-full bg-darkbg border border-slate-600 text-white p-2 tech-clip text-xs focus:border-neoncyan transition outline-none"></div>
-          <div class="flex items-center gap-3">
-            <button onclick="aiParseProd()" class="px-5 py-2 bg-neoncyan text-black font-bold tech-btn text-xs hover:bg-white transition"><i class="fa-solid fa-robot mr-1"></i>AI 解析商品</button>
-            <span id="ai-parse-status" class="text-xs text-gray-500"></span>
-          </div>
-        </div>
         <div id="pdr-add-form" class="hidden bg-panelbg border border-slate-700 tech-clip p-5 space-y-4">
           <div class="flex justify-between items-center">
             <p class="text-xs font-bold text-neoncyan tracking-widest">新增商品</p>
@@ -1937,95 +1927,6 @@
       renderProdDrill();
       showToast('已儲存');
     }
-
-    // ── AI 上架助手 v1 ───────────────────────────────────────────
-    async function aiParseProd() {
-      const input  = (document.getElementById('ai-prod-input')?.value || '').trim();
-      const url    = (document.getElementById('ai-prod-url')?.value   || '').trim();
-      const status = document.getElementById('ai-parse-status');
-      if (!input) { showToast('請貼上商品資料文字'); return; }
-      if (status) { status.textContent = '解析中...'; status.style.color = '#00f3ff'; }
-      try {
-        const res  = await fetch('/api/ai-product-parse', {
-          method:  'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body:    JSON.stringify({ input, url }),
-        });
-        const data = await res.json();
-        if (!res.ok || data.error) {
-          if (status) { status.textContent = '解析失敗：' + (data.error || res.status); status.style.color = '#ff003c'; }
-          showToast('AI 解析失敗，請重試');
-          return;
-        }
-        _aiFillForm(data);
-        if (status) { status.textContent = '解析完成，請確認後按新增商品'; status.style.color = '#4ade80'; }
-      } catch (e) {
-        console.error('aiParseProd error:', e);
-        if (status) { status.textContent = '網路錯誤，請重試'; status.style.color = '#ff003c'; }
-        showToast('AI 解析失敗，請重試');
-      }
-    }
-
-    function _aiFillForm(data) {
-      // 展開新增商品表單
-      document.getElementById('pdr-add-form')?.classList.remove('hidden');
-
-      // 基本欄位
-      const nameEl = document.getElementById('prod-name');
-      if (nameEl) nameEl.value = data.name || '';
-
-      const priceEl = document.getElementById('prod-price');
-      if (priceEl) priceEl.value = (typeof data.price === 'number') ? data.price : 0;
-
-      const codeEl = document.getElementById('prod-productCode');
-      if (codeEl) codeEl.value = data.productCode || '';
-
-      // description：附加 supplierUrl
-      let desc = data.description || '';
-      if (data.supplierUrl) desc += (desc ? '
-' : '') + '來源：' + data.supplierUrl;
-      const descEl = document.getElementById('prod-description');
-      if (descEl) descEl.value = desc;
-
-      // colors / specs → 切換 multi mode 並填入動態欄位
-      const hasOpts = (data.colors && data.colors.length > 0) || (data.specs && data.specs.length > 0);
-      const modeEl  = document.getElementById('prod-productMode');
-      if (hasOpts && modeEl) {
-        modeEl.value = 'multi';
-        toggleProdModeFields(modeEl);
-        const colList = document.getElementById('prod-colors-list');
-        if (colList) {
-          colList.innerHTML = '';
-          (data.colors || []).forEach(c => _addDynField('prod-colors-list', c, 10, '顏色'));
-        }
-        const spList = document.getElementById('prod-specs-list');
-        if (spList) {
-          spList.innerHTML = '';
-          (data.specs || []).forEach(s => _addDynField('prod-specs-list', s, 10, '規格'));
-        }
-      }
-
-      // 圖片預覽（僅顯示網址提示，無法 file input 自動填入）
-      if (data.imageUrl) {
-        const thumb   = document.getElementById('prod-img-thumb');
-        const preview = document.getElementById('prod-image-preview');
-        if (thumb && preview) {
-          thumb.src = data.imageUrl;
-          preview.classList.remove('hidden');
-        }
-        // 把圖片網址附加到說明，方便人工複製上傳
-        if (descEl && data.imageUrl) {
-          if (!descEl.value.includes(data.imageUrl)) {
-            descEl.value += (descEl.value ? '
-' : '') + '圖片：' + data.imageUrl;
-          }
-        }
-      }
-
-      showToast('AI 已填入，請確認後按新增商品');
-      document.getElementById('pdr-add-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-    // ─────────────────────────────────────────────────────────────
 
     function addProductFromPath() {
       const name  = document.getElementById('prod-name')?.value.trim();
