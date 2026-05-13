@@ -709,7 +709,7 @@
       // 購物清單
       const container=document.getElementById('checkout-cart-items');
       if(container){
-        container.innerHTML=cart.map(i=>{let sub='';if(i.selectedColor)sub+=i.selectedColor;if(i.selectedSpec)sub+=(sub?'／':'')+i.selectedSpec;const label=i.name+(sub?' ['+sub+']':'');return`<div class="flex justify-between items-center text-sm"><span class="text-white">${label}${i.qty>1?` ×${i.qty}`:''}</span><span class="text-goldlight font-tech">NT$ ${i.price*i.qty}</span></div>`;}).join('');
+        container.innerHTML=cart.map(i=>{let sub='';if(i.selectedColor)sub+=`<div class="text-xs text-slate-400 mt-0.5">顏色：<span class="text-neoncyan">${i.selectedColor}</span></div>`;if(i.selectedSpec)sub+=`<div class="text-xs text-slate-400 mt-0.5">規格：<span class="text-neoncyan">${i.selectedSpec}</span></div>`;return`<div class="flex justify-between items-start text-sm gap-2"><div><div class="text-goldlight font-tech">${i.name}${i.qty>1?` ×${i.qty}`:''}</div>${sub}</div><span class="text-goldlight font-tech shrink-0">NT$ ${i.price*i.qty}</span></div>`;}).join('');
       }
       // 重置取貨卡片 & 欄位狀態
       currentShipping='';
