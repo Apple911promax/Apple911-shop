@@ -439,7 +439,10 @@
   <input id="reg-phone" type="tel" placeholder="手機號碼（登入帳號之一）" class="w-full bg-darkbg border border-slate-700 text-white p-3 tech-clip text-sm outline-none focus:border-neoncyan transition">
   <input id="reg-email" type="email" placeholder="信箱（登入帳號之一）" class="w-full bg-darkbg border border-slate-700 text-white p-3 tech-clip text-sm outline-none focus:border-neoncyan transition">
   <div>
-    <input id="reg-password" type="password" placeholder="設定密碼（大寫+小寫+數字，至少8碼）" class="w-full bg-darkbg border border-slate-700 text-white p-3 tech-clip text-sm outline-none focus:border-neoncyan transition" oninput="checkRegPass()">
+    <div class="relative">
+      <input id="reg-password" type="password" placeholder="設定密碼（大寫+小寫+數字，至少8碼）" class="w-full bg-darkbg border border-slate-700 text-white p-3 tech-clip text-sm outline-none focus:border-neoncyan transition pr-10" oninput="checkRegPass()">
+      <button type="button" onclick="toggleRegPassword()" class="absolute right-0 top-0 h-full px-3 text-gray-400 hover:text-neoncyan transition" tabindex="-1" aria-label="切換密碼顯示"><i id="reg-password-eye" class="fa-solid fa-eye text-sm"></i></button>
+    </div>
     <div id="reg-pass-hint" class="text-[10px] mt-1 text-gray-500 tracking-wide hidden">
       <span id="rph-len" class="mr-2">✗ 至少8碼</span><span id="rph-upper" class="mr-2">✗ 大寫</span><span id="rph-lower" class="mr-2">✗ 小寫</span><span id="rph-num">✗ 數字</span>
     </div>
@@ -1536,6 +1539,7 @@
       modal.classList.replace('hidden','flex');
     }
     function closeTerms(){document.getElementById('terms-modal').classList.replace('flex','hidden');document.body.style.overflow='auto';}
+    function toggleRegPassword(){const inp=document.getElementById('reg-password');const eye=document.getElementById('reg-password-eye');if(inp.type==='password'){inp.type='text';eye.classList.replace('fa-eye','fa-eye-slash');}else{inp.type='password';eye.classList.replace('fa-eye-slash','fa-eye');}}
     function checkRegPass(){
       const val=document.getElementById('reg-password')?.value||'';
       const hint=document.getElementById('reg-pass-hint');
