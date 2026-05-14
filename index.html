@@ -475,7 +475,6 @@
           <p id="prod-modal-price" class="text-goldlight font-tech text-lg mt-1"></p>
         </div>
         <p id="prod-modal-desc" class="text-gray-300 text-sm leading-relaxed"></p>
-        <div id="prod-modal-options"></div>
       </div>
       <div class="p-4 bg-darkbg border-t border-white/5 shrink-0">
         <button id="prod-modal-add-btn" class="w-full py-4 bg-neoncyan text-black font-bold tech-clip hover:bg-white transition tracking-widest uppercase text-sm">加入購物車 ADD TO CART</button>
@@ -588,7 +587,7 @@
     let sidebarOpenItemId=null;
     let sidebarOpenBrandId=null;
     function _getFrontCats(){return categories.length>0?categories:[{id:1,name:'手機殼',brands:[{id:101,name:'Apple',series:[{id:1001,name:'iPhone 16系列'},{id:1002,name:'iPhone 15系列'}]}]},{id:2,name:'維修服務',brands:[]},{id:3,name:'保護貼',brands:[]}];}
-    function _prodCard(p){const imgHtml=p.image?`<img src="${p.image}" class="h-20 w-full object-contain mb-3">`:`<div class="h-24 flex items-center justify-center text-4xl text-slate-600 mb-3 group-hover:text-neoncyan transition"><i class="fa-solid ${p.img||'fa-box'}"></i></div>`;const hasOpts=((p.colors&&p.colors.length>0)||(p.specs&&p.specs.length>0));const cartOnclick=hasOpts?`openProdModal(${p.id})`:`addToCart(${p.id})`;return`<div class="bg-darkbg border border-slate-800 p-4 tech-clip flex flex-col text-center hover:border-neoncyan transition group">${imgHtml}<h4 class="text-xs font-bold text-white mb-2 line-clamp-1">${p.name}</h4><div class="text-goldlight font-tech text-sm mb-4">${p.price===0?(p.tag||'現場報價'):'NT$ '+p.price}</div><div class="flex gap-2 mt-auto"><button onclick="openProdModal(${p.id})" class="flex-1 py-3 bg-slate-800 text-neoncyan text-[10px] font-bold rounded hover:bg-slate-700 hover:text-white transition uppercase tracking-widest">商品資訊</button><button onclick="${cartOnclick}" class="flex-1 py-3 bg-neoncyan text-black text-[10px] font-bold rounded hover:bg-white transition uppercase tracking-widest">加入購物車</button></div></div>`;}
+    function _prodCard(p){const imgHtml=p.image?`<img src="${p.image}" class="h-20 w-full object-contain mb-3">`:`<div class="h-24 flex items-center justify-center text-4xl text-slate-600 mb-3 group-hover:text-neoncyan transition"><i class="fa-solid ${p.img||'fa-box'}"></i></div>`;return`<div class="bg-darkbg border border-slate-800 p-4 tech-clip flex flex-col text-center hover:border-neoncyan transition group">${imgHtml}<h4 class="text-xs font-bold text-white mb-2 line-clamp-1">${p.name}</h4><div class="text-goldlight font-tech text-sm mb-4">${p.price===0?(p.tag||'現場報價'):'NT$ '+p.price}</div><div class="flex gap-2 mt-auto"><button onclick="openProdModal(${p.id})" class="flex-1 py-3 bg-slate-800 text-neoncyan text-[10px] font-bold rounded hover:bg-slate-700 hover:text-white transition uppercase tracking-widest">商品資訊</button><button onclick="addToCart(${p.id})" class="flex-1 py-3 bg-neoncyan text-black text-[10px] font-bold rounded hover:bg-white transition uppercase tracking-widest">加入購物車</button></div></div>`;}
     function navFrontBack(){if(frontPath.length>=3){applyFilter(frontPath[0].name);}else{frontPath=[];showSection('home');}}
     function renderFrontDrill(){/* ... */}
     function applyFilter(cat){
@@ -617,90 +616,12 @@
       showSection('product');
       closeAllDrawers();
     }
-    function _normalizeArr(v){if(Array.isArray(v))return v.filter(Boolean);if(typeof v==='string'&&v.trim())return v.split(',').map(s=>s.trim()).filter(Boolean);return[];}
-    function openProdModal(id){
-      const p=_getLatestProducts().find(p=>p.id==id);if(!p)return;
-      const imgEl=document.getElementById('prod-modal-img');
-      imgEl.innerHTML=p.image?`<img src="${p.image}" class="max-h-48 object-contain rounded">`:`<div class="h-32 flex items-center justify-center text-6xl text-slate-600"><i class="fa-solid ${p.img||'fa-box'}"></i></div>`;
-      document.getElementById('prod-modal-name').innerText=p.name||'';
-      document.getElementById('prod-modal-price').innerText=p.price===0?(p.tag||'現場報價'):'NT$ '+p.price;
-      const descEl=document.getElementById('prod-modal-desc');
-      descEl.innerText=(p.description&&p.description.trim())?p.description.trim():'';
-      const colors=_normalizeArr(p.colors);
-      const specs=_normalizeArr(p.specs);
-      const optEl=document.getElementById('prod-modal-options');
-      let optHtml='';
-      if(colors.length>0){
-        optHtml+=`<div class="mt-3"><p class="text-xs text-gray-400 mb-2 tracking-widest">顏色</p><div class="flex flex-wrap gap-2" id="pm-colors">`;
-        colors.forEach(c=>{optHtml+=`<button type="button" onclick="pmSelectChip('color','${c.replace(/'/g,"\\'")}',this)" class="px-3 py-1 border border-slate-600 text-xs text-white rounded hover:border-neoncyan transition pm-chip-color">${c}</button>`;});
-        optHtml+=`</div></div>`;
-      }
-      if(specs.length>0){
-        optHtml+=`<div class="mt-3"><p class="text-xs text-gray-400 mb-2 tracking-widest">規格</p><div class="flex flex-wrap gap-2" id="pm-specs">`;
-        specs.forEach(s=>{optHtml+=`<button type="button" onclick="pmSelectChip('spec','${s.replace(/'/g,"\\'")}',this)" class="px-3 py-1 border border-slate-600 text-xs text-white rounded hover:border-neoncyan transition pm-chip-spec">${s}</button>`;});
-        optHtml+=`</div></div>`;
-      }
-      optHtml+=`<div class="mt-3"><p class="text-xs text-gray-400 mb-2 tracking-widest">數量</p><div class="flex items-center gap-3"><button type="button" onclick="pmQtyChange(-1)" class="w-8 h-8 bg-slate-700 text-white rounded hover:bg-slate-600 transition font-bold text-lg leading-none">-</button><span id="pm-qty-val" class="text-white font-bold text-base w-6 text-center">1</span><button type="button" onclick="pmQtyChange(1)" class="w-8 h-8 bg-slate-700 text-white rounded hover:bg-slate-600 transition font-bold text-lg leading-none">+</button></div></div>`;
-      optEl.innerHTML=optHtml;
-      optEl.dataset.prodId=id;
-      optEl.dataset.selectedColor='';
-      optEl.dataset.selectedSpec='';
-      optEl.dataset.qty='1';
-      document.getElementById('prod-modal-add-btn').onclick=()=>{pmAddToCart();};
-      const modal=document.getElementById('prod-modal');modal.classList.remove('hidden');modal.classList.add('flex');
-    }
-    function pmSelectChip(type,val,btn){
-      const optEl=document.getElementById('prod-modal-options');
-      const cls=type==='color'?'pm-chip-color':'pm-chip-spec';
-      document.querySelectorAll('.'+cls).forEach(b=>{b.classList.remove('border-neoncyan','text-neoncyan');b.classList.add('border-slate-600');});
-      btn.classList.add('border-neoncyan','text-neoncyan');btn.classList.remove('border-slate-600');
-      if(type==='color')optEl.dataset.selectedColor=val;else optEl.dataset.selectedSpec=val;
-    }
-    function pmQtyChange(delta){
-      const optEl=document.getElementById('prod-modal-options');
-      let q=parseInt(optEl.dataset.qty||'1')+delta;
-      if(q<1)q=1;
-      optEl.dataset.qty=String(q);
-      const qv=document.getElementById('pm-qty-val');if(qv)qv.textContent=q;
-    }
-    function pmAddToCart(){
-      const optEl=document.getElementById('prod-modal-options');
-      const id=optEl.dataset.prodId;
-      const p=_getLatestProducts().find(p=>p.id==id);if(!p)return;
-      const colors=_normalizeArr(p.colors);
-      const specs=_normalizeArr(p.specs);
-      const selectedColor=optEl.dataset.selectedColor||'';
-      const selectedSpec=optEl.dataset.selectedSpec||'';
-      const qty=parseInt(optEl.dataset.qty||'1');
-      if(colors.length>0&&!selectedColor){showToast('請選擇顏色');return;}
-      if(specs.length>0&&!selectedSpec){showToast('請選擇規格');return;}
-      if(qty<1){showToast('數量不正確');return;}
-      addToCart(id,selectedColor,selectedSpec,qty);
-      closeProdModal();
-    }
+    function openProdModal(id){const p=_getLatestProducts().find(p=>p.id==id);if(!p)return;const imgEl=document.getElementById('prod-modal-img');imgEl.innerHTML=p.image?`<img src="${p.image}" class="max-h-48 object-contain rounded">`:`<div class="h-32 flex items-center justify-center text-6xl text-slate-600"><i class="fa-solid ${p.img||'fa-box'}"></i></div>`;document.getElementById('prod-modal-name').innerText=p.name||'';document.getElementById('prod-modal-price').innerText=p.price===0?(p.tag||'現場報價'):'NT$ '+p.price;const descEl=document.getElementById('prod-modal-desc');descEl.innerText=(p.description&&p.description.trim())?p.description.trim():'';document.getElementById('prod-modal-add-btn').onclick=()=>{addToCart(id);};const modal=document.getElementById('prod-modal');modal.classList.remove('hidden');modal.classList.add('flex');}
     function closeProdModal(){const modal=document.getElementById('prod-modal');modal.classList.add('hidden');modal.classList.remove('flex');}
-    function addToCart(id,selectedColor,selectedSpec,qty){
-      const p=_getLatestProducts().find(p=>p.id==id);if(!p)return;
-      const colors=_normalizeArr(p.colors);
-      const specs=_normalizeArr(p.specs);
-      const sc=selectedColor||'';
-      const ss=selectedSpec||'';
-      const q=qty||1;
-      // 無 colors/specs 直接加入（商品卡快速加入路徑）
-      if(colors.length===0&&specs.length===0){
-        const exist=cart.find(c=>c.id==id&&!c.selectedColor&&!c.selectedSpec);
-        if(exist){exist.qty+=q;}else{cart.push({...p,qty:q,selectedColor:'',selectedSpec:''});}
-        renderCart();showToast('已加入購物車');return;
-      }
-      // 有 colors/specs：同商品+同顏色+同規格才合併
-      const exist=cart.find(c=>c.id==id&&c.selectedColor===sc&&c.selectedSpec===ss);
-      if(exist){exist.qty+=q;}else{cart.push({...p,qty:q,selectedColor:sc,selectedSpec:ss});}
-      renderCart();showToast('已加入購物車');
-    }
+    function addToCart(id){const p=_getLatestProducts().find(p=>p.id==id);if(!p)return;const exist=cart.find(c=>c.id==id);if(exist){exist.qty++;}else{cart.push({...p,qty:1});}renderCart();showToast('已加入購物車');}
     function removeFromCart(index){if(cart[index].qty>1){cart[index].qty--;}else{cart.splice(index,1);}renderCart();}
-    function _cartItemLabel(item){let sub='';if(item.selectedColor)sub+=item.selectedColor;if(item.selectedSpec)sub+=(sub?'／':'')+item.selectedSpec;return sub?item.name+'<span class="text-neoncyan text-[10px] ml-1">['+sub+']</span>':item.name;}
-    function renderCart(){const countBadge=document.getElementById('cart-count'),cartContainer=document.getElementById('cart-items'),totalEl=document.getElementById('cart-total');const totalQty=cart.reduce((s,i)=>s+i.qty,0);countBadge.innerText=totalQty;if(totalQty>0)countBadge.classList.remove('scale-0');else countBadge.classList.add('scale-0');if(cart.length===0){cartContainer.innerHTML='<div class="flex h-full items-center justify-center text-gray-500 font-bold tracking-widest uppercase">EMPTY</div>';totalEl.innerText='NT$ 0';_syncCheckoutItems();return;}let total=0;cartContainer.innerHTML=cart.map((item,index)=>{const lineTotal=item.price*item.qty;total+=lineTotal;return`<div class="bg-darkbg p-4 border border-slate-700 flex justify-between items-center rounded tech-clip"><div class="text-left"><div class="text-white text-sm font-bold">${_cartItemLabel(item)}${item.qty>1?` ×${item.qty}`:''}</div><div class="text-goldlight font-tech text-sm">NT$ ${lineTotal}</div></div><button onclick="removeFromCart(${index})" class="text-slate-500 hover:text-neonred p-2 transition text-lg"><i class="fa-solid fa-trash-can"></i></button></div>`}).join('');totalEl.innerText='NT$ '+total;try{localStorage.setItem('apple911_cart',JSON.stringify(cart));}catch(e){}_syncCheckoutItems();}
-    function _syncCheckoutItems(){const cv=document.getElementById('checkout-view');if(!cv||cv.classList.contains('hidden'))return;if(cart.length===0){showSection('home');return;}const container=document.getElementById('checkout-cart-items');if(container)container.innerHTML=cart.map(i=>{let sub='';if(i.selectedColor)sub+=i.selectedColor;if(i.selectedSpec)sub+=(sub?'／':'')+i.selectedSpec;const label=i.name+(sub?' ['+sub+']':'');return`<div class="flex justify-between items-center text-sm"><span class="text-white">${label}${i.qty>1?` ×${i.qty}`:''}</span><span class="text-goldlight font-tech">NT$ ${i.price*i.qty}</span></div>`;}).join('');updateCheckoutTotal();}
+    function renderCart(){const countBadge=document.getElementById('cart-count'),cartContainer=document.getElementById('cart-items'),totalEl=document.getElementById('cart-total');const totalQty=cart.reduce((s,i)=>s+i.qty,0);countBadge.innerText=totalQty;if(totalQty>0)countBadge.classList.remove('scale-0');else countBadge.classList.add('scale-0');if(cart.length===0){cartContainer.innerHTML='<div class="flex h-full items-center justify-center text-gray-500 font-bold tracking-widest uppercase">EMPTY</div>';totalEl.innerText='NT$ 0';_syncCheckoutItems();return;}let total=0;cartContainer.innerHTML=cart.map((item,index)=>{const lineTotal=item.price*item.qty;total+=lineTotal;return`<div class="bg-darkbg p-4 border border-slate-700 flex justify-between items-center rounded tech-clip"><div class="text-left"><div class="text-white text-sm font-bold">${item.name}${item.qty>1?` ×${item.qty}`:''}</div><div class="text-goldlight font-tech text-sm">NT$ ${lineTotal}</div></div><button onclick="removeFromCart(${index})" class="text-slate-500 hover:text-neonred p-2 transition text-lg"><i class="fa-solid fa-trash-can"></i></button></div>`}).join('');totalEl.innerText='NT$ '+total;try{localStorage.setItem('apple911_cart',JSON.stringify(cart));}catch(e){}_syncCheckoutItems();}
+    function _syncCheckoutItems(){const cv=document.getElementById('checkout-view');if(!cv||cv.classList.contains('hidden'))return;if(cart.length===0){showSection('home');return;}const container=document.getElementById('checkout-cart-items');if(container)container.innerHTML=cart.map(i=>`<div class="flex justify-between items-center text-sm"><span class="text-white">${i.name}${i.qty>1?` ×${i.qty}`:''}</span><span class="text-goldlight font-tech">NT$ ${i.price*i.qty}</span></div>`).join('');updateCheckoutTotal();}
     function checkout(){
       if(cart.length===0)return showToast('購物車為空');
       if(!isLoggedIn){showToast('請先登入');document.getElementById('auth-modal').classList.replace('hidden','flex');return;}
@@ -709,7 +630,7 @@
       // 購物清單
       const container=document.getElementById('checkout-cart-items');
       if(container){
-        container.innerHTML=cart.map(i=>{let sub='';if(i.selectedColor)sub+=`<div class="text-xs text-slate-400 mt-0.5">顏色：<span class="text-neoncyan">${i.selectedColor}</span></div>`;if(i.selectedSpec)sub+=`<div class="text-xs text-slate-400 mt-0.5">規格：<span class="text-neoncyan">${i.selectedSpec}</span></div>`;return`<div class="flex justify-between items-start text-sm gap-2"><div><div class="text-goldlight font-tech">${i.name}${i.qty>1?` ×${i.qty}`:''}</div>${sub}</div><span class="text-goldlight font-tech shrink-0">NT$ ${i.price*i.qty}</span></div>`;}).join('');
+        container.innerHTML=cart.map(i=>`<div class="flex justify-between items-center text-sm"><span class="text-white">${i.name}${i.qty>1?` ×${i.qty}`:''}</span><span class="text-goldlight font-tech">NT$ ${i.price*i.qty}</span></div>`).join('');
       }
       // 重置取貨卡片 & 欄位狀態
       currentShipping='';
@@ -1845,13 +1766,29 @@ window._fbSignInWithCustomToken = async function(token, lineProfile) {
 window._fbSendPasswordReset = async function() {
   const email = document.getElementById('forgot-email')?.value.trim();
   if(!email){ if(typeof showToast==='function') showToast('請輸入信箱'); return; }
+  // 驗證格式
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+    if(typeof showToast==='function') showToast('信箱格式錯誤');
+    return;
+  }
+  // 呼叫後端 API（使用 Firebase Admin + Resend 寄信）
   try {
-    await sendPasswordResetEmail(_fbAuth, email);
-    if(typeof showToast==='function') showToast('重設信已發送，請查收信箱');
-    if(typeof switchAuth==='function') switchAuth('login');
+    const res = await fetch('/api/send-reset-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if(res.ok && data.ok !== false){
+      if(typeof showToast==='function') showToast('重設信已發送，請查收信箱');
+      if(typeof switchAuth==='function') switchAuth('login');
+    } else {
+      const msg = data.error || '發送失敗，請稍後再試';
+      if(typeof showToast==='function') showToast(msg);
+    }
   } catch(e) {
-    const msg = e.code==='auth/user-not-found'?'此信箱未註冊':e.code==='auth/invalid-email'?'信箱格式錯誤':'發送失敗，請稍後再試';
-    if(typeof showToast==='function') showToast(msg);
+    console.error('[_fbSendPasswordReset]', e);
+    if(typeof showToast==='function') showToast('網路錯誤，請稍後再試');
   }
 };
 window._fbAddOrder = async function(newOrder) {
