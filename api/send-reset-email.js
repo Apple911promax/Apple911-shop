@@ -201,14 +201,36 @@ module.exports = async function handler(req, res) {
       throw e;
     }
 
-    // 2. 產生 Firebase 密碼重設連結（action URL 指向我們的 reset-password.html）
+    // 2. 產生 Firebase 原始密碼重設連結
+    //    continueUrl 只是備用，信件按鈕不會直接使用這個 Firebase action URL
     const actionCodeSettings = {
       url: `${siteUrl}/reset-password.html`,
       handleCodeInApp: false,
     };
-    const resetLink = await adminAuth.generatePasswordResetLink(trimmedEmail, actionCodeSettings);
+    const firebaseResetLink = await adminAuth.generatePasswordResetLink(trimmedEmail, actionCodeSettings);
 
-    // 3. 使用 Resend 寄信
+    // 3. 從 Firebase 產生的連結解析出 oobCode / apiKey / mode
+    //    Firebase 原始格式：https://xxx.firebaseapp.com/__/auth/action?mode=resetPassword&oobCode=XXX&apiKey=YYY&...
+    const fbUrl   = new URL(firebaseResetLink);
+    const oobCode = fbUrl.searchParams.get('oobCode');
+    const apiKey  = fbUrl.searchParams.get('apiKey');
+    const mode    = fbUrl.searchParams.get('mode') || 'resetPassword';
+
+    if (!oobCode) {
+      console.error('[send-reset-email] Firebase 回傳連結缺少 oobCode:', firebaseResetLink);
+      return res.status(500).json({ error: '無法產生重設連結，請稍後再試' });
+    }
+
+    // 4. 重組成自訂連結，直接指向 reset-password.html（跳過 Firebase 預設 action 頁）
+    const customResetLink =
+      `${siteUrl}/reset-password.html` +
+      `?mode=${encodeURIComponent(mode)}` +
+      `&oobCode=${encodeURIComponent(oobCode)}` +
+      `&apiKey=${encodeURIComponent(apiKey || '')}`;
+
+    console.log(`[send-reset-email] 自訂 reset link 產生成功，oobCode 前綴: ${oobCode.slice(0, 8)}...`);
+
+    // 5. 使用 Resend 寄信（按鈕連結使用 customResetLink，不使用 Firebase 原始 action URL）
     const fromDisplay = `Apple911 客服中心 <${resendFrom}>`;
     const emailRes = await fetch('https://api.resend.com/emails', {
       method: 'POST',
@@ -220,7 +242,7 @@ module.exports = async function handler(req, res) {
         from:    fromDisplay,
         to:      [trimmedEmail],
         subject: 'Apple911 密碼重設通知',
-        html:    buildResetEmailHtml(resetLink),
+        html:    buildResetEmailHtml(customResetLink),
       }),
     });
 
