@@ -1489,15 +1489,15 @@
             </select>
           </div>
           <div id="edit-multi-fields-${id}" class="md:col-span-2${prod.productMode==='multi'?'':' hidden'}">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div class="space-y-3">
               <div>
                 <label class="text-xs text-gray-400 block mb-1">顏色選項</label>
-                <div id="edit-colors-${id}" class="space-y-2">${((prod.colors||[]).length?(prod.colors||[]):['']).map(v=>_optionInputHtml(v)).join('')}</div>
+                <div id="edit-colors-${id}" class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-10 gap-2">${((prod.colors||[]).length?(prod.colors||[]):['']).map(v=>_optionInputHtml(v)).join('')}</div>
                 <button type="button" onclick="addOptionInput('edit-colors-${id}','顏色',10)" class="mt-2 px-3 py-1 bg-slate-800 text-neoncyan font-bold tech-btn text-xs hover:bg-slate-700 transition"><i class="fa-solid fa-plus mr-1"></i>新增顏色</button>
               </div>
               <div>
                 <label class="text-xs text-gray-400 block mb-1">規格選項</label>
-                <div id="edit-specs-${id}" class="space-y-2">${((prod.specs||[]).length?(prod.specs||[]):['']).map(v=>_optionInputHtml(v)).join('')}</div>
+                <div id="edit-specs-${id}" class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-2">${((prod.specs||[]).length?(prod.specs||[]):['']).map(v=>_optionInputHtml(v)).join('')}</div>
                 <button type="button" onclick="addOptionInput('edit-specs-${id}','規格',10)" class="mt-2 px-3 py-1 bg-slate-800 text-neoncyan font-bold tech-btn text-xs hover:bg-slate-700 transition"><i class="fa-solid fa-plus mr-1"></i>新增規格</button>
               </div>
             </div>
@@ -1538,9 +1538,9 @@
 
     function _optionInputHtml(value = '', bgClass = 'bg-panelbg') {
       const safe = String(value || '').replace(/"/g, '&quot;');
-      return `<div data-opt-row class="flex items-center gap-2">
-        <input type="text" value="${safe}" data-opt-input placeholder="選填" class="flex-1 ${bgClass} border border-slate-600 text-white p-2 tech-clip text-sm focus:border-neoncyan transition">
-        <button type="button" onclick="removeOptionInput(this)" class="px-3 py-2 bg-slate-800 text-gray-400 font-bold tech-btn text-xs hover:text-neonred transition"><i class="fa-solid fa-trash-can"></i></button>
+      return `<div data-opt-row class="flex items-center gap-1 min-w-0">
+        <input type="text" value="${safe}" data-opt-input placeholder="選填" class="w-full min-w-0 ${bgClass} border border-slate-600 text-white p-2 tech-clip text-xs focus:border-neoncyan transition">
+        <button type="button" onclick="removeOptionInput(this)" class="shrink-0 px-2 py-2 bg-slate-800 text-gray-400 font-bold tech-btn text-xs hover:text-neonred transition"><i class="fa-solid fa-trash-can"></i></button>
       </div>`;
     }
 
@@ -1833,12 +1833,12 @@
                 <option value="multi">多規格</option>
               </select></div>
             <div id="prod-multi-fields" class="md:col-span-2 hidden">
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div class="space-y-3">
                 <div><label class="text-xs text-gray-400 block mb-1">顏色選項</label>
-                  <div id="prod-colors" class="space-y-2">${_optionInputHtml('', 'bg-darkbg')}</div>
+                  <div id="prod-colors" class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-10 gap-2">${_optionInputHtml('', 'bg-darkbg')}</div>
                   <button type="button" onclick="addOptionInput('prod-colors','顏色',10,'bg-darkbg')" class="mt-2 px-3 py-1 bg-slate-800 text-neoncyan font-bold tech-btn text-xs hover:bg-slate-700 transition"><i class="fa-solid fa-plus mr-1"></i>新增顏色</button></div>
                 <div><label class="text-xs text-gray-400 block mb-1">規格選項</label>
-                  <div id="prod-specs" class="space-y-2">${_optionInputHtml('', 'bg-darkbg')}</div>
+                  <div id="prod-specs" class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-2">${_optionInputHtml('', 'bg-darkbg')}</div>
                   <button type="button" onclick="addOptionInput('prod-specs','規格',10,'bg-darkbg')" class="mt-2 px-3 py-1 bg-slate-800 text-neoncyan font-bold tech-btn text-xs hover:bg-slate-700 transition"><i class="fa-solid fa-plus mr-1"></i>新增規格</button></div>
               </div>
             </div>
