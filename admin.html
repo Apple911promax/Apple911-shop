@@ -1490,6 +1490,27 @@
       showToast(prod.active ? '已上架：' + prod.name : '已下架：' + prod.name);
     }
 
+    function duplicateProduct(id) {
+      const prods = loadProducts();
+      const prod  = prods.find(p => p.id == id);
+      if (!prod) return;
+      const now = Date.now();
+      let newId = String(now);
+      while (prods.some(p => String(p.id) === newId)) newId = String(Number(newId) + 1);
+      const copy = JSON.parse(JSON.stringify(prod));
+      copy.id = newId;
+      copy.name = (prod.name || '未命名商品') + '（複製）';
+      copy.active = false;
+      copy.createdAt = now;
+      copy.updatedAt = now;
+      copy.images = Array.isArray(copy.images) ? copy.images.filter(Boolean) : (copy.image ? [copy.image] : []);
+      copy.image = copy.images[0] || copy.image || '';
+      saveProducts([...prods, copy]);
+      renderProdDrill();
+      renderStats();
+      showToast('已複製商品：' + copy.name);
+    }
+
     function deleteProduct(id) {
       showConfirm('確定要刪除此商品？', () => {
         saveProducts(loadProducts().filter(p => p.id != id));
@@ -1834,6 +1855,7 @@
           <div class="flex items-center gap-2 shrink-0">
             <span class="text-xs px-2 py-1 rounded font-bold ${p.active===false?'text-gray-600 bg-slate-900':'text-green-400 bg-green-900/20'}">${p.active===false?'下架':'上架'}</span>
             <button onclick="editProduct('${p.id}')" class="text-xs text-gray-500 hover:text-neoncyan transition px-2 py-1 bg-slate-800 rounded font-bold">編輯</button>
+            <button onclick="duplicateProduct('${p.id}')" class="text-xs text-gray-500 hover:text-neoncyan transition px-2 py-1 bg-slate-800 rounded font-bold">複製商品</button>
             <button onclick="toggleProductActive('${p.id}')" class="text-xs text-gray-500 hover:text-neoncyan transition px-2 py-1 bg-slate-800 rounded font-bold">${p.active===false?'上架':'下架'}</button>
             <button onclick="deleteProduct('${p.id}')" class="text-slate-600 hover:text-neonred transition px-2"><i class="fa-solid fa-trash-can text-sm"></i></button>
           </div>
