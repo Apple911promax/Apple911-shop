@@ -1377,7 +1377,6 @@
       const active   = document.getElementById('prod-active').value === 'true';
       const desc     = document.getElementById('prod-description').value.trim();
       const productCode = document.getElementById('prod-productCode')?.value.trim() || '';
-      const productMode = document.getElementById('prod-productMode')?.value || 'single';
       const colors = _cleanOpts(document.getElementById('prod-colors'), '顏色', 10);
       const specs  = _cleanOpts(document.getElementById('prod-specs'), '規格', 10);
 
@@ -1404,15 +1403,13 @@
         active: active === true,
         sortOrder: 0,
         createdAt: Date.now(),
-        productCode, productMode, colors, specs
+        productCode, colors, specs
       });
       saveProducts(prods);
       ['prod-name','prod-price','prod-description'].forEach(id => document.getElementById(id).value = '');
       const _pcEl = document.getElementById('prod-productCode'); if (_pcEl) _pcEl.value = '';
-      const _pmEl = document.getElementById('prod-productMode'); if (_pmEl) _pmEl.value = 'single';
       const _pColEl = document.getElementById('prod-colors'); if (_pColEl) _pColEl.innerHTML = _optionInputHtml('', 'bg-darkbg');
       const _pSpEl = document.getElementById('prod-specs'); if (_pSpEl) _pSpEl.innerHTML = _optionInputHtml('', 'bg-darkbg');
-      document.getElementById('prod-multi-fields')?.classList.add('hidden');
       document.getElementById('prod-item').value   = '';
       document.getElementById('prod-brand').innerHTML  = '<option value="">請先選擇品項</option>';
       document.getElementById('prod-series').innerHTML = '<option value="">請先選擇品牌</option>';
@@ -1481,14 +1478,7 @@
             <label class="text-xs text-gray-400 block mb-1">產品代號</label>
             <input id="edit-productCode-${id}" type="text" value="${(prod.productCode||'').replace(/"/g,'&quot;')}" placeholder="選填，例如 SKU-001" class="w-full bg-panelbg border border-slate-600 text-white p-2 tech-clip text-sm focus:border-neoncyan transition">
           </div>
-          <div>
-            <label class="text-xs text-gray-400 block mb-1">商品模式</label>
-            <select id="edit-productMode-${id}" onchange="toggleEditModeFields('${id}')" class="w-full bg-panelbg border border-slate-600 text-white p-2 tech-clip text-sm focus:border-neoncyan transition">
-              <option value="single" ${(prod.productMode||'single')==='single'?'selected':''}>單一規格</option>
-              <option value="multi" ${prod.productMode==='multi'?'selected':''}>多規格</option>
-            </select>
-          </div>
-          <div id="edit-multi-fields-${id}" class="md:col-span-2${prod.productMode==='multi'?'':' hidden'}">
+          <div class="md:col-span-2">
             <div class="space-y-3">
               <div>
                 <label class="text-xs text-gray-400 block mb-1">顏色選項</label>
@@ -1523,17 +1513,6 @@
     function cancelEditProduct(id) {
       const editRow = document.getElementById('prod-edit-row-' + id);
       if (editRow) editRow.remove();
-    }
-
-    function toggleEditModeFields(id) {
-      const sel = document.getElementById('edit-productMode-' + id);
-      const fields = document.getElementById('edit-multi-fields-' + id);
-      if (fields && sel) fields.classList.toggle('hidden', sel.value !== 'multi');
-    }
-
-    function toggleProdModeFields(sel) {
-      const fields = document.getElementById('prod-multi-fields');
-      if (fields && sel) fields.classList.toggle('hidden', sel.value !== 'multi');
     }
 
     function _optionInputHtml(value = '', bgClass = 'bg-panelbg') {
@@ -1590,7 +1569,6 @@
       const desc   = document.getElementById('edit-desc-'  + id)?.value.trim();
       const img    = document.getElementById('edit-img-'   + id)?.value.trim() || 'fa-box';
       const productCode = document.getElementById('edit-productCode-' + id)?.value.trim() || '';
-      const productMode = document.getElementById('edit-productMode-' + id)?.value || 'single';
       const colors = _cleanOpts(document.getElementById('edit-colors-' + id), '顏色', 10);
       const specs  = _cleanOpts(document.getElementById('edit-specs-'  + id), '規格', 10);
       if (!name) return showToast('商品名稱不可為空');
@@ -1605,7 +1583,6 @@
       prod.description = desc;
       prod.img         = img;
       prod.productCode = productCode;
-      prod.productMode = productMode;
       prod.colors      = colors;
       prod.specs       = specs;
       prod.updatedAt   = Date.now();
@@ -1780,11 +1757,9 @@
         const _pColors = Array.isArray(p.colors) ? p.colors : [];
         const _pSpecs  = Array.isArray(p.specs)  ? p.specs  : [];
         const _pCode   = p.productCode || '';
-        const _pMode   = p.productMode || 'single';
         const _search  = [p.name, _pCode, ..._pColors, ..._pSpecs].join(' ').toLowerCase().replace(/"/g, '');
         const _tags    = [
           _pCode ? `<span class="text-[10px] text-slate-400 border border-slate-700 px-1.5 py-0.5 rounded">代號 ${_pCode}</span>` : '',
-          _pMode === 'multi' ? `<span class="text-[10px] text-neoncyan border border-neoncyan/40 px-1.5 py-0.5 rounded">多規格</span>` : '',
           _pColors.length ? `<span class="text-[10px] text-gray-400">顏色：${_pColors.join(' / ')}</span>` : '',
           _pSpecs.length ? `<span class="text-[10px] text-gray-400">規格：${_pSpecs.join(' / ')}</span>` : ''
         ].filter(Boolean).join(' ');
@@ -1827,12 +1802,7 @@
               <input id="prod-description" type="text" placeholder="選填" class="w-full bg-darkbg border border-slate-600 text-white p-3 tech-clip text-sm focus:border-neoncyan transition"></div>
             <div><label class="text-xs text-gray-400 block mb-1">產品代號</label>
               <input id="prod-productCode" type="text" placeholder="選填，例如 SKU-001" class="w-full bg-darkbg border border-slate-600 text-white p-3 tech-clip text-sm focus:border-neoncyan transition"></div>
-            <div><label class="text-xs text-gray-400 block mb-1">商品模式</label>
-              <select id="prod-productMode" onchange="toggleProdModeFields(this)" class="w-full bg-darkbg border border-slate-600 text-white p-3 tech-clip text-sm focus:border-neoncyan transition">
-                <option value="single">單一規格</option>
-                <option value="multi">多規格</option>
-              </select></div>
-            <div id="prod-multi-fields" class="md:col-span-2 hidden">
+            <div class="md:col-span-2">
               <div class="space-y-3">
                 <div><label class="text-xs text-gray-400 block mb-1">顏色選項</label>
                   <div id="prod-colors" class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-10 gap-2">${_optionInputHtml('', 'bg-darkbg')}</div>
@@ -1947,7 +1917,6 @@
       const active = document.getElementById('prod-active')?.value === 'true';
       const desc  = document.getElementById('prod-description')?.value.trim() || '';
       const productCode = document.getElementById('prod-productCode')?.value.trim() || '';
-      const productMode = document.getElementById('prod-productMode')?.value || 'single';
       const colors = _cleanOpts(document.getElementById('prod-colors'), '顏色', 10);
       const specs  = _cleanOpts(document.getElementById('prod-specs'), '規格', 10);
       if (!name) return showToast('請輸入商品名稱');
@@ -1963,17 +1932,15 @@
       prods.push({ id: String(Date.now()), name, price, cat: item?.name||'',
         itemId: prodPath[0].id, brandId: prodPath[1].id, seriesId: prodPath[2].id,
         categoryName, description: desc, image: images[0] || '', images, img: document.getElementById('prod-icon')?.value||'fa-box', active: active === true,
-        sortOrder: 0, createdAt: Date.now(), productCode, productMode, colors, specs });
+        sortOrder: 0, createdAt: Date.now(), productCode, colors, specs });
       saveProducts(prods);
       document.getElementById('prod-name').value = '';
       document.getElementById('prod-price').value = '';
       document.getElementById('prod-description').value = '';
       document.getElementById('prod-active').value = 'true';
       const _pcEl = document.getElementById('prod-productCode'); if (_pcEl) _pcEl.value = '';
-      const _pmEl = document.getElementById('prod-productMode'); if (_pmEl) _pmEl.value = 'single';
       const _pColEl = document.getElementById('prod-colors'); if (_pColEl) _pColEl.innerHTML = _optionInputHtml('', 'bg-darkbg');
       const _pSpEl = document.getElementById('prod-specs'); if (_pSpEl) _pSpEl.innerHTML = _optionInputHtml('', 'bg-darkbg');
-      document.getElementById('prod-multi-fields')?.classList.add('hidden');
       const fileInput = document.getElementById('prod-image-file'); if (fileInput) fileInput.value = '';
       const preview = document.getElementById('prod-image-preview'); if (preview) preview.innerHTML = '';
       document.getElementById('pdr-add-form')?.classList.add('hidden');
