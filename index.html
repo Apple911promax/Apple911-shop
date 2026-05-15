@@ -703,6 +703,11 @@
       }
       return 0;
     }
+    function getCouponDisplayName(coupon){
+      if(!coupon) return '';
+      const name = coupon.name || coupon.couponName || '';
+      return name ? `${name}（${coupon.code}）` : coupon.code;
+    }
     /* 更新結帳頁小計 / 運費 / 折扣 / 總計 */
     function updateCheckoutTotal(){
       const subtotal = cart.reduce((s,i)=>s+(i.price||0)*i.qty,0);
@@ -728,7 +733,7 @@
       if(discRow && discEl){
         if(appliedCoupon && discount>0){
           discRow.classList.remove('hidden');
-          if(discLabel) discLabel.textContent=`優惠折抵（${appliedCoupon.code}）`;
+          if(discLabel) discLabel.textContent=`優惠折抵（${getCouponDisplayName(appliedCoupon)}）`;
           discEl.textContent='-NT$ '+discount;
         } else {
           discRow.classList.add('hidden');
@@ -780,9 +785,10 @@
           const typeLabel=c.type==='percent'?`${c.value}% 折扣`:`折抵 NT$${c.value}`;
           const minLabel=c.minOrder>0?`，滿 NT$${c.minOrder} 可用`:'';
           const unavail=c.minOrder>0&&subtotal<c.minOrder;
+          const couponDisplayName=getCouponDisplayName(c);
           return `<div class="flex items-center justify-between bg-darkbg border border-slate-700 px-3 py-2 rounded gap-2">
             <div class="flex-1 min-w-0">
-              <span class="font-tech font-bold text-neoncyan text-xs">${c.code}</span>
+              <span class="font-tech font-bold text-neoncyan text-xs">${couponDisplayName}</span>
               <span class="text-[10px] text-gray-400 ml-1.5">${typeLabel}${minLabel}</span>
             </div>
             <button onclick="applyCheckoutCoupon('${c.code}')" class="px-3 py-1 text-[10px] font-bold tech-btn shrink-0 transition ${unavail?'bg-slate-800 text-gray-600 cursor-not-allowed':'bg-neoncyan/10 text-neoncyan hover:bg-neoncyan hover:text-black'}" ${unavail?'disabled':''}>使用</button>
@@ -1170,9 +1176,10 @@
         const expiryLabel=c.expiry?new Date(c.expiry).toLocaleDateString('zh-TW'):'永久有效';
         const statusText=!c.active?'已停用':expired?'已過期':'可使用';
         const statusColor=!c.active?'text-gray-500':expired?'text-neonred':'text-neoncyan';
+        const couponDisplayName=getCouponDisplayName(c);
         return `<div class="bg-darkbg border border-slate-700 p-4 rounded space-y-2${expired||!c.active?' opacity-50':''}">
           <div class="flex items-center justify-between">
-            <span class="font-tech font-bold text-neoncyan tracking-widest text-sm">${c.code}</span>
+            <span class="font-tech font-bold text-neoncyan tracking-widest text-sm">${couponDisplayName}</span>
             <span class="text-[10px] font-bold ${statusColor}">${statusText}</span>
           </div>
           <p class="text-sm text-white font-bold">${typeLabel}</p>
