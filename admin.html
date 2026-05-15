@@ -390,6 +390,14 @@
             <div><p class="text-[10px] text-gray-500 mb-1">付款補充說明（顯示於訂單成功頁）</p><textarea id="set-pay-note" rows="2" placeholder="請於 24 小時內完成轉帳，並回傳末 5 碼..." class="w-full bg-darkbg border border-slate-600 text-white p-2 text-xs rounded outline-none focus:border-neoncyan transition"></textarea></div>
           </div>
 
+          <!-- 訂單設定 -->
+          <div class="bg-panelbg border border-slate-700 tech-clip p-5 space-y-3">
+            <p class="text-xs font-bold text-neoncyan tracking-widest border-b border-slate-800 pb-2"><i class="fa-solid fa-clock mr-1"></i>訂單設定</p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div><p class="text-[10px] text-gray-500 mb-1">未付款自動取消時間（小時）</p><input id="set-order-unpaid-cancel-hours" type="number" min="1" placeholder="24" class="w-full bg-darkbg border border-slate-600 text-white p-2 text-xs rounded outline-none focus:border-neoncyan transition"></div>
+            </div>
+          </div>
+
           <!-- 運費設定 -->
           <div class="bg-panelbg border border-slate-700 tech-clip p-5 space-y-3">
             <p class="text-xs font-bold text-neoncyan tracking-widest border-b border-slate-800 pb-2"><i class="fa-solid fa-truck mr-1"></i>運費設定</p>
@@ -730,9 +738,34 @@
     }
 
     function loadOrders() {
+      autoCancelUnpaidOrders();
       renderStats();
       if (currentPage === 'overview') renderOverview();
       if (currentPage === 'members-orders' && currentMoTab === 'orders') renderTable();
+    }
+
+    const _autoCancelingOrderIds = new Set();
+    function getUnpaidCancelHours() {
+      const hours = parseInt(_settingsCache?.order?.unpaidCancelHours, 10);
+      return Number.isFinite(hours) && hours > 0 ? hours : 24;
+    }
+    function autoCancelUnpaidOrders() {
+      if (!window._fbUpdateOrder) return;
+      const cutoff = Date.now() - getUnpaidCancelHours() * 60 * 60 * 1000;
+      orders.forEach(order => {
+        if (!order || !order.id) return;
+        if (order.status !== '未付款') {
+          _autoCancelingOrderIds.delete(order.id);
+          return;
+        }
+        const orderTime = Number(order.time || order.createdAt || 0);
+        if (!orderTime || !Number.isFinite(orderTime) || orderTime > cutoff) return;
+        if (_autoCancelingOrderIds.has(order.id)) return;
+        _autoCancelingOrderIds.add(order.id);
+        window._fbUpdateOrder(order.id, { status: '已取消' })
+          .then(() => { console.log('[Orders] 未付款逾時自動取消:', order.id); })
+          .catch(() => { _autoCancelingOrderIds.delete(order.id); });
+      });
     }
 
     // ════════════════════════════════════════════════════════════
@@ -1029,6 +1062,7 @@
       v('set-pay-branch',       s.payment?.branch);
       v('set-pay-account',      s.payment?.account);
       v('set-pay-note',         s.payment?.note);
+      v('set-order-unpaid-cancel-hours', s.order?.unpaidCancelHours ?? 24);
       v('set-ship-threshold',   s.shipping?.freeThreshold ?? 699);
       v('set-ship-home',        s.shipping?.homeFee ?? 100);
       v('set-ship-island',      s.shipping?.islandFee ?? 200);
@@ -1039,16 +1073,19 @@
     }
     function saveSettings() {
       const g = id => document.getElementById(id);
+      const unpaidCancelHours = parseInt(g('set-order-unpaid-cancel-hours')?.value, 10);
       const settings = {
         marquee:      { enabled: g('set-marquee-enabled')?.checked||false,  text: g('set-marquee-text')?.value.trim()||'' },
         announcement: { enabled: g('set-announce-enabled')?.checked||false, type: g('set-announce-type')?.value||'info', text: g('set-announce-text')?.value.trim()||'' },
         popup:        { enabled: g('set-popup-enabled')?.checked||false,    title: g('set-popup-title')?.value.trim()||'', content: g('set-popup-content')?.value.trim()||'', everyTime: g('set-popup-every')?.checked||false },
         payment:      { bank: g('set-pay-bank')?.value.trim()||'', branch: g('set-pay-branch')?.value.trim()||'', account: g('set-pay-account')?.value.trim()||'', note: g('set-pay-note')?.value.trim()||'' },
+        order:        { unpaidCancelHours: Number.isFinite(unpaidCancelHours) && unpaidCancelHours > 0 ? unpaidCancelHours : 24 },
         shipping:     { freeThreshold: parseInt(g('set-ship-threshold')?.value)||699, homeFee: parseInt(g('set-ship-home')?.value)||100, islandFee: parseInt(g('set-ship-island')?.value)||200 },
         store:        { name: g('set-store-name')?.value.trim()||'', phone: g('set-store-phone')?.value.trim()||'', address: g('set-store-addr')?.value.trim()||'', hours: g('set-store-hours')?.value.trim()||'' },
         updatedAt: Date.now()
       };
       _settingsCache = settings;
+      autoCancelUnpaidOrders();
       if(window._fbSaveSettings){ window._fbSaveSettings(settings); } else { showToast('Firebase 尚未就緒'); }
     }
 
@@ -2801,6 +2838,7 @@ window._fbSaveSettings = async function(settings) {
 onSnapshot(_fbSettingsRef, (snap) => {
   if (snap.exists()) {
     _settingsCache = snap.data();
+    if (typeof autoCancelUnpaidOrders === 'function') autoCancelUnpaidOrders();
     if (currentPage === 'settings' && typeof renderSettings === 'function') renderSettings();
   }
   console.log('[Firebase] 後台設定即時同步');
