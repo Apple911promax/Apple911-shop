@@ -8,14 +8,17 @@ function buildOrderFlexMessage(order) {
   const statusColor =
     (order.status === '已付款' || order.status === '已付款待確認') ? '#00f3ff' :
     order.status === '未付款' ? '#ff003c' : '#9ca3af';
-  const itemRows = displayItems.map(i => ({
-    type: 'box', layout: 'horizontal', paddingTop: '6px', paddingBottom: '6px',
-    contents: [
-      { type: 'text', text: i.name, color: '#ffffff', size: 'sm', flex: 5, wrap: true },
-      { type: 'text', text: `×${i.qty}`, color: '#9ca3af', size: 'sm', flex: 1, align: 'center' },
-      { type: 'text', text: `NT$${i.price * i.qty}`, color: '#e2c78e', size: 'sm', flex: 2, align: 'end' },
-    ],
-  }));
+  const itemRows = displayItems.map(i => {
+    const _v = [i.selectedColor, i.selectedSpec].filter(Boolean).join('/');
+    return {
+      type: 'box', layout: 'horizontal', paddingTop: '6px', paddingBottom: '6px',
+      contents: [
+        { type: 'text', text: i.name + (_v ? `\n[${_v}]` : ''), color: '#ffffff', size: 'sm', flex: 5, wrap: true },
+        { type: 'text', text: `×${i.qty}`, color: '#9ca3af', size: 'sm', flex: 1, align: 'center' },
+        { type: 'text', text: `NT$${i.price * i.qty}`, color: '#e2c78e', size: 'sm', flex: 2, align: 'end' },
+      ],
+    };
+  });
   if (extraCount > 0) itemRows.push({ type: 'text', text: `另有 ${extraCount} 項商品`, color: '#9ca3af', size: 'xs', paddingTop: '4px' });
   const amountRows = [{ label: '小計', value: `NT$${order.subtotal}`, color: '#ffffff' }];
   if (order.discount > 0) amountRows.push({ label: '折扣', value: `-NT$${order.discount}`, color: '#ff003c' });
@@ -112,14 +115,17 @@ function buildCustomerConfirmFlex(order) {
   const items = order.items || [];
   const displayItems = items.slice(0, 5);
   const extraCount = items.length - displayItems.length;
-  const itemRows = displayItems.map(i => ({
-    type: 'box', layout: 'horizontal', paddingTop: '4px', paddingBottom: '4px',
-    contents: [
-      { type: 'text', text: i.name, color: '#ffffff', size: 'sm', flex: 5, wrap: true },
-      { type: 'text', text: `×${i.qty}`, color: '#9ca3af', size: 'sm', flex: 1, align: 'center' },
-      { type: 'text', text: `NT$${i.price * i.qty}`, color: '#e2c78e', size: 'sm', flex: 2, align: 'end' },
-    ],
-  }));
+  const itemRows = displayItems.map(i => {
+    const _v = [i.selectedColor, i.selectedSpec].filter(Boolean).join('/');
+    return {
+      type: 'box', layout: 'horizontal', paddingTop: '4px', paddingBottom: '4px',
+      contents: [
+        { type: 'text', text: i.name + (_v ? `\n[${_v}]` : ''), color: '#ffffff', size: 'sm', flex: 5, wrap: true },
+        { type: 'text', text: `×${i.qty}`, color: '#9ca3af', size: 'sm', flex: 1, align: 'center' },
+        { type: 'text', text: `NT$${i.price * i.qty}`, color: '#e2c78e', size: 'sm', flex: 2, align: 'end' },
+      ],
+    };
+  });
   if (extraCount > 0) itemRows.push({ type: 'text', text: `另有 ${extraCount} 項商品`, color: '#9ca3af', size: 'xs', paddingTop: '4px' });
   const isPending = order.status === '未付款';
   return {
@@ -358,7 +364,7 @@ module.exports = async function handler(req, res) {
 
   const shippingMap = { home: '宅配', cvs: '超商取貨', store: '門市自取' };
   const shippingLabel = shippingMap[order.shippingMethod] || order.shippingMethod || '—';
-  const itemLines = (order.items || []).map(i => `  • ${i.name} ×${i.qty}  NT$${i.price * i.qty}`).join('\n');
+  const itemLines = (order.items || []).map(i => { const _v = [i.selectedColor, i.selectedSpec].filter(Boolean).join('/'); return `  • ${i.name}${_v ? ' [' + _v + ']' : ''} ×${i.qty}  NT$${i.price * i.qty}`; }).join('\n');
   const fallbackText = [
     '🛒 新訂單通知', `訂單編號：${order.id}`,
     `時間：${new Date(order.time).toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' })}`,
