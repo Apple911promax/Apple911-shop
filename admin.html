@@ -2878,7 +2878,6 @@ window._fbAdminSignOut = async function() {
 let _ordersUnsub = null;
 let _membersUnsub = null;
 let _hasBeenLoggedIn = false;
-let _authLogoutTimer = null;
 
 function _startOrdersListener() {
   if (_ordersUnsub) { _ordersUnsub(); _ordersUnsub = null; }
@@ -2925,23 +2924,15 @@ function _handleAuthLogout() {
 }
 
 // authStateReady() 等初始化完成後才註冊 onAuthStateChanged
-// 確保跳過初始化的 null → user → null，且 Firestore token 就緒後才啟動監聽器
+// null 事件絕不自動登出（Firebase token 刷新會觸發 null），只有明確 signOut() 才登出
 _fbAuth.authStateReady().then(() => {
   onAuthStateChanged(_fbAuth, (user) => {
     if (user) {
-      if (_authLogoutTimer) { clearTimeout(_authLogoutTimer); _authLogoutTimer = null; }
       _handleAuthLogin(user);
-    } else {
-      if (!_hasBeenLoggedIn) {
-        console.log('[Firebase Auth] 後台未登入');
-      } else {
-        if (_authLogoutTimer) clearTimeout(_authLogoutTimer);
-        _authLogoutTimer = setTimeout(() => {
-          _authLogoutTimer = null;
-          _handleAuthLogout();
-        }, 3000);
-      }
+    } else if (!_hasBeenLoggedIn) {
+      console.log('[Firebase Auth] 後台未登入');
     }
+    // 已登入後收到 null：Firebase token 刷新中，忽略，監聽器失敗重試機制會自動恢復
   });
 }).catch(err => {
   console.error('[Firebase Auth] 初始化失敗:', err.message);
