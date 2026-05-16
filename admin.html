@@ -2876,11 +2876,14 @@ window._fbAdminSignOut = async function() {
 
 // ── Auth 處理 ──
 let _ordersUnsub = null;
+let _ordersRetryTimer = null;
 let _membersUnsub = null;
+let _membersRetryTimer = null;
 let _hasBeenLoggedIn = false;
 
-function _startOrdersListener(retries = 0) {
-  if (_ordersUnsub) { _ordersUnsub(); _ordersUnsub = null; }
+function _startOrdersListener() {
+  if (_ordersRetryTimer) { clearTimeout(_ordersRetryTimer); _ordersRetryTimer = null; }
+  if (_ordersUnsub) return; // 已有監聽器，不重複建立
   _ordersUnsub = onSnapshot(query(collection(_fbDb, 'orders'), orderBy('time', 'desc')), (snap) => {
     const realList = [];
     snap.forEach(docSnap => realList.push(docSnap.data()));
@@ -2890,15 +2893,18 @@ function _startOrdersListener(retries = 0) {
   }, (err) => {
     console.error('[Firebase] 監聽訂單失敗:', err.message);
     _ordersUnsub = null;
-    if (retries < 10) setTimeout(() => {
-      if (_fbAuth.currentUser) _startOrdersListener(0);
-      else _startOrdersListener(retries + 1);
-    }, 2000);
+    if (!_ordersRetryTimer && _fbAuth.currentUser) {
+      _ordersRetryTimer = setTimeout(() => {
+        _ordersRetryTimer = null;
+        if (_fbAuth.currentUser) _startOrdersListener();
+      }, 5000);
+    }
   });
 }
 
-function _startMembersListener(retries = 0) {
-  if (_membersUnsub) { _membersUnsub(); _membersUnsub = null; }
+function _startMembersListener() {
+  if (_membersRetryTimer) { clearTimeout(_membersRetryTimer); _membersRetryTimer = null; }
+  if (_membersUnsub) return; // 已有監聽器，不重複建立
   _membersUnsub = onSnapshot(collection(_fbDb, 'members'), (snap) => {
     const list = [];
     snap.forEach(docSnap => list.push(docSnap.data()));
@@ -2908,10 +2914,12 @@ function _startMembersListener(retries = 0) {
   }, (err) => {
     console.error('[Firebase] 監聽會員失敗:', err.message);
     _membersUnsub = null;
-    if (retries < 10) setTimeout(() => {
-      if (_fbAuth.currentUser) _startMembersListener(0);
-      else _startMembersListener(retries + 1);
-    }, 2000);
+    if (!_membersRetryTimer && _fbAuth.currentUser) {
+      _membersRetryTimer = setTimeout(() => {
+        _membersRetryTimer = null;
+        if (_fbAuth.currentUser) _startMembersListener();
+      }, 5000);
+    }
   });
 }
 
@@ -2919,13 +2927,17 @@ function _handleAuthLogin(user) {
   console.log('[Firebase Auth] 後台已登入:', user.email);
   _hasBeenLoggedIn = true;
   if (typeof _doShowAdmin === 'function') _doShowAdmin();
+  if (_ordersRetryTimer) { clearTimeout(_ordersRetryTimer); _ordersRetryTimer = null; }
   if (!_ordersUnsub) _startOrdersListener();
+  if (_membersRetryTimer) { clearTimeout(_membersRetryTimer); _membersRetryTimer = null; }
   if (!_membersUnsub) _startMembersListener();
 }
 
 function _handleAuthLogout() {
   console.log('[Firebase Auth] 後台登出');
+  if (_ordersRetryTimer) { clearTimeout(_ordersRetryTimer); _ordersRetryTimer = null; }
   if (_ordersUnsub) { _ordersUnsub(); _ordersUnsub = null; }
+  if (_membersRetryTimer) { clearTimeout(_membersRetryTimer); _membersRetryTimer = null; }
   if (_membersUnsub) { _membersUnsub(); _membersUnsub = null; }
 }
 
