@@ -1734,15 +1734,20 @@
       const currentCount = preview.querySelectorAll('[data-product-image]').length;
       if (currentCount + files.length > 20) { input.value = ''; return showToast('商品圖片最多 20 張'); }
       if (files.length === 0) return;
-      Promise.all(files.map(file => new Promise(resolve => {
-        const reader = new FileReader();
-        reader.onload = e => resolve(e.target.result);
-        reader.readAsDataURL(file);
-      }))).then(images => {
-        preview.insertAdjacentHTML('beforeend', _imageThumbsHtml(images));
-        preview.classList.remove('hidden');
-        input.value = '';
-      });
+      if (!window._uploadProductImage) { showToast('圖片上傳功能尚未就緒，請稍後再試'); return; }
+      showToast('圖片上傳中，請稍候...');
+      Promise.all(files.map(file => window._uploadProductImage(file)))
+        .then(urls => {
+          preview.insertAdjacentHTML('beforeend', _imageThumbsHtml(urls));
+          preview.classList.remove('hidden');
+          input.value = '';
+          showToast('圖片上傳完成');
+        })
+        .catch(e => {
+          console.error('[Firebase Storage] 圖片上傳失敗:', e.message);
+          showToast('圖片上傳失敗，請重試');
+          input.value = '';
+        });
     }
 
     // ════════════════════════════════════════════════════════════
@@ -2827,6 +2832,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
 import { getFirestore, doc, setDoc, getDoc, getDocs, collection, query, orderBy, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-storage.js";
 
 const _fbCfg = {
   apiKey: "AIzaSyDpasiFnj0UQpNKndmya4__C1J8bJxGN4g",
@@ -2840,6 +2846,7 @@ const _fbApp      = initializeApp(_fbCfg);
 console.log('[Firebase] projectId:', _fbCfg.projectId);
 const _fbDb       = getFirestore(_fbApp);
 const _fbAuth     = getAuth(_fbApp);
+const _fbStorage  = getStorage(_fbApp);
 const _fbProdsRef    = doc(_fbDb, 'store', 'products');
 const _fbCatRef      = doc(_fbDb, 'store', 'categories');
 const _fbMembersRef  = doc(_fbDb, 'store', 'members');
@@ -2989,6 +2996,13 @@ window._fbSaveProducts = async function(prods) {
     await setDoc(_fbProdsRef, { list: prods, updatedAt: Date.now() });
     console.log('[Firebase] 商品儲存成功，共', prods.length, '筆');
   } catch(e) { console.error('[Firebase] 商品儲存失敗:', e.message); if (typeof showToast === 'function') showToast('商品儲存失敗，請重試'); }
+};
+
+window._uploadProductImage = async function(file) {
+  const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+  const storageRef = ref(_fbStorage, `products/${Date.now()}_${safeName}`);
+  await uploadBytes(storageRef, file);
+  return await getDownloadURL(storageRef);
 };
 
 window._fbSaveCategories = async function(cats) {
