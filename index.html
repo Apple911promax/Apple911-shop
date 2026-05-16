@@ -1659,8 +1659,15 @@ const _fbProdsRef    = doc(_fbDb, 'store', 'products');
 const _fbCatRef      = doc(_fbDb, 'store', 'categories');
 const _fbCouponsRef  = doc(_fbDb, 'store', 'coupons');
 const _fbSettingsRef = doc(_fbDb, 'store', 'settings');
+const _ADMIN_EMAILS = ['apple911promax@gmail.com'];
 onAuthStateChanged(_fbAuth, async (user) => {
   if (user) {
+    if (_ADMIN_EMAILS.includes((user.email||'').toLowerCase())) {
+      window._fbCurrentUser = null; window._memberProfile = null;
+      await signOut(_fbAuth);
+      if (typeof _logoutUI === 'function') _logoutUI();
+      return;
+    }
     try {
       const adminSnap = await getDoc(doc(_fbDb, 'admins', user.uid));
       if (adminSnap.exists()) {
@@ -1767,6 +1774,12 @@ window._fbRegister = async function() {
 window._fbGoogleLogin = async function() {
   try {
     const cred = await signInWithPopup(_fbAuth, new GoogleAuthProvider());
+    if (_ADMIN_EMAILS.includes((cred.user.email||'').toLowerCase())) {
+      await signOut(_fbAuth);
+      if (typeof _logoutUI === 'function') _logoutUI();
+      if (typeof showToast === 'function') showToast('管理員帳號請使用後台登入');
+      return;
+    }
     const ref = doc(_fbDb, 'members', cred.user.uid);
     const snap = await getDoc(ref);
     let memberData;
