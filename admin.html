@@ -1381,7 +1381,7 @@
     function saveProducts(prods) {
       _productsCache = prods;
       if (window._fbSaveProducts) window._fbSaveProducts(prods);
-      console.log('[後台DEBUG] saveProducts 儲存', prods.length, '筆:', prods.map(p=>({id:p.id,name:p.name,active:p.active,cat:p.cat,itemId:p.itemId,brandId:p.brandId,seriesId:p.seriesId,categoryName:p.categoryName})));
+      console.log('[後台DEBUG] saveProducts 儲存', prods.length, '筆:', prods.map(p=>({id:p.id,name:p.name,images:(p.images||[]).length+'張',image:p.image?'有':'無'})));
     }
 
     function renderProducts() {
@@ -1734,15 +1734,20 @@
       const currentCount = preview.querySelectorAll('[data-product-image]').length;
       if (currentCount + files.length > 20) { input.value = ''; return showToast('商品圖片最多 20 張'); }
       if (files.length === 0) return;
-      Promise.all(files.map(file => new Promise(resolve => {
-        const reader = new FileReader();
-        reader.onload = e => resolve(e.target.result);
-        reader.readAsDataURL(file);
-      }))).then(images => {
-        preview.insertAdjacentHTML('beforeend', _imageThumbsHtml(images));
-        preview.classList.remove('hidden');
-        input.value = '';
-      });
+      if (!window._uploadProductImage) { showToast('圖片上傳功能尚未就緒，請稍後再試'); return; }
+      showToast('圖片上傳中，請稍候...');
+      Promise.all(files.map(file => window._uploadProductImage(file)))
+        .then(urls => {
+          preview.insertAdjacentHTML('beforeend', _imageThumbsHtml(urls));
+          preview.classList.remove('hidden');
+          input.value = '';
+          showToast('圖片上傳完成');
+        })
+        .catch(e => {
+          console.error('[Firebase Storage] 圖片上傳失敗:', e.message);
+          showToast('圖片上傳失敗，請重試');
+          input.value = '';
+        });
     }
 
     // ════════════════════════════════════════════════════════════
@@ -1792,10 +1797,16 @@
 
       const rowsHtml = items.map(item => `
         <div class="flex items-center gap-2 px-4 py-3 border-b border-slate-800 last:border-0 hover:bg-white/[0.05] transition cursor-pointer" onclick="prodNavTo(${item.id})">
+          ${level === 0 ? `<div class="w-7 h-7 flex items-center justify-center text-neoncyan shrink-0">
+            <i class="fa-solid fa-${item.icon || 'tag'} text-base"></i>
+          </div>` : ''}
           <div id="pdil-${item.id}" class="flex-1 min-w-0">
             <span class="text-sm font-bold text-white">${item.name}</span>
           </div>
           <div class="flex items-center shrink-0">
+            ${level === 0 ? `<button onclick="event.stopPropagation();openIconPicker(${item.id})" class="text-gray-600 hover:text-goldlight transition p-2" title="選擇 Icon">
+              <i class="fa-solid fa-icons text-xs"></i>
+            </button>` : ''}
             <button onclick="event.stopPropagation();startEditProdItem(${item.id})" class="text-gray-600 hover:text-gray-300 transition p-2">
               <i class="fa-solid fa-pen text-xs"></i>
             </button>
@@ -1971,12 +1982,12 @@
       const item = items.find(i => i.id === id);
       if (!item || !label) return;
       label.innerHTML = `
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2" onclick="event.stopPropagation()">
           <input id="pdi-edit-${id}" type="text" value="${item.name.replace(/"/g,'&quot;')}"
             class="flex-1 min-w-0 bg-darkbg border border-neoncyan text-white p-2 tech-clip text-xs focus:border-neoncyan transition"
             onkeydown="if(event.key==='Enter')saveEditProdItem(${id});if(event.key==='Escape')renderProdDrill()">
-          <button onclick="saveEditProdItem(${id})" class="text-xs px-3 py-1 bg-neoncyan text-black font-bold tech-btn hover:bg-white transition">儲存</button>
-          <button onclick="renderProdDrill()" class="text-xs px-2 py-1 bg-slate-700 text-gray-400 font-bold tech-btn hover:text-white transition">取消</button>
+          <button onclick="event.stopPropagation();saveEditProdItem(${id})" class="text-xs px-3 py-1 bg-neoncyan text-black font-bold tech-btn hover:bg-white transition">儲存</button>
+          <button onclick="event.stopPropagation();renderProdDrill()" class="text-xs px-2 py-1 bg-slate-700 text-gray-400 font-bold tech-btn hover:text-white transition">取消</button>
         </div>`;
       document.getElementById('pdi-edit-' + id)?.focus();
     }
@@ -2324,10 +2335,17 @@
 
       const itemsHtml = items.map(item => `
         <div class="bg-darkbg border border-slate-700 tech-clip p-3 flex items-center gap-2" id="cat-item-${item.id}">
+          ${level === 0 ? `<div class="w-8 h-8 flex items-center justify-center text-neoncyan shrink-0">
+            <i class="fa-solid fa-${item.icon || 'tag'} text-xl"></i>
+          </div>` : ''}
           <div class="flex-1 min-w-0" id="cat-label-${item.id}">
             <span class="text-sm font-bold text-white">${item.name}</span>
           </div>
           <div class="flex items-center gap-2 shrink-0 flex-wrap justify-end">
+            ${level === 0 ? `<button onclick="openIconPicker(${item.id})"
+              class="text-xs px-3 py-1 bg-slate-800 text-goldlight font-bold tech-btn hover:bg-goldlight hover:text-black transition whitespace-nowrap">
+              <i class="fa-solid fa-icons mr-1"></i>Icon
+            </button>` : ''}
             ${level < 2 ? `<button onclick="catNavTo(${item.id})"
               class="text-xs px-3 py-1 bg-slate-800 text-neoncyan font-bold tech-btn hover:bg-neoncyan hover:text-black transition whitespace-nowrap">
               ${nextLabel}
@@ -2443,6 +2461,104 @@
       saveCategories(cats);
       renderCatMgmt();
       showToast('已儲存');
+    }
+
+    // ════════════════════════════════════════════════════════════
+    // Icon Picker（品項 level 0 專用）
+    // ════════════════════════════════════════════════════════════
+    const CAT_ICONS = [
+      { name:'tag', label:'標籤' }, { name:'mobile-screen', label:'手機' },
+      { name:'tablet-screen-button', label:'平板' }, { name:'laptop', label:'筆電' },
+      { name:'desktop', label:'桌機' }, { name:'headphones', label:'耳機' },
+      { name:'clock', label:'時鐘' }, { name:'camera', label:'相機' },
+      { name:'battery-full', label:'電池' }, { name:'plug', label:'充電器' },
+      { name:'wifi', label:'WiFi' }, { name:'wrench', label:'扳手' },
+      { name:'screwdriver', label:'螺絲起子' }, { name:'screwdriver-wrench', label:'工具組' },
+      { name:'hammer', label:'鎚子' }, { name:'gear', label:'齒輪' },
+      { name:'gears', label:'齒輪組' }, { name:'shield', label:'防護' },
+      { name:'shield-halved', label:'半盾' }, { name:'bag-shopping', label:'購物袋' },
+      { name:'box', label:'箱子' }, { name:'star', label:'星星' },
+      { name:'heart', label:'愛心' }, { name:'bookmark', label:'書籤' },
+      { name:'gift', label:'禮物' }, { name:'cart-shopping', label:'購物車' },
+      { name:'barcode', label:'條碼' }, { name:'microchip', label:'晶片' },
+      { name:'memory', label:'記憶體' }, { name:'sim-card', label:'SIM卡' },
+      { name:'volume-high', label:'喇叭' }, { name:'microphone', label:'麥克風' },
+      { name:'keyboard', label:'鍵盤' }, { name:'computer-mouse', label:'滑鼠' },
+      { name:'display', label:'螢幕' }, { name:'print', label:'列印' },
+      { name:'house', label:'首頁' }, { name:'store', label:'商店' },
+      { name:'globe', label:'全球' }, { name:'check', label:'確認' },
+      { name:'lock', label:'鎖定' }, { name:'key', label:'鑰匙' },
+      { name:'user', label:'用戶' }, { name:'users', label:'用戶群' },
+      { name:'circle-info', label:'資訊' }, { name:'bell', label:'通知' },
+      { name:'fire', label:'火焰' }, { name:'bolt', label:'閃電' },
+      { name:'gem', label:'寶石' }, { name:'crown', label:'皇冠' },
+      { name:'award', label:'獎項' }, { name:'certificate', label:'認證' },
+      { name:'recycle', label:'回收' }, { name:'leaf', label:'葉片' },
+      { name:'truck', label:'貨車' }, { name:'rotate', label:'旋轉' },
+      { name:'magnifying-glass', label:'搜尋' }, { name:'phone', label:'電話' },
+      { name:'image', label:'圖片' }, { name:'palette', label:'調色板' },
+      { name:'cube', label:'方塊' }, { name:'cubes', label:'方塊組' },
+      { name:'qrcode', label:'QRCode' }, { name:'link', label:'連結' },
+    ];
+
+    let _iconPickerTargetId = null;
+
+    function openIconPicker(id) {
+      _iconPickerTargetId = id;
+      let modal = document.getElementById('icon-picker-modal');
+      if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'icon-picker-modal';
+        modal.className = 'fixed inset-0 z-50 flex items-center justify-center bg-black/80';
+        modal.innerHTML = `
+          <div class="bg-panelbg border border-slate-700 tech-clip w-full max-w-lg mx-4 p-4 space-y-3 max-h-[80vh] flex flex-col">
+            <div class="flex items-center justify-between shrink-0">
+              <p class="text-xs font-bold text-neoncyan tracking-widest"><i class="fa-solid fa-icons mr-2"></i>選擇 Icon</p>
+              <button onclick="closeIconPicker()" class="text-gray-400 hover:text-white transition"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <input id="icon-search" type="text" placeholder="搜尋 icon 名稱..."
+              class="w-full bg-darkbg border border-slate-600 text-white p-2 tech-clip text-xs focus:border-neoncyan transition shrink-0"
+              oninput="renderIconGrid(this.value)">
+            <div id="icon-grid" class="grid grid-cols-5 gap-2 overflow-y-auto flex-1 pr-1 min-h-0"></div>
+          </div>`;
+        document.body.appendChild(modal);
+      } else {
+        modal.classList.remove('hidden');
+      }
+      document.getElementById('icon-search').value = '';
+      renderIconGrid('');
+    }
+
+    function renderIconGrid(query) {
+      const grid = document.getElementById('icon-grid');
+      if (!grid) return;
+      const q = query.toLowerCase();
+      const filtered = q ? CAT_ICONS.filter(ic => ic.name.includes(q) || ic.label.includes(q)) : CAT_ICONS;
+      const cats = loadCategories();
+      const currentItem = cats.find(c => c.id === _iconPickerTargetId);
+      const currentIcon = currentItem?.icon || '';
+      grid.innerHTML = filtered.map(ic => `
+        <button onclick="selectCatIcon(${_iconPickerTargetId}, '${ic.name}')"
+          class="flex flex-col items-center gap-1 p-2 border ${currentIcon === ic.name ? 'border-neoncyan bg-neoncyan/10 text-neoncyan' : 'border-slate-700 bg-darkbg text-slate-400 hover:border-neoncyan hover:text-neoncyan'} transition text-center">
+          <i class="fa-solid fa-${ic.name} text-xl"></i>
+          <span class="text-[10px] leading-tight">${ic.label}</span>
+        </button>`).join('') || '<p class="col-span-5 text-xs text-gray-600 text-center py-6">無符合結果</p>';
+    }
+
+    function selectCatIcon(id, iconName) {
+      const cats = loadCategories();
+      const item = cats.find(c => c.id === id);
+      if (item) { item.icon = iconName; saveCategories(cats); }
+      closeIconPicker();
+      const catView = document.getElementById('cat-mgmt-view');
+      if (catView && !catView.classList.contains('hidden')) renderCatMgmt();
+      else renderProdDrill();
+      showToast('Icon 已更新');
+    }
+
+    function closeIconPicker() {
+      const modal = document.getElementById('icon-picker-modal');
+      if (modal) modal.classList.add('hidden');
     }
 
     // ════════════════════════════════════════════════════════════
@@ -2713,9 +2829,9 @@
 
 <!-- Firebase 整合 START — 可整段刪除 -->
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
-import { getFirestore, doc, setDoc, getDoc, collection, query, orderBy, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
-import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
+import { getFirestore, doc, setDoc, getDoc, getDocs, collection, query, orderBy, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js";
 
 const _fbCfg = {
   apiKey: "AIzaSyDpasiFnj0UQpNKndmya4__C1J8bJxGN4g",
@@ -2726,6 +2842,7 @@ const _fbCfg = {
   appId: "1:335224055176:web:62f37cdf81f6233c16063d"
 };
 const _fbApp      = initializeApp(_fbCfg);
+console.log('[Firebase] projectId:', _fbCfg.projectId);
 const _fbDb       = getFirestore(_fbApp);
 const _fbAuth     = getAuth(_fbApp);
 const _fbProdsRef    = doc(_fbDb, 'store', 'products');
@@ -2747,6 +2864,7 @@ window._fbAdminLogin = async function() {
   }
   try {
     await signInWithEmailAndPassword(_fbAuth, emailVal, password);
+    // 不直接呼叫 _handleAuthLogin，由 onAuthStateChanged 在 token 就緒後觸發
   } catch(e) {
     document.getElementById('login-error').classList.remove('hidden');
     document.getElementById('login-error').textContent =
@@ -2758,38 +2876,100 @@ window._fbAdminLogin = async function() {
 
 // ── 登出 ──
 window._fbAdminSignOut = async function() {
+  _handleAuthLogout();
   try { await signOut(_fbAuth); } catch(e) {}
 };
 
-// ── Auth 狀態監聽 ──
-let _ordersUnsub = null;
+// ── Auth 處理 ──
+let _ordersPollTimer = null;
 let _membersUnsub = null;
-onAuthStateChanged(_fbAuth, (user) => {
-  if (user) {
-    console.log('[Firebase Auth] 後台已登入:', user.email);
-    if (typeof _doShowAdmin === 'function') _doShowAdmin();
-    // 確認登入後才啟動監聽，避免初始化競態
-    if (_ordersUnsub) _ordersUnsub();
-    _ordersUnsub = onSnapshot(query(collection(_fbDb, 'orders'), orderBy('time', 'desc')), (snap) => {
-      const realList = [];
-      snap.forEach(docSnap => realList.push(docSnap.data()));
-      orders = realList;
-      console.log('[Firebase] 訂單即時更新，共', orders.length, '筆');
-      if (typeof loadOrders === 'function') loadOrders();
-    }, (err) => { console.error('[Firebase] 監聽訂單失敗:', err.message); });
-    if (_membersUnsub) _membersUnsub();
-    _membersUnsub = onSnapshot(collection(_fbDb, 'members'), (snap) => {
-      const list = [];
-      snap.forEach(docSnap => list.push(docSnap.data()));
-      if (typeof _membersCache !== 'undefined') window._membersCache = list;
-      if (currentPage === 'members-orders' && currentMoTab === 'members' && typeof renderMembers === 'function') renderMembers();
-      console.log('[Firebase] 會員即時更新，共', list.length, '筆');
-    }, (err) => { console.error('[Firebase] 監聽會員失敗:', err.message); });
-  } else {
-    console.log('[Firebase Auth] 後台未登入');
-    if (_ordersUnsub) { _ordersUnsub(); _ordersUnsub = null; }
-    if (_membersUnsub) { _membersUnsub(); _membersUnsub = null; }
+let _membersRetryTimer = null;
+let _hasBeenLoggedIn = false;
+let _authUser = null; // 由 _handleAuthLogin/_handleAuthLogout 維護，比 currentUser 更穩定
+
+async function _fetchOrders() {
+  if (!_authUser) return;
+  try { await _authUser.getIdToken(true); } catch(e) { return; }
+  try {
+    const snap = await getDocs(collection(_fbDb, 'orders'));
+    const realList = [];
+    snap.forEach(docSnap => realList.push(docSnap.data()));
+    orders = realList;
+    console.log('[Firebase] 訂單已更新，共', orders.length, '筆');
+    if (typeof loadOrders === 'function') loadOrders();
+  } catch(e) {
+    console.error('[Firebase] 訂單抓取失敗:', e.message);
   }
+}
+
+function _startOrdersPolling() {
+  if (_ordersPollTimer) return;
+  _fetchOrders();
+  _ordersPollTimer = setInterval(_fetchOrders, 15000);
+}
+
+function _stopOrdersPolling() {
+  if (_ordersPollTimer) { clearInterval(_ordersPollTimer); _ordersPollTimer = null; }
+}
+
+function _startMembersListener() {
+  if (_membersRetryTimer) { clearTimeout(_membersRetryTimer); _membersRetryTimer = null; }
+  if (_membersUnsub) return; // 已有監聽器，不重複建立
+  _membersUnsub = onSnapshot(collection(_fbDb, 'members'), (snap) => {
+    const list = [];
+    snap.forEach(docSnap => list.push(docSnap.data()));
+    if (typeof _membersCache !== 'undefined') window._membersCache = list;
+    if (currentPage === 'members-orders' && currentMoTab === 'members' && typeof renderMembers === 'function') renderMembers();
+    console.log('[Firebase] 會員即時更新，共', list.length, '筆');
+  }, (err) => {
+    console.error('[Firebase] 監聽會員失敗:', err.message);
+    _membersUnsub = null;
+    if (err.code === 'permission-denied') return;
+    if (!_membersRetryTimer && _fbAuth.currentUser) {
+      _membersRetryTimer = setTimeout(() => {
+        _membersRetryTimer = null;
+        if (_fbAuth.currentUser) _startMembersListener();
+      }, 5000);
+    }
+  });
+}
+
+async function _handleAuthLogin(user) {
+  console.log('[Firebase Auth] 後台已登入:', user.email);
+  _hasBeenLoggedIn = true;
+  _authUser = user;
+  if (typeof _doShowAdmin === 'function') _doShowAdmin();
+  _startOrdersPolling();
+  if (_membersRetryTimer) { clearTimeout(_membersRetryTimer); _membersRetryTimer = null; }
+  if (!_membersUnsub) _startMembersListener();
+}
+
+function _handleAuthLogout() {
+  console.log('[Firebase Auth] 後台登出');
+  _authUser = null;
+  _stopOrdersPolling();
+  if (_membersRetryTimer) { clearTimeout(_membersRetryTimer); _membersRetryTimer = null; }
+  if (_membersUnsub) { _membersUnsub(); _membersUnsub = null; }
+}
+
+// 切回頁面時立刻抓一次最新訂單
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') _fetchOrders();
+});
+
+// authStateReady() 等初始化完成後才註冊 onAuthStateChanged
+// null 事件絕不自動登出（Firebase token 刷新會觸發 null），只有明確 signOut() 才登出
+_fbAuth.authStateReady().then(() => {
+  onAuthStateChanged(_fbAuth, (user) => {
+    if (user) {
+      _handleAuthLogin(user);
+    } else if (!_hasBeenLoggedIn) {
+      console.log('[Firebase Auth] 後台未登入');
+    }
+    // 已登入後收到 null：Firebase token 刷新中，忽略，監聽器失敗重試機制會自動恢復
+  });
+}).catch(err => {
+  console.error('[Firebase Auth] 初始化失敗:', err.message);
 });
 
 window._fbUpdateOrder = async function(orderId, data) {
@@ -2809,21 +2989,35 @@ window._fbUpdateMember = async function(uid, data) {
 };
 
 window._fbSaveProducts = async function(prods) {
+  if (!_authUser) { console.warn('[Firebase] 商品儲存略過：用戶未登入'); return; }
+  try { await _authUser.getIdToken(true); } catch(e) {}
   try {
     await setDoc(_fbProdsRef, { list: prods, updatedAt: Date.now() });
     console.log('[Firebase] 商品儲存成功，共', prods.length, '筆');
   } catch(e) { console.error('[Firebase] 商品儲存失敗:', e.message); if (typeof showToast === 'function') showToast('商品儲存失敗，請重試'); }
 };
 
+window._uploadProductImage = async function(file) {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('upload_preset', 'apple911-products');
+  const res = await fetch('https://api.cloudinary.com/v1_1/dqlxny7iw/image/upload', { method: 'POST', body: formData });
+  if (!res.ok) throw new Error('Cloudinary 上傳失敗');
+  const data = await res.json();
+  return data.secure_url;
+};
+
 window._fbSaveCategories = async function(cats) {
+  if (!_authUser) { console.warn('[Firebase] 分類儲存略過：用戶未登入'); return; }
   try {
     await setDoc(_fbCatRef, { list: cats, updatedAt: Date.now() });
     console.log('[Firebase] 分類儲存成功');
-  } catch(e) { console.error('[Firebase] 分類儲存失敗:', e.message); if (typeof showToast === 'function') showToast('分類儲存失敗，請重試'); }
+  } catch(e) { console.error('[Firebase] 分類儲存失敗:', e.code, e.message, e); if (typeof showToast === 'function') showToast('分類儲存失敗，請重試'); }
 };
 
 const _fbCouponsRef = doc(_fbDb, 'store', 'coupons');
 window._fbSaveCoupons = async function(coupons) {
+  if (!_authUser) { console.warn('[Firebase] 優惠券儲存略過：用戶未登入'); return; }
   try {
     await setDoc(_fbCouponsRef, { list: coupons, updatedAt: Date.now() });
     console.log('[Firebase] 優惠券儲存成功，共', coupons.length, '筆');
@@ -2851,6 +3045,7 @@ onSnapshot(_fbCatRef, (snap) => {
 }, (e) => { console.error('[Firebase] 後台分類監聽失敗:', e.message); });
 
 window._fbSaveSettings = async function(settings) {
+  if (!_authUser) { console.warn('[Firebase] 設定儲存略過：用戶未登入'); return; }
   try {
     await setDoc(_fbSettingsRef, settings);
     console.log('[Firebase] 設定儲存成功');

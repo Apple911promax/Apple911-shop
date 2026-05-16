@@ -13,7 +13,9 @@ service cloud.firestore {
     }
 
     match /orders/{orderId} {
-      allow read: if isAdmin()
+      allow list: if isAdmin();
+
+      allow get: if isAdmin()
         || (request.auth != null && resource.data.userId == request.auth.uid);
 
       allow create: if request.auth != null
@@ -26,13 +28,24 @@ service cloud.firestore {
     }
 
     match /members/{uid} {
-      allow list, get: if isAdmin();
-      allow read, write: if request.auth != null && request.auth.uid == uid;
+      allow list: if isAdmin();
+
+      allow get: if isAdmin()
+        || (request.auth != null && request.auth.uid == uid);
+
+      allow create, update: if isAdmin()
+        || (request.auth != null && request.auth.uid == uid);
+
+      allow delete: if false;
     }
 
     match /admins/{uid} {
       allow read: if request.auth != null && (request.auth.uid == uid || isAdmin());
       allow write: if isAdmin();
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }
