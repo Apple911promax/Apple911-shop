@@ -2879,7 +2879,7 @@ let _ordersUnsub = null;
 let _membersUnsub = null;
 let _hasBeenLoggedIn = false;
 
-function _startOrdersListener() {
+function _startOrdersListener(retries = 0) {
   if (_ordersUnsub) { _ordersUnsub(); _ordersUnsub = null; }
   _ordersUnsub = onSnapshot(query(collection(_fbDb, 'orders'), orderBy('time', 'desc')), (snap) => {
     const realList = [];
@@ -2890,11 +2890,14 @@ function _startOrdersListener() {
   }, (err) => {
     console.error('[Firebase] 監聽訂單失敗:', err.message);
     _ordersUnsub = null;
-    setTimeout(() => { if (_fbAuth.currentUser) _startOrdersListener(); }, 2000);
+    if (retries < 10) setTimeout(() => {
+      if (_fbAuth.currentUser) _startOrdersListener(0);
+      else _startOrdersListener(retries + 1);
+    }, 2000);
   });
 }
 
-function _startMembersListener() {
+function _startMembersListener(retries = 0) {
   if (_membersUnsub) { _membersUnsub(); _membersUnsub = null; }
   _membersUnsub = onSnapshot(collection(_fbDb, 'members'), (snap) => {
     const list = [];
@@ -2905,7 +2908,10 @@ function _startMembersListener() {
   }, (err) => {
     console.error('[Firebase] 監聽會員失敗:', err.message);
     _membersUnsub = null;
-    setTimeout(() => { if (_fbAuth.currentUser) _startMembersListener(); }, 2000);
+    if (retries < 10) setTimeout(() => {
+      if (_fbAuth.currentUser) _startMembersListener(0);
+      else _startMembersListener(retries + 1);
+    }, 2000);
   });
 }
 
