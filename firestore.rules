@@ -3,50 +3,35 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     // ── store/* ──────────────────────────────────────────────────────────────
-    // 涵蓋：products / categories / settings / coupons / couponLogs
-    // 前台需要公開讀取商品、分類、設定、優惠券
-    // 管理員才能寫入
     match /store/{docId} {
       allow read: if true;
       allow write: if request.auth != null
-                   && request.auth.token.email == 'apple911promax@gmail.com';
+                   && request.auth.uid == 'NxSBeTLWZbQk54e9vnUkvCS8m942';
     }
 
     // ── orders/{orderId} ─────────────────────────────────────────────────────
-    // 每筆訂單為頂層 collection 的獨立文件
-    // 管理員：全量讀寫（onSnapshot 全collection + updateDoc）
-    // 前台登入用戶：建立 / 讀取 / 更新自己的訂單（userId == auth.uid）
-    // 前台訪客：允許建立訂單（支援訪客結帳）
     match /orders/{orderId} {
       allow read, write: if request.auth != null
-                         && request.auth.token.email == 'apple911promax@gmail.com';
+                         && request.auth.uid == 'NxSBeTLWZbQk54e9vnUkvCS8m942';
       allow create: if true;
       allow read, update: if request.auth != null
                           && resource.data.userId == request.auth.uid;
     }
 
     // ── members/{uid} ────────────────────────────────────────────────────────
-    // uid = Firebase Auth UID
-    // 管理員：全量讀寫（onSnapshot 全collection + updateDoc）
-    // 前台登入用戶：讀寫自己的資料（auth.uid == uid）
-    // 未驗證讀取（allow read: if true）：
-    //   手機號碼登入前需以 phone 查詢 members collection 取得 email，
-    //   此時 Firebase Auth 尚未完成，無法提供 auth token
     match /members/{uid} {
       allow read, write: if request.auth != null
-                         && request.auth.token.email == 'apple911promax@gmail.com';
+                         && request.auth.uid == 'NxSBeTLWZbQk54e9vnUkvCS8m942';
       allow read, write: if request.auth != null
                          && request.auth.uid == uid;
       allow read: if true;
     }
 
     // ── admins/{uid} ─────────────────────────────────────────────────────────
-    // 前台登入後檢查是否為管理員（getDoc admins/uid），需要登入才可讀
-    // 管理員才能寫入
     match /admins/{uid} {
       allow read: if request.auth != null;
       allow write: if request.auth != null
-                   && request.auth.token.email == 'apple911promax@gmail.com';
+                   && request.auth.uid == 'NxSBeTLWZbQk54e9vnUkvCS8m942';
     }
 
   }
