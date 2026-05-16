@@ -2969,20 +2969,39 @@ function _handleAuthLogout() {
   if (_membersUnsub) { _membersUnsub(); _membersUnsub = null; }
 }
 
-// 切回頁面時強制刷新 token 並重啟 orders listener，避免 WebChannel reconnect 遺失 auth
+// 切換視窗時管理 orders listener，避免 WebChannel 在背景重連遺失 auth token
 let _ordersRefocusTimer = null;
-async function _handlePageRefocus() {
-  if (!_authUser) return;
-  if (_ordersRefocusTimer) return; // debounce：500ms 內只執行一次
-  _ordersRefocusTimer = setTimeout(() => { _ordersRefocusTimer = null; }, 500);
-  console.log('[Firebase] 頁面重新 focus，刷新 token 並重啟 orders listener');
-  try { await _authUser.getIdToken(true); } catch(e) { console.warn('[Firebase] focus token 刷新失敗:', e.message); return; }
+
+function _stopOrdersListener() {
+  if (_ordersRetryTimer) { clearTimeout(_ordersRetryTimer); _ordersRetryTimer = null; }
   if (_ordersUnsub) { _ordersUnsub(); _ordersUnsub = null; }
   _ordersPermissionRetryUsed = false;
-  _startOrdersListener();
 }
-document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') _handlePageRefocus(); });
-window.addEventListener('focus', _handlePageRefocus);
+
+async function _handlePageVisible() {
+  if (!_authUser) return;
+  if (_ordersRefocusTimer) { clearTimeout(_ordersRefocusTimer); _ordersRefocusTimer = null; }
+  _ordersRefocusTimer = setTimeout(async () => {
+    _ordersRefocusTimer = null;
+    if (!_authUser) return;
+    console.log('[Firebase] 頁面回到前景，刷新 token 並重啟 orders listener');
+    _stopOrdersListener(); // 先清除一切，不讓舊連線有機會重連
+    try { await _authUser.getIdToken(true); } catch(e) { console.warn('[Firebase] focus token 刷新失敗:', e.message); return; }
+    _startOrdersListener();
+  }, 300);
+}
+
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') {
+    // 切走時立刻關掉，不讓它在背景重連
+    if (_ordersRefocusTimer) { clearTimeout(_ordersRefocusTimer); _ordersRefocusTimer = null; }
+    _stopOrdersListener();
+    console.log('[Firebase] 頁面隱藏，orders listener 已暫停');
+  } else {
+    _handlePageVisible();
+  }
+});
+window.addEventListener('focus', _handlePageVisible);
 
 // authStateReady() 等初始化完成後才註冊 onAuthStateChanged
 // null 事件絕不自動登出（Firebase token 刷新會觸發 null），只有明確 signOut() 才登出
