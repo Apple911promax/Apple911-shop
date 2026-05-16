@@ -531,7 +531,7 @@
                 ${hasSeries?`<i class="fa-solid fa-chevron-right text-xs text-neoncyan/30 transition" id="sidebar-arrow-${c.id}-${b.id}"></i>`:''}
               </button>
               ${hasSeries?`<div class="hidden pl-4 space-y-1" id="sidebar-series-${c.id}-${b.id}">${b.series.map(s=>`
-                <button onclick="sidebarSelectSeries(${c.id},'${c.name}',${b.id},'${b.name}',${s.id},'${s.name}')" class="w-full text-left px-4 py-2 text-xs text-sky-300 hover:text-white hover:bg-white/5 transition rounded">
+                <button onclick="sidebarSelectSeries(${c.id},'${c.name}',${b.id},'${b.name}',${s.id},'${s.name}')" class="w-full text-left px-4 py-2 text-xs text-white hover:text-neoncyan hover:bg-white/5 transition rounded">
                   <i class="fa-solid fa-minus text-[8px] mr-2 text-neoncyan/20"></i>${s.name}
                 </button>`).join('')}</div>`:''}
             </div>`;
