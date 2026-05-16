@@ -2893,6 +2893,8 @@ function _startOrdersListener() {
   }, (err) => {
     console.error('[Firebase] 監聽訂單失敗:', err.message);
     _ordersUnsub = null;
+    // permission-denied 是確定性錯誤，重試無意義，直接停止
+    if (err.code === 'permission-denied') return;
     if (!_ordersRetryTimer && _fbAuth.currentUser) {
       _ordersRetryTimer = setTimeout(() => {
         _ordersRetryTimer = null;
@@ -2914,6 +2916,7 @@ function _startMembersListener() {
   }, (err) => {
     console.error('[Firebase] 監聽會員失敗:', err.message);
     _membersUnsub = null;
+    if (err.code === 'permission-denied') return;
     if (!_membersRetryTimer && _fbAuth.currentUser) {
       _membersRetryTimer = setTimeout(() => {
         _membersRetryTimer = null;
@@ -2923,10 +2926,12 @@ function _startMembersListener() {
   });
 }
 
-function _handleAuthLogin(user) {
+async function _handleAuthLogin(user) {
   console.log('[Firebase Auth] 後台已登入:', user.email);
   _hasBeenLoggedIn = true;
   if (typeof _doShowAdmin === 'function') _doShowAdmin();
+  // 強制刷新 token，確保 Firestore 使用最新 auth 憑證再啟動監聽
+  try { await user.getIdToken(true); } catch(e) { console.warn('[Firebase] token 刷新失敗:', e.message); }
   if (_ordersRetryTimer) { clearTimeout(_ordersRetryTimer); _ordersRetryTimer = null; }
   if (!_ordersUnsub) _startOrdersListener();
   if (_membersRetryTimer) { clearTimeout(_membersRetryTimer); _membersRetryTimer = null; }
