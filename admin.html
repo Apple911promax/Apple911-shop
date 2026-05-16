@@ -2930,7 +2930,7 @@ window._fbSaveCategories = async function(cats) {
   try {
     await setDoc(_fbCatRef, { list: cats, updatedAt: Date.now() });
     console.log('[Firebase] 分類儲存成功');
-  } catch(e) { console.error('[Firebase] 分類儲存失敗:', e.message); if (typeof showToast === 'function') showToast('分類儲存失敗，請重試'); }
+  } catch(e) { console.error('[Firebase] 分類儲存失敗:', e.code, e.message, e); if (typeof showToast === 'function') showToast('分類儲存失敗，請重試'); }
 };
 
 const _fbCouponsRef = doc(_fbDb, 'store', 'coupons');
