@@ -1381,7 +1381,7 @@
     function saveProducts(prods) {
       _productsCache = prods;
       if (window._fbSaveProducts) window._fbSaveProducts(prods);
-      console.log('[後台DEBUG] saveProducts 儲存', prods.length, '筆:', prods.map(p=>({id:p.id,name:p.name,active:p.active,cat:p.cat,itemId:p.itemId,brandId:p.brandId,seriesId:p.seriesId,categoryName:p.categoryName})));
+      console.log('[後台DEBUG] saveProducts 儲存', prods.length, '筆:', prods.map(p=>({id:p.id,name:p.name,images:(p.images||[]).length+'張',image:p.image?'有':'無'})));
     }
 
     function renderProducts() {
