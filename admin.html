@@ -1977,7 +1977,7 @@
       const item = items.find(i => i.id === id);
       if (!item || !label) return;
       label.innerHTML = `
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2" onclick="event.stopPropagation()">
           <input id="pdi-edit-${id}" type="text" value="${item.name.replace(/"/g,'&quot;')}"
             class="flex-1 min-w-0 bg-darkbg border border-neoncyan text-white p-2 tech-clip text-xs focus:border-neoncyan transition"
             onkeydown="if(event.key==='Enter')saveEditProdItem(${id});if(event.key==='Escape')renderProdDrill()">
