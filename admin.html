@@ -1792,10 +1792,16 @@
 
       const rowsHtml = items.map(item => `
         <div class="flex items-center gap-2 px-4 py-3 border-b border-slate-800 last:border-0 hover:bg-white/[0.05] transition cursor-pointer" onclick="prodNavTo(${item.id})">
+          ${level === 0 ? `<div class="w-7 h-7 flex items-center justify-center text-neoncyan shrink-0">
+            <i class="fa-solid fa-${item.icon || 'tag'} text-base"></i>
+          </div>` : ''}
           <div id="pdil-${item.id}" class="flex-1 min-w-0">
             <span class="text-sm font-bold text-white">${item.name}</span>
           </div>
           <div class="flex items-center shrink-0">
+            ${level === 0 ? `<button onclick="event.stopPropagation();openIconPicker(${item.id})" class="text-gray-600 hover:text-goldlight transition p-2" title="選擇 Icon">
+              <i class="fa-solid fa-icons text-xs"></i>
+            </button>` : ''}
             <button onclick="event.stopPropagation();startEditProdItem(${item.id})" class="text-gray-600 hover:text-gray-300 transition p-2">
               <i class="fa-solid fa-pen text-xs"></i>
             </button>
@@ -2539,7 +2545,9 @@
       const item = cats.find(c => c.id === id);
       if (item) { item.icon = iconName; saveCategories(cats); }
       closeIconPicker();
-      renderCatMgmt();
+      const catView = document.getElementById('cat-mgmt-view');
+      if (catView && !catView.classList.contains('hidden')) renderCatMgmt();
+      else renderProdDrill();
       showToast('Icon 已更新');
     }
 
