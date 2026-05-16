@@ -2825,7 +2825,7 @@
 <!-- Firebase 整合 START — 可整段刪除 -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
-import { getFirestore, doc, setDoc, getDoc, collection, query, orderBy, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+import { getFirestore, initializeFirestore, memoryLocalCache, doc, setDoc, getDoc, collection, query, orderBy, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
 
 const _fbCfg = {
@@ -2838,7 +2838,7 @@ const _fbCfg = {
 };
 const _fbApp      = initializeApp(_fbCfg);
 console.log('[Firebase] projectId:', _fbCfg.projectId);
-const _fbDb       = getFirestore(_fbApp);
+const _fbDb       = initializeFirestore(_fbApp, { localCache: memoryLocalCache() });
 const _fbAuth     = getAuth(_fbApp);
 const _fbProdsRef    = doc(_fbDb, 'store', 'products');
 const _fbCatRef      = doc(_fbDb, 'store', 'categories');
