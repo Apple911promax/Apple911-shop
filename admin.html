@@ -2324,10 +2324,17 @@
 
       const itemsHtml = items.map(item => `
         <div class="bg-darkbg border border-slate-700 tech-clip p-3 flex items-center gap-2" id="cat-item-${item.id}">
+          ${level === 0 ? `<div class="w-8 h-8 flex items-center justify-center text-neoncyan shrink-0">
+            <i class="fa-solid fa-${item.icon || 'tag'} text-xl"></i>
+          </div>` : ''}
           <div class="flex-1 min-w-0" id="cat-label-${item.id}">
             <span class="text-sm font-bold text-white">${item.name}</span>
           </div>
           <div class="flex items-center gap-2 shrink-0 flex-wrap justify-end">
+            ${level === 0 ? `<button onclick="openIconPicker(${item.id})"
+              class="text-xs px-3 py-1 bg-slate-800 text-goldlight font-bold tech-btn hover:bg-goldlight hover:text-black transition whitespace-nowrap">
+              <i class="fa-solid fa-icons mr-1"></i>Icon
+            </button>` : ''}
             ${level < 2 ? `<button onclick="catNavTo(${item.id})"
               class="text-xs px-3 py-1 bg-slate-800 text-neoncyan font-bold tech-btn hover:bg-neoncyan hover:text-black transition whitespace-nowrap">
               ${nextLabel}
@@ -2443,6 +2450,102 @@
       saveCategories(cats);
       renderCatMgmt();
       showToast('已儲存');
+    }
+
+    // ════════════════════════════════════════════════════════════
+    // Icon Picker（品項 level 0 專用）
+    // ════════════════════════════════════════════════════════════
+    const CAT_ICONS = [
+      { name:'tag', label:'標籤' }, { name:'mobile-screen', label:'手機' },
+      { name:'tablet-screen-button', label:'平板' }, { name:'laptop', label:'筆電' },
+      { name:'desktop', label:'桌機' }, { name:'headphones', label:'耳機' },
+      { name:'clock', label:'時鐘' }, { name:'camera', label:'相機' },
+      { name:'battery-full', label:'電池' }, { name:'plug', label:'充電器' },
+      { name:'wifi', label:'WiFi' }, { name:'wrench', label:'扳手' },
+      { name:'screwdriver', label:'螺絲起子' }, { name:'screwdriver-wrench', label:'工具組' },
+      { name:'hammer', label:'鎚子' }, { name:'gear', label:'齒輪' },
+      { name:'gears', label:'齒輪組' }, { name:'shield', label:'防護' },
+      { name:'shield-halved', label:'半盾' }, { name:'bag-shopping', label:'購物袋' },
+      { name:'box', label:'箱子' }, { name:'star', label:'星星' },
+      { name:'heart', label:'愛心' }, { name:'bookmark', label:'書籤' },
+      { name:'gift', label:'禮物' }, { name:'cart-shopping', label:'購物車' },
+      { name:'barcode', label:'條碼' }, { name:'microchip', label:'晶片' },
+      { name:'memory', label:'記憶體' }, { name:'sim-card', label:'SIM卡' },
+      { name:'volume-high', label:'喇叭' }, { name:'microphone', label:'麥克風' },
+      { name:'keyboard', label:'鍵盤' }, { name:'computer-mouse', label:'滑鼠' },
+      { name:'display', label:'螢幕' }, { name:'print', label:'列印' },
+      { name:'house', label:'首頁' }, { name:'store', label:'商店' },
+      { name:'globe', label:'全球' }, { name:'check', label:'確認' },
+      { name:'lock', label:'鎖定' }, { name:'key', label:'鑰匙' },
+      { name:'user', label:'用戶' }, { name:'users', label:'用戶群' },
+      { name:'circle-info', label:'資訊' }, { name:'bell', label:'通知' },
+      { name:'fire', label:'火焰' }, { name:'bolt', label:'閃電' },
+      { name:'gem', label:'寶石' }, { name:'crown', label:'皇冠' },
+      { name:'award', label:'獎項' }, { name:'certificate', label:'認證' },
+      { name:'recycle', label:'回收' }, { name:'leaf', label:'葉片' },
+      { name:'truck', label:'貨車' }, { name:'rotate', label:'旋轉' },
+      { name:'magnifying-glass', label:'搜尋' }, { name:'phone', label:'電話' },
+      { name:'image', label:'圖片' }, { name:'palette', label:'調色板' },
+      { name:'cube', label:'方塊' }, { name:'cubes', label:'方塊組' },
+      { name:'qrcode', label:'QRCode' }, { name:'link', label:'連結' },
+    ];
+
+    let _iconPickerTargetId = null;
+
+    function openIconPicker(id) {
+      _iconPickerTargetId = id;
+      let modal = document.getElementById('icon-picker-modal');
+      if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'icon-picker-modal';
+        modal.className = 'fixed inset-0 z-50 flex items-center justify-center bg-black/80';
+        modal.innerHTML = `
+          <div class="bg-panelbg border border-slate-700 tech-clip w-full max-w-lg mx-4 p-4 space-y-3 max-h-[80vh] flex flex-col">
+            <div class="flex items-center justify-between shrink-0">
+              <p class="text-xs font-bold text-neoncyan tracking-widest"><i class="fa-solid fa-icons mr-2"></i>選擇 Icon</p>
+              <button onclick="closeIconPicker()" class="text-gray-400 hover:text-white transition"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <input id="icon-search" type="text" placeholder="搜尋 icon 名稱..."
+              class="w-full bg-darkbg border border-slate-600 text-white p-2 tech-clip text-xs focus:border-neoncyan transition shrink-0"
+              oninput="renderIconGrid(this.value)">
+            <div id="icon-grid" class="grid grid-cols-5 gap-2 overflow-y-auto flex-1 pr-1 min-h-0"></div>
+          </div>`;
+        document.body.appendChild(modal);
+      } else {
+        modal.classList.remove('hidden');
+      }
+      document.getElementById('icon-search').value = '';
+      renderIconGrid('');
+    }
+
+    function renderIconGrid(query) {
+      const grid = document.getElementById('icon-grid');
+      if (!grid) return;
+      const q = query.toLowerCase();
+      const filtered = q ? CAT_ICONS.filter(ic => ic.name.includes(q) || ic.label.includes(q)) : CAT_ICONS;
+      const cats = loadCategories();
+      const currentItem = cats.find(c => c.id === _iconPickerTargetId);
+      const currentIcon = currentItem?.icon || '';
+      grid.innerHTML = filtered.map(ic => `
+        <button onclick="selectCatIcon(${_iconPickerTargetId}, '${ic.name}')"
+          class="flex flex-col items-center gap-1 p-2 border ${currentIcon === ic.name ? 'border-neoncyan bg-neoncyan/10 text-neoncyan' : 'border-slate-700 bg-darkbg text-slate-400 hover:border-neoncyan hover:text-neoncyan'} transition text-center">
+          <i class="fa-solid fa-${ic.name} text-xl"></i>
+          <span class="text-[10px] leading-tight">${ic.label}</span>
+        </button>`).join('') || '<p class="col-span-5 text-xs text-gray-600 text-center py-6">無符合結果</p>';
+    }
+
+    function selectCatIcon(id, iconName) {
+      const cats = loadCategories();
+      const item = cats.find(c => c.id === id);
+      if (item) { item.icon = iconName; saveCategories(cats); }
+      closeIconPicker();
+      renderCatMgmt();
+      showToast('Icon 已更新');
+    }
+
+    function closeIconPicker() {
+      const modal = document.getElementById('icon-picker-modal');
+      if (modal) modal.classList.add('hidden');
     }
 
     // ════════════════════════════════════════════════════════════
