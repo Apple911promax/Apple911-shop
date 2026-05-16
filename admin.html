@@ -2885,7 +2885,7 @@ let _authUser = null; // 由 _handleAuthLogin/_handleAuthLogout 維護，比 cur
 function _startOrdersListener() {
   if (_ordersRetryTimer) { clearTimeout(_ordersRetryTimer); _ordersRetryTimer = null; }
   if (_ordersUnsub) return; // 已有監聽器，不重複建立
-  _ordersUnsub = onSnapshot(query(collection(_fbDb, 'orders'), orderBy('time', 'desc')), (snap) => {
+  _ordersUnsub = onSnapshot(collection(_fbDb, 'orders'), (snap) => {
     const realList = [];
     snap.forEach(docSnap => realList.push(docSnap.data()));
     orders = realList;
@@ -2929,6 +2929,7 @@ function _startMembersListener() {
 
 async function _handleAuthLogin(user) {
   console.log('[Firebase Auth] 後台已登入:', user.email);
+  console.log('[Firebase Auth] admin uid:', user.uid);
   _hasBeenLoggedIn = true;
   _authUser = user; // 登入後立即記錄，save 函式直接用此變數
   if (typeof _doShowAdmin === 'function') _doShowAdmin();
