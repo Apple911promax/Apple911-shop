@@ -1981,8 +1981,8 @@
           <input id="pdi-edit-${id}" type="text" value="${item.name.replace(/"/g,'&quot;')}"
             class="flex-1 min-w-0 bg-darkbg border border-neoncyan text-white p-2 tech-clip text-xs focus:border-neoncyan transition"
             onkeydown="if(event.key==='Enter')saveEditProdItem(${id});if(event.key==='Escape')renderProdDrill()">
-          <button onclick="saveEditProdItem(${id})" class="text-xs px-3 py-1 bg-neoncyan text-black font-bold tech-btn hover:bg-white transition">儲存</button>
-          <button onclick="renderProdDrill()" class="text-xs px-2 py-1 bg-slate-700 text-gray-400 font-bold tech-btn hover:text-white transition">取消</button>
+          <button onclick="event.stopPropagation();saveEditProdItem(${id})" class="text-xs px-3 py-1 bg-neoncyan text-black font-bold tech-btn hover:bg-white transition">儲存</button>
+          <button onclick="event.stopPropagation();renderProdDrill()" class="text-xs px-2 py-1 bg-slate-700 text-gray-400 font-bold tech-btn hover:text-white transition">取消</button>
         </div>`;
       document.getElementById('pdi-edit-' + id)?.focus();
     }
