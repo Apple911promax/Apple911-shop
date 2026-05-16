@@ -2837,6 +2837,7 @@ const _fbCfg = {
   appId: "1:335224055176:web:62f37cdf81f6233c16063d"
 };
 const _fbApp      = initializeApp(_fbCfg);
+console.log('[Firebase] projectId:', _fbCfg.projectId);
 const _fbDb       = getFirestore(_fbApp);
 const _fbAuth     = getAuth(_fbApp);
 const _fbProdsRef    = doc(_fbDb, 'store', 'products');
@@ -2885,6 +2886,8 @@ let _authUser = null; // 由 _handleAuthLogin/_handleAuthLogout 維護，比 cur
 function _startOrdersListener() {
   if (_ordersRetryTimer) { clearTimeout(_ordersRetryTimer); _ordersRetryTimer = null; }
   if (_ordersUnsub) return; // 已有監聽器，不重複建立
+  console.log('[Firebase] orders listener path: orders');
+  console.log('[Firebase] orders listener query: collection orders');
   _ordersUnsub = onSnapshot(query(collection(_fbDb, 'orders'), orderBy('time', 'desc')), (snap) => {
     const realList = [];
     snap.forEach(docSnap => realList.push(docSnap.data()));
@@ -2929,6 +2932,8 @@ function _startMembersListener() {
 
 async function _handleAuthLogin(user) {
   console.log('[Firebase Auth] 後台已登入:', user.email);
+  console.log('[Firebase Auth] admin uid:', user.uid);
+  console.log('[Firebase Auth] admin email:', user.email);
   _hasBeenLoggedIn = true;
   _authUser = user; // 登入後立即記錄，save 函式直接用此變數
   if (typeof _doShowAdmin === 'function') _doShowAdmin();
