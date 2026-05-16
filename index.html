@@ -612,7 +612,8 @@
       list.innerHTML='';
       const allProds=_getLatestProducts();
       const active=allProds.filter(p=>p.active!==false);
-      const filtered=cat==='all'?active:active.filter(p=>item ? p.itemId==item.id : p.cat===cat);
+      const _catItem=cat==='all'?null:_getFrontCats().find(c=>c.name===cat);
+      const filtered=cat==='all'?active:active.filter(p=>_catItem ? p.itemId==_catItem.id : p.cat===cat);
       document.getElementById('current-view-title').innerText=cat==='all'?'全部商品與服務':cat;
       list.innerHTML=filtered.map(_prodCard).join('')||'<p class="col-span-2 lg:col-span-4 text-center py-10 text-gray-500 text-sm tracking-widest">尚無商品</p>';
       showSection('product');
