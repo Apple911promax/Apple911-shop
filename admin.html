@@ -2882,6 +2882,7 @@ let _membersUnsub = null;
 let _membersRetryTimer = null;
 let _hasBeenLoggedIn = false;
 let _authUser = null; // 由 _handleAuthLogin/_handleAuthLogout 維護，比 currentUser 更穩定
+let _ordersPermissionRetryUsed = false;
 
 function _startOrdersListener() {
   if (_ordersRetryTimer) { clearTimeout(_ordersRetryTimer); _ordersRetryTimer = null; }
@@ -2897,8 +2898,20 @@ function _startOrdersListener() {
   }, (err) => {
     console.error('[Firebase] 監聽訂單失敗:', err.message);
     _ordersUnsub = null;
-    // permission-denied 是確定性錯誤，重試無意義，直接停止
-    if (err.code === 'permission-denied') return;
+    if (err.code === 'permission-denied') {
+      if (_ordersPermissionRetryUsed) {
+        console.error('[Firebase] orders 權限重試後仍失敗，請檢查 Firestore Rules');
+        return;
+      }
+      _ordersPermissionRetryUsed = true;
+      console.warn('[Firebase] orders 權限暫時失敗，3 秒後重試一次');
+      setTimeout(async () => {
+        if (!_authUser) return;
+        try { await _authUser.getIdToken(true); } catch(e) { console.warn('[Firebase] token 刷新失敗:', e.message); }
+        _startOrdersListener();
+      }, 3000);
+      return;
+    }
     if (!_ordersRetryTimer && _fbAuth.currentUser) {
       _ordersRetryTimer = setTimeout(() => {
         _ordersRetryTimer = null;
@@ -2936,6 +2949,7 @@ async function _handleAuthLogin(user) {
   console.log('[Firebase Auth] admin email:', user.email);
   _hasBeenLoggedIn = true;
   _authUser = user; // 登入後立即記錄，save 函式直接用此變數
+  _ordersPermissionRetryUsed = false;
   if (typeof _doShowAdmin === 'function') _doShowAdmin();
   // 強制刷新 token，確保 Firestore 使用最新 auth 憑證再啟動監聽
   try { await user.getIdToken(true); } catch(e) { console.warn('[Firebase] token 刷新失敗:', e.message); }
@@ -2948,6 +2962,7 @@ async function _handleAuthLogin(user) {
 function _handleAuthLogout() {
   console.log('[Firebase Auth] 後台登出');
   _authUser = null;
+  _ordersPermissionRetryUsed = false;
   if (_ordersRetryTimer) { clearTimeout(_ordersRetryTimer); _ordersRetryTimer = null; }
   if (_ordersUnsub) { _ordersUnsub(); _ordersUnsub = null; }
   if (_membersRetryTimer) { clearTimeout(_membersRetryTimer); _membersRetryTimer = null; }
