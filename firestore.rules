@@ -2,32 +2,36 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // ── store/* ──────────────────────────────────────────────────────────────
     match /store/{docId} {
       allow read: if true;
       allow write: if request.auth != null
                    && request.auth.uid == 'NxSBeTLWZbQk54e9vnUkvCS8m942';
     }
 
-    // ── orders/{orderId} ─────────────────────────────────────────────────────
     match /orders/{orderId} {
-      allow read, write: if request.auth != null
-                         && request.auth.uid == 'NxSBeTLWZbQk54e9vnUkvCS8m942';
+      allow list: if request.auth != null
+                  && request.auth.uid == 'NxSBeTLWZbQk54e9vnUkvCS8m942';
+      allow get: if request.auth != null
+                 && (
+                   request.auth.uid == 'NxSBeTLWZbQk54e9vnUkvCS8m942'
+                   || resource.data.userId == request.auth.uid
+                 );
       allow create: if true;
-      allow read, update: if request.auth != null
-                          && resource.data.userId == request.auth.uid;
+      allow update, delete: if request.auth != null
+                            && (
+                              request.auth.uid == 'NxSBeTLWZbQk54e9vnUkvCS8m942'
+                              || resource.data.userId == request.auth.uid
+                            );
     }
 
-    // ── members/{uid} ────────────────────────────────────────────────────────
     match /members/{uid} {
-      allow read, write: if request.auth != null
-                         && request.auth.uid == 'NxSBeTLWZbQk54e9vnUkvCS8m942';
+      allow list, get: if request.auth != null
+                       && request.auth.uid == 'NxSBeTLWZbQk54e9vnUkvCS8m942';
       allow read, write: if request.auth != null
                          && request.auth.uid == uid;
       allow read: if true;
     }
 
-    // ── admins/{uid} ─────────────────────────────────────────────────────────
     match /admins/{uid} {
       allow read: if request.auth != null;
       allow write: if request.auth != null
