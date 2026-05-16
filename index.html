@@ -519,19 +519,19 @@
       sidebarEl.innerHTML=catsArg.map(c=>{
         const hasBrands=c.brands&&c.brands.length>0;
         return`<div class="sidebar-item" id="sidebar-item-${c.id}">
-          <button onclick="${hasBrands?`sidebarToggleItem(${c.id})`:`applyFilter('${c.name}')`}" class="w-full text-left p-4 bg-darkbg border border-neoncyan/20 text-gray-400 font-bold tech-clip transition uppercase hover:bg-white/5 hover:border-neoncyan hover:text-white group flex justify-between items-center">
+          <button onclick="${hasBrands?`sidebarToggleItem(${c.id})`:`applyFilter('${c.name}')`}" class="w-full text-left p-4 bg-darkbg border border-neoncyan/20 text-white font-bold tech-clip transition uppercase hover:bg-white/5 hover:border-neoncyan hover:text-white group flex justify-between items-center">
             <span><i class="fa-solid fa-${c.icon||'tag'} mr-2 text-neoncyan/50 group-hover:text-neoncyan transition"></i>${c.name}</span>
             ${hasBrands?`<i class="fa-solid fa-chevron-right text-xs text-neoncyan/40 transition" id="sidebar-arrow-${c.id}"></i>`:''}
           </button>
           ${hasBrands?`<div class="hidden pl-2 space-y-1 mt-1" id="sidebar-brands-${c.id}">${c.brands.map(b=>{
             const hasSeries=b.series&&b.series.length>0;
             return`<div id="sidebar-brand-${c.id}-${b.id}">
-              <button onclick="${hasSeries?`sidebarToggleBrand(${c.id},${b.id})`:`applyFilter('${c.name}')`}" class="w-full text-left px-4 py-2 text-sm text-gray-400 hover:text-neoncyan transition flex justify-between items-center">
+              <button onclick="${hasSeries?`sidebarToggleBrand(${c.id},${b.id})`:`applyFilter('${c.name}')`}" class="w-full text-left px-4 py-2 text-sm text-gray-200 hover:text-neoncyan transition flex justify-between items-center">
                 <span><i class="fa-solid fa-chevron-right text-[10px] mr-2 text-neoncyan/30"></i>${b.name}</span>
                 ${hasSeries?`<i class="fa-solid fa-chevron-right text-xs text-neoncyan/30 transition" id="sidebar-arrow-${c.id}-${b.id}"></i>`:''}
               </button>
               ${hasSeries?`<div class="hidden pl-4 space-y-1" id="sidebar-series-${c.id}-${b.id}">${b.series.map(s=>`
-                <button onclick="sidebarSelectSeries(${c.id},'${c.name}',${b.id},'${b.name}',${s.id},'${s.name}')" class="w-full text-left px-4 py-2 text-xs text-gray-500 hover:text-white hover:bg-white/5 transition rounded">
+                <button onclick="sidebarSelectSeries(${c.id},'${c.name}',${b.id},'${b.name}',${s.id},'${s.name}')" class="w-full text-left px-4 py-2 text-xs text-gray-300 hover:text-white hover:bg-white/5 transition rounded">
                   <i class="fa-solid fa-minus text-[8px] mr-2 text-neoncyan/20"></i>${s.name}
                 </button>`).join('')}</div>`:''}
             </div>`;
