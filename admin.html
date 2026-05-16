@@ -2857,7 +2857,8 @@ window._fbAdminLogin = async function() {
     return;
   }
   try {
-    await signInWithEmailAndPassword(_fbAuth, emailVal, password);
+    const result = await signInWithEmailAndPassword(_fbAuth, emailVal, password);
+    _handleAuthLogin(result.user);
   } catch(e) {
     document.getElementById('login-error').classList.remove('hidden');
     document.getElementById('login-error').textContent =
@@ -2869,13 +2870,13 @@ window._fbAdminLogin = async function() {
 
 // ── 登出 ──
 window._fbAdminSignOut = async function() {
+  _handleAuthLogout();
   try { await signOut(_fbAuth); } catch(e) {}
 };
 
-// ── Auth 狀態監聽 ──
+// ── Auth 處理 ──
 let _ordersUnsub = null;
 let _membersUnsub = null;
-let _authLogoutTimer = null;
 
 function _startOrdersListener() {
   if (_ordersUnsub) { _ordersUnsub(); _ordersUnsub = null; }
@@ -2907,22 +2908,28 @@ function _startMembersListener() {
   });
 }
 
-onAuthStateChanged(_fbAuth, (user) => {
-  if (user) {
-    if (_authLogoutTimer) { clearTimeout(_authLogoutTimer); _authLogoutTimer = null; }
-    console.log('[Firebase Auth] 後台已登入:', user.email);
-    if (typeof _doShowAdmin === 'function') _doShowAdmin();
-    _startOrdersListener();
-    _startMembersListener();
+function _handleAuthLogin(user) {
+  console.log('[Firebase Auth] 後台已登入:', user.email);
+  if (typeof _doShowAdmin === 'function') _doShowAdmin();
+  _startOrdersListener();
+  _startMembersListener();
+}
+
+function _handleAuthLogout() {
+  console.log('[Firebase Auth] 後台登出');
+  if (_ordersUnsub) { _ordersUnsub(); _ordersUnsub = null; }
+  if (_membersUnsub) { _membersUnsub(); _membersUnsub = null; }
+}
+
+// 用 authStateReady() 等待 Firebase Auth 確定初始狀態，完全跳過初始化的 null 狀態
+_fbAuth.authStateReady().then(() => {
+  if (_fbAuth.currentUser) {
+    _handleAuthLogin(_fbAuth.currentUser);
   } else {
-    if (_authLogoutTimer) clearTimeout(_authLogoutTimer);
-    _authLogoutTimer = setTimeout(() => {
-      _authLogoutTimer = null;
-      console.log('[Firebase Auth] 後台未登入');
-      if (_ordersUnsub) { _ordersUnsub(); _ordersUnsub = null; }
-      if (_membersUnsub) { _membersUnsub(); _membersUnsub = null; }
-    }, 3000);
+    console.log('[Firebase Auth] 後台未登入');
   }
+}).catch(err => {
+  console.error('[Firebase Auth] 初始化失敗:', err.message);
 });
 
 window._fbUpdateOrder = async function(orderId, data) {
