@@ -2857,8 +2857,8 @@ window._fbAdminLogin = async function() {
     return;
   }
   try {
-    const result = await signInWithEmailAndPassword(_fbAuth, emailVal, password);
-    _handleAuthLogin(result.user);
+    await signInWithEmailAndPassword(_fbAuth, emailVal, password);
+    // 不直接呼叫 _handleAuthLogin，由 onAuthStateChanged 在 token 就緒後觸發
   } catch(e) {
     document.getElementById('login-error').classList.remove('hidden');
     document.getElementById('login-error').textContent =
@@ -2877,6 +2877,8 @@ window._fbAdminSignOut = async function() {
 // ── Auth 處理 ──
 let _ordersUnsub = null;
 let _membersUnsub = null;
+let _hasBeenLoggedIn = false;
+let _authLogoutTimer = null;
 
 function _startOrdersListener() {
   if (_ordersUnsub) { _ordersUnsub(); _ordersUnsub = null; }
@@ -2910,9 +2912,10 @@ function _startMembersListener() {
 
 function _handleAuthLogin(user) {
   console.log('[Firebase Auth] 後台已登入:', user.email);
+  _hasBeenLoggedIn = true;
   if (typeof _doShowAdmin === 'function') _doShowAdmin();
-  _startOrdersListener();
-  _startMembersListener();
+  if (!_ordersUnsub) _startOrdersListener();
+  if (!_membersUnsub) _startMembersListener();
 }
 
 function _handleAuthLogout() {
@@ -2921,13 +2924,25 @@ function _handleAuthLogout() {
   if (_membersUnsub) { _membersUnsub(); _membersUnsub = null; }
 }
 
-// 用 authStateReady() 等待 Firebase Auth 確定初始狀態，完全跳過初始化的 null 狀態
+// authStateReady() 等初始化完成後才註冊 onAuthStateChanged
+// 確保跳過初始化的 null → user → null，且 Firestore token 就緒後才啟動監聽器
 _fbAuth.authStateReady().then(() => {
-  if (_fbAuth.currentUser) {
-    _handleAuthLogin(_fbAuth.currentUser);
-  } else {
-    console.log('[Firebase Auth] 後台未登入');
-  }
+  onAuthStateChanged(_fbAuth, (user) => {
+    if (user) {
+      if (_authLogoutTimer) { clearTimeout(_authLogoutTimer); _authLogoutTimer = null; }
+      _handleAuthLogin(user);
+    } else {
+      if (!_hasBeenLoggedIn) {
+        console.log('[Firebase Auth] 後台未登入');
+      } else {
+        if (_authLogoutTimer) clearTimeout(_authLogoutTimer);
+        _authLogoutTimer = setTimeout(() => {
+          _authLogoutTimer = null;
+          _handleAuthLogout();
+        }, 3000);
+      }
+    }
+  });
 }).catch(err => {
   console.error('[Firebase Auth] 初始化失敗:', err.message);
 });
