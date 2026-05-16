@@ -2884,6 +2884,7 @@ let _authUser = null; // 由 _handleAuthLogin/_handleAuthLogout 維護，比 cur
 
 async function _fetchOrders() {
   if (!_authUser) return;
+  try { await _authUser.getIdToken(false); } catch(e) { return; }
   try {
     const snap = await getDocs(collection(_fbDb, 'orders'));
     const realList = [];
