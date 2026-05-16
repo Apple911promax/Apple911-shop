@@ -2969,6 +2969,21 @@ function _handleAuthLogout() {
   if (_membersUnsub) { _membersUnsub(); _membersUnsub = null; }
 }
 
+// 切回頁面時強制刷新 token 並重啟 orders listener，避免 WebChannel reconnect 遺失 auth
+let _ordersRefocusTimer = null;
+async function _handlePageRefocus() {
+  if (!_authUser) return;
+  if (_ordersRefocusTimer) return; // debounce：500ms 內只執行一次
+  _ordersRefocusTimer = setTimeout(() => { _ordersRefocusTimer = null; }, 500);
+  console.log('[Firebase] 頁面重新 focus，刷新 token 並重啟 orders listener');
+  try { await _authUser.getIdToken(true); } catch(e) { console.warn('[Firebase] focus token 刷新失敗:', e.message); return; }
+  if (_ordersUnsub) { _ordersUnsub(); _ordersUnsub = null; }
+  _ordersPermissionRetryUsed = false;
+  _startOrdersListener();
+}
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') _handlePageRefocus(); });
+window.addEventListener('focus', _handlePageRefocus);
+
 // authStateReady() 等初始化完成後才註冊 onAuthStateChanged
 // null 事件絕不自動登出（Firebase token 刷新會觸發 null），只有明確 signOut() 才登出
 _fbAuth.authStateReady().then(() => {
