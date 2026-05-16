@@ -2889,7 +2889,7 @@ let _authUser = null; // 由 _handleAuthLogin/_handleAuthLogout 維護，比 cur
 
 async function _fetchOrders() {
   if (!_authUser) return;
-  try { await _authUser.getIdToken(false); } catch(e) { return; }
+  try { await _authUser.getIdToken(true); } catch(e) { return; }
   try {
     const snap = await getDocs(collection(_fbDb, 'orders'));
     const realList = [];
@@ -2990,6 +2990,7 @@ window._fbUpdateMember = async function(uid, data) {
 
 window._fbSaveProducts = async function(prods) {
   if (!_authUser) { console.warn('[Firebase] 商品儲存略過：用戶未登入'); return; }
+  try { await _authUser.getIdToken(true); } catch(e) {}
   try {
     await setDoc(_fbProdsRef, { list: prods, updatedAt: Date.now() });
     console.log('[Firebase] 商品儲存成功，共', prods.length, '筆');
