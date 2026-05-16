@@ -2920,6 +2920,7 @@ window._fbUpdateMember = async function(uid, data) {
 };
 
 window._fbSaveProducts = async function(prods) {
+  if (!_fbAuth.currentUser) { console.warn('[Firebase] 商品儲存略過：auth 尚未就緒'); return; }
   try {
     await setDoc(_fbProdsRef, { list: prods, updatedAt: Date.now() });
     console.log('[Firebase] 商品儲存成功，共', prods.length, '筆');
@@ -2927,6 +2928,7 @@ window._fbSaveProducts = async function(prods) {
 };
 
 window._fbSaveCategories = async function(cats) {
+  if (!_fbAuth.currentUser) { console.warn('[Firebase] 分類儲存略過：auth 尚未就緒'); return; }
   try {
     await setDoc(_fbCatRef, { list: cats, updatedAt: Date.now() });
     console.log('[Firebase] 分類儲存成功');
@@ -2935,6 +2937,7 @@ window._fbSaveCategories = async function(cats) {
 
 const _fbCouponsRef = doc(_fbDb, 'store', 'coupons');
 window._fbSaveCoupons = async function(coupons) {
+  if (!_fbAuth.currentUser) { console.warn('[Firebase] 優惠券儲存略過：auth 尚未就緒'); return; }
   try {
     await setDoc(_fbCouponsRef, { list: coupons, updatedAt: Date.now() });
     console.log('[Firebase] 優惠券儲存成功，共', coupons.length, '筆');
@@ -2962,6 +2965,7 @@ onSnapshot(_fbCatRef, (snap) => {
 }, (e) => { console.error('[Firebase] 後台分類監聽失敗:', e.message); });
 
 window._fbSaveSettings = async function(settings) {
+  if (!_fbAuth.currentUser) { console.warn('[Firebase] 設定儲存略過：auth 尚未就緒'); return; }
   try {
     await setDoc(_fbSettingsRef, settings);
     console.log('[Firebase] 設定儲存成功');
