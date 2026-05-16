@@ -2889,7 +2889,7 @@ function _startOrdersListener() {
   if (_ordersUnsub) return; // 已有監聽器，不重複建立
   console.log('[Firebase] orders listener path: orders');
   console.log('[Firebase] orders listener query: collection orders');
-  _ordersUnsub = onSnapshot(query(collection(_fbDb, 'orders'), orderBy('time', 'desc')), (snap) => {
+  _ordersUnsub = onSnapshot(collection(_fbDb, 'orders'), (snap) => {
     const realList = [];
     snap.forEach(docSnap => realList.push(docSnap.data()));
     orders = realList;
