@@ -13,7 +13,8 @@ service cloud.firestore {
     }
 
     match /orders/{orderId} {
-      allow list: if isAdmin();
+      allow list: if isAdmin()
+        || (request.auth != null && resource.data.userId == request.auth.uid);
 
       allow get: if isAdmin()
         || (request.auth != null && resource.data.userId == request.auth.uid);
