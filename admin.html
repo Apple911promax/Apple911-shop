@@ -2916,6 +2916,7 @@ let _settingsUnsub = null;
 let _couponsUnsub = null;
 let _membersUnsub = null;
 let _membersRetryTimer = null;
+let _membersListenerRetryCount = 0;
 let _hasBeenLoggedIn = false;
 let _authUser = null; // 由 _handleAuthLogin/_handleAuthLogout 維護，比 currentUser 更穩定
 
@@ -2969,12 +2970,24 @@ function _startOrdersListener() {
     (err) => {
       console.error('[orders realtime error]', err.code, err.message);
       _stopOrdersListener();
-      _ordersListenerRetryCount = 0;
-      if (err.code === 'permission-denied') {
-        console.warn('[orders realtime] permission-denied，等待 token 刷新後自動重啟');
-        // onIdTokenChanged 在 token 刷新後會自動重啟監聽器
-      } else if (_isAdminUser(_authUser)) {
-        _startOrdersPolling();
+      if (err.code === 'permission-denied' && _isAdminUser(_authUser)) {
+        if (_ordersListenerRetryCount < 3 && !_ordersRetryTimer) {
+          _ordersListenerRetryCount++;
+          const delay = _ordersListenerRetryCount * 10000;
+          console.warn(`[orders realtime] permission-denied，${delay / 1000}s 後重試 (${_ordersListenerRetryCount}/3)`);
+          _ordersRetryTimer = setTimeout(() => {
+            _ordersRetryTimer = null;
+            if (!_isAdminUser(_authUser) || _ordersUnsub) return;
+            _startOrdersListener();
+          }, delay);
+        } else {
+          _ordersListenerRetryCount = 0;
+          console.warn('[orders realtime] 多次重試仍失敗，切換 polling');
+          _startOrdersPolling();
+        }
+      } else {
+        _ordersListenerRetryCount = 0;
+        if (_isAdminUser(_authUser)) _startOrdersPolling();
       }
     }
   );
@@ -2995,6 +3008,7 @@ function _startMembersListener() {
   if (_membersRetryTimer) { clearTimeout(_membersRetryTimer); _membersRetryTimer = null; }
   if (_membersUnsub) return; // 已有監聽器，不重複建立
   _membersUnsub = onSnapshot(collection(_fbDb, 'members'), (snap) => {
+    _membersListenerRetryCount = 0;
     const list = [];
     snap.forEach(docSnap => list.push(docSnap.data()));
     if (typeof _membersCache !== 'undefined') window._membersCache = list;
@@ -3004,10 +3018,21 @@ function _startMembersListener() {
     console.error('[Firebase] 監聽會員失敗:', err.message);
     _membersUnsub = null;
     if (err.code === 'permission-denied') {
-      console.warn('[Firebase] members permission-denied，等待 token 刷新後自動重啟');
-      // onIdTokenChanged 在 token 刷新後會自動重啟監聽器
+      if (_isAdminUser(_authUser) && _membersListenerRetryCount < 3 && !_membersRetryTimer) {
+        _membersListenerRetryCount++;
+        const delay = _membersListenerRetryCount * 10000;
+        console.warn(`[Firebase] members permission-denied，${delay / 1000}s 後重試 (${_membersListenerRetryCount}/3)`);
+        _membersRetryTimer = setTimeout(() => {
+          _membersRetryTimer = null;
+          if (_isAdminUser(_authUser) && !_membersUnsub) _startMembersListener();
+        }, delay);
+      } else {
+        _membersListenerRetryCount = 0;
+        console.warn('[Firebase] members permission-denied 多次重試仍失敗，停止監聽');
+      }
       return;
     }
+    _membersListenerRetryCount = 0;
     if (!_membersRetryTimer && _isAdminUser(_authUser)) {
       _membersRetryTimer = setTimeout(() => {
         _membersRetryTimer = null;
@@ -3083,6 +3108,7 @@ async function _handleAuthLogin(user) {
   _startOrdersListener();
   _startPublicAdminListeners();
   if (_membersRetryTimer) { clearTimeout(_membersRetryTimer); _membersRetryTimer = null; }
+  _membersListenerRetryCount = 0;
   if (!_membersUnsub) _startMembersListener();
 }
 
@@ -3095,6 +3121,7 @@ function _handleAuthLogout() {
   _stopOrdersPolling();
   _stopPublicAdminListeners();
   if (_membersRetryTimer) { clearTimeout(_membersRetryTimer); _membersRetryTimer = null; }
+  _membersListenerRetryCount = 0;
   if (_membersUnsub) { _membersUnsub(); _membersUnsub = null; }
 }
 
@@ -3121,7 +3148,7 @@ _fbAuth.authStateReady().then(() => {
     // 已登入後收到 null：Firebase token 刷新中，忽略，onIdTokenChanged 會在新 token 就緒後重啟監聽器
   });
 
-  // token 刷新完成後，自動重啟因 permission-denied 停止的監聽器
+  // token 實際刷新完成後（無 timer 重試中），自動重啟已停止的監聽器
   onIdTokenChanged(_fbAuth, (user) => {
     if (!_isAdminUser(user) || !_hasBeenLoggedIn) return;
     _authUser = user;
@@ -3132,6 +3159,7 @@ _fbAuth.authStateReady().then(() => {
     }
     if (!_membersUnsub && !_membersRetryTimer) {
       console.log('[Firebase] token 已刷新，重啟 members 監聽');
+      _membersListenerRetryCount = 0;
       _startMembersListener();
     }
   });
