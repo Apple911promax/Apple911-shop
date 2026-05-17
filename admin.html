@@ -2920,7 +2920,7 @@ let _hasBeenLoggedIn = false;
 let _authUser = null; // 由 _handleAuthLogin/_handleAuthLogout 維護，比 currentUser 更穩定
 
 async function _fetchOrders() {
-  if (!_authUser) return;
+  if (!_isAdminUser(_authUser)) return;
   try { await _authUser.getIdToken(true); } catch(e) { return; }
   try {
     const snap = await getDocs(collection(_fbDb, 'orders'));
@@ -3107,7 +3107,7 @@ _fbAuth.authStateReady().then(() => {
   onAuthStateChanged(_fbAuth, (user) => {
     if (user) {
       if (!_isAdminUser(user)) {
-        console.warn('[Firebase Auth] 非管理員帳號，已拒絕登入:', user.email);
+        console.warn('[Firebase Auth] 非管理員帳號，拒絕進入後台:', user.email, user.uid);
         _handleAuthLogout();
         signOut(_fbAuth);
         return;
