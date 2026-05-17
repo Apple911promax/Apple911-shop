@@ -3041,9 +3041,9 @@ function _handleAuthLogout() {
   if (_membersUnsub) { _membersUnsub(); _membersUnsub = null; }
 }
 
-// 切回頁面時立刻抓一次最新訂單
+// 切回頁面時立刻抓一次最新訂單（僅在 polling 模式，realtime 監聽中不需要）
 document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible') _fetchOrders();
+  if (document.visibilityState === 'visible' && !_ordersUnsub) _fetchOrders();
 });
 
 // authStateReady() 等初始化完成後才註冊 onAuthStateChanged
