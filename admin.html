@@ -2883,6 +2883,7 @@ window._fbAdminSignOut = async function() {
 // ── Auth 處理 ──
 let _ordersPollTimer = null;
 let _ordersUnsub = null;
+let _ordersRetryTimer = null;
 let _ordersListenerRetryCount = 0;
 let _productsUnsub = null;
 let _categoriesUnsub = null;
@@ -2921,7 +2922,7 @@ function _stopOrdersPolling() {
 
 function _startOrdersListener() {
   if (_ordersUnsub) return;
-  if (!_fbAuth.currentUser) return;
+  if (!_authUser) return;
   console.log('[orders realtime] 啟動監聽，uid:', _fbAuth.currentUser.uid);
   _ordersUnsub = onSnapshot(
     collection(_fbDb, 'orders'),
@@ -2938,9 +2939,12 @@ function _startOrdersListener() {
     (err) => {
       console.error('[orders realtime error]', err.code, err.message);
       _stopOrdersListener();
-      if (err.code === 'permission-denied' && _fbAuth.currentUser && _ordersListenerRetryCount < 2) {
+      if (err.code === 'permission-denied' && _authUser && _ordersListenerRetryCount < 2) {
         _ordersListenerRetryCount++;
-        setTimeout(() => { if (_fbAuth.currentUser && !_ordersUnsub) _startOrdersListener(); }, 4000);
+        _ordersRetryTimer = setTimeout(() => {
+          _ordersRetryTimer = null;
+          if (_authUser && !_ordersUnsub) _startOrdersListener();
+        }, 4000);
       } else {
         _ordersListenerRetryCount = 0;
         _startOrdersPolling();
@@ -2968,10 +2972,10 @@ function _startMembersListener() {
   }, (err) => {
     console.error('[Firebase] 監聽會員失敗:', err.message);
     _membersUnsub = null;
-    if (!_membersRetryTimer && _fbAuth.currentUser) {
+    if (!_membersRetryTimer && _authUser) {
       _membersRetryTimer = setTimeout(() => {
         _membersRetryTimer = null;
-        if (_fbAuth.currentUser) _startMembersListener();
+        if (_authUser) _startMembersListener();
       }, 5000);
     }
   });
@@ -3032,6 +3036,8 @@ async function _handleAuthLogin(user) {
   console.log('[Firebase Auth] 後台已登入:', user.email);
   _hasBeenLoggedIn = true;
   _authUser = user;
+  if (_ordersRetryTimer) { clearTimeout(_ordersRetryTimer); _ordersRetryTimer = null; }
+  _ordersListenerRetryCount = 0;
   if (typeof _doShowAdmin === 'function') _doShowAdmin();
   _startOrdersListener();
   _startPublicAdminListeners();
@@ -3042,6 +3048,8 @@ async function _handleAuthLogin(user) {
 function _handleAuthLogout() {
   console.log('[Firebase Auth] 後台登出');
   _authUser = null;
+  if (_ordersRetryTimer) { clearTimeout(_ordersRetryTimer); _ordersRetryTimer = null; }
+  _ordersListenerRetryCount = 0;
   _stopOrdersListener();
   _stopOrdersPolling();
   _stopPublicAdminListeners();
