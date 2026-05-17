@@ -2882,6 +2882,10 @@ window._fbAdminSignOut = async function() {
 
 // ── Auth 處理 ──
 let _ordersPollTimer = null;
+let _productsUnsub = null;
+let _categoriesUnsub = null;
+let _settingsUnsub = null;
+let _couponsUnsub = null;
 let _membersUnsub = null;
 let _membersRetryTimer = null;
 let _hasBeenLoggedIn = false;
@@ -2934,12 +2938,64 @@ function _startMembersListener() {
   });
 }
 
+function _startPublicAdminListeners() {
+  if (!_productsUnsub) {
+    _productsUnsub = onSnapshot(_fbProdsRef, (snap) => {
+      if (snap.exists()) {
+        const prods = snap.data().list || [];
+        _productsCache = prods;
+        if (typeof renderStats     === 'function') renderStats();
+        if (typeof renderProdDrill === 'function') renderProdDrill();
+      }
+      console.log('[Firebase] 後台商品即時同步，共', _productsCache.length, '筆');
+    }, (e) => { console.error('[Firebase] 後台商品監聽失敗:', e.message); });
+  }
+  if (!_categoriesUnsub) {
+    _categoriesUnsub = onSnapshot(_fbCatRef, (snap) => {
+      if (snap.exists()) {
+        const cats = snap.data().list || [];
+        _categoriesCache = cats;
+        if (typeof renderProdDrill === 'function') renderProdDrill();
+      }
+      console.log('[Firebase] 後台分類即時同步');
+    }, (e) => { console.error('[Firebase] 後台分類監聽失敗:', e.message); });
+  }
+  if (!_settingsUnsub) {
+    _settingsUnsub = onSnapshot(_fbSettingsRef, (snap) => {
+      if (snap.exists()) {
+        _settingsCache = snap.data();
+        if (typeof autoCancelUnpaidOrders === 'function') autoCancelUnpaidOrders();
+        if (currentPage === 'settings' && typeof renderSettings === 'function') renderSettings();
+      }
+      console.log('[Firebase] 後台設定即時同步');
+    }, (e) => { console.error('[Firebase] 後台設定監聽失敗:', e.message); });
+  }
+  if (!_couponsUnsub) {
+    _couponsUnsub = onSnapshot(_fbCouponsRef, (snap) => {
+      if (snap.exists()) {
+        _couponsCache = snap.data().list || [];
+        if (typeof renderStats === 'function') renderStats();
+        if (currentPage === 'coupons' && typeof renderCoupons === 'function') renderCoupons();
+      }
+      console.log('[Firebase] 後台優惠券即時同步，共', _couponsCache.length, '筆');
+    }, (e) => { console.error('[Firebase] 後台優惠券監聽失敗:', e.message); });
+  }
+}
+
+function _stopPublicAdminListeners() {
+  if (_productsUnsub)   { try { _productsUnsub();   } catch(e) { console.error('[Firebase] products unsub 失敗:', e.message); } _productsUnsub   = null; }
+  if (_categoriesUnsub) { try { _categoriesUnsub(); } catch(e) { console.error('[Firebase] categories unsub 失敗:', e.message); } _categoriesUnsub = null; }
+  if (_settingsUnsub)   { try { _settingsUnsub();   } catch(e) { console.error('[Firebase] settings unsub 失敗:', e.message); } _settingsUnsub   = null; }
+  if (_couponsUnsub)    { try { _couponsUnsub();    } catch(e) { console.error('[Firebase] coupons unsub 失敗:', e.message); } _couponsUnsub    = null; }
+}
+
 async function _handleAuthLogin(user) {
   console.log('[Firebase Auth] 後台已登入:', user.email);
   _hasBeenLoggedIn = true;
   _authUser = user;
   if (typeof _doShowAdmin === 'function') _doShowAdmin();
   _startOrdersPolling();
+  _startPublicAdminListeners();
   if (_membersRetryTimer) { clearTimeout(_membersRetryTimer); _membersRetryTimer = null; }
   if (!_membersUnsub) _startMembersListener();
 }
@@ -2948,6 +3004,7 @@ function _handleAuthLogout() {
   console.log('[Firebase Auth] 後台登出');
   _authUser = null;
   _stopOrdersPolling();
+  _stopPublicAdminListeners();
   if (_membersRetryTimer) { clearTimeout(_membersRetryTimer); _membersRetryTimer = null; }
   if (_membersUnsub) { _membersUnsub(); _membersUnsub = null; }
 }
@@ -3024,26 +3081,6 @@ window._fbSaveCoupons = async function(coupons) {
   } catch(e) { console.error('[Firebase] 優惠券儲存失敗:', e.message); if (typeof showToast === 'function') showToast('優惠券儲存失敗，請重試'); }
 };
 
-onSnapshot(_fbProdsRef, (snap) => {
-  if (snap.exists()) {
-    const prods = snap.data().list || [];
-    _productsCache = prods;
-    if (typeof renderStats     === 'function') renderStats();
-    if (typeof renderProdDrill === 'function') renderProdDrill();
-
-  }
-  console.log('[Firebase] 後台商品即時同步，共', _productsCache.length, '筆');
-}, (e) => { console.error('[Firebase] 後台商品監聽失敗:', e.message); });
-
-onSnapshot(_fbCatRef, (snap) => {
-  if (snap.exists()) {
-    const cats = snap.data().list || [];
-    _categoriesCache = cats;
-    if (typeof renderProdDrill === 'function') renderProdDrill();
-  }
-  console.log('[Firebase] 後台分類即時同步');
-}, (e) => { console.error('[Firebase] 後台分類監聽失敗:', e.message); });
-
 window._fbSaveSettings = async function(settings) {
   if (!_authUser) { console.warn('[Firebase] 設定儲存略過：用戶未登入'); return; }
   try {
@@ -3052,22 +3089,6 @@ window._fbSaveSettings = async function(settings) {
     if (typeof showToast === 'function') showToast('設定已儲存');
   } catch(e) { console.error('[Firebase] 設定儲存失敗:', e.message); if (typeof showToast === 'function') showToast('設定儲存失敗'); }
 };
-onSnapshot(_fbSettingsRef, (snap) => {
-  if (snap.exists()) {
-    _settingsCache = snap.data();
-    if (typeof autoCancelUnpaidOrders === 'function') autoCancelUnpaidOrders();
-    if (currentPage === 'settings' && typeof renderSettings === 'function') renderSettings();
-  }
-  console.log('[Firebase] 後台設定即時同步');
-}, (e) => { console.error('[Firebase] 後台設定監聽失敗:', e.message); });
-onSnapshot(_fbCouponsRef, (snap) => {
-  if (snap.exists()) {
-    _couponsCache = snap.data().list || [];
-    if (typeof renderStats === 'function') renderStats();
-    if (currentPage === 'coupons' && typeof renderCoupons === 'function') renderCoupons();
-  }
-  console.log('[Firebase] 後台優惠券即時同步，共', _couponsCache.length, '筆');
-}, (e) => { console.error('[Firebase] 後台優惠券監聽失敗:', e.message); });
 
 const _fbCouponLogsRef = doc(_fbDb, 'store', 'couponLogs');
 window._fbSaveCouponLog = async function(log) {
@@ -3087,7 +3108,7 @@ window._fbGetCouponLogs = async function(couponId) {
   } catch(e) { console.error('[Firebase] 發送紀錄讀取失敗:', e.message); return []; }
 };
 
-console.log('[Firebase] 後台監聽已啟動');
+console.log('[Firebase] 後台初始化完成（監聽由登入觸發）');
 </script>
 <!-- Firebase 整合 END -->
 
