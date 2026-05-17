@@ -2920,9 +2920,11 @@ function _stopOrdersPolling() {
 function _startOrdersListener() {
   if (_ordersUnsub) return;
   if (!_fbAuth.currentUser) return;
+  console.log('[orders realtime] 啟動監聽，uid:', _fbAuth.currentUser.uid);
   _ordersUnsub = onSnapshot(
     query(collection(_fbDb, 'orders'), orderBy('time', 'desc')),
     (snap) => {
+      console.log('[orders realtime] snapshot size:', snap.size);
       const realList = [];
       snap.forEach(docSnap => realList.push(docSnap.data()));
       orders = realList;
@@ -2930,7 +2932,7 @@ function _startOrdersListener() {
       if (typeof loadOrders === 'function') loadOrders();
     },
     (err) => {
-      console.error('[Firebase] 訂單監聽失敗:', err.code, err.message);
+      console.error('[orders realtime error]', err.code, err.message);
       _stopOrdersListener();
       _startOrdersPolling();
     }
