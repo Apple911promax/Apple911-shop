@@ -2922,8 +2922,12 @@ function _stopOrdersPolling() {
 
 function _startOrdersListener() {
   if (_ordersUnsub) return;
-  if (!_authUser) return;
-  console.log('[orders realtime] 啟動監聽，uid:', _fbAuth.currentUser.uid);
+  if (!_authUser || !_authUser.uid) {
+    console.warn('[orders realtime] 未登入，略過啟動');
+    return;
+  }
+  const uid = _authUser.uid;
+  console.log('[orders realtime] 啟動監聽，uid:', uid);
   _ordersUnsub = onSnapshot(
     collection(_fbDb, 'orders'),
     (snap) => {
@@ -2939,11 +2943,12 @@ function _startOrdersListener() {
     (err) => {
       console.error('[orders realtime error]', err.code, err.message);
       _stopOrdersListener();
-      if (err.code === 'permission-denied' && _authUser && _ordersListenerRetryCount < 2) {
+      if (err.code === 'permission-denied' && _authUser && _authUser.uid && _ordersListenerRetryCount < 2) {
         _ordersListenerRetryCount++;
         _ordersRetryTimer = setTimeout(() => {
           _ordersRetryTimer = null;
-          if (_authUser && !_ordersUnsub) _startOrdersListener();
+          if (!_authUser || !_authUser.uid) return;
+          if (!_ordersUnsub) _startOrdersListener();
         }, 4000);
       } else {
         _ordersListenerRetryCount = 0;
@@ -2972,10 +2977,10 @@ function _startMembersListener() {
   }, (err) => {
     console.error('[Firebase] 監聽會員失敗:', err.message);
     _membersUnsub = null;
-    if (!_membersRetryTimer && _authUser) {
+    if (!_membersRetryTimer && _authUser && _authUser.uid) {
       _membersRetryTimer = setTimeout(() => {
         _membersRetryTimer = null;
-        if (_authUser) _startMembersListener();
+        if (_authUser && _authUser.uid) _startMembersListener();
       }, 5000);
     }
   });
