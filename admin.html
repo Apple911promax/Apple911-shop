@@ -2831,7 +2831,7 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
 import { getFirestore, doc, setDoc, getDoc, getDocs, collection, query, orderBy, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
-import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, onIdTokenChanged, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js";
 
 const _fbCfg = {
   apiKey: "AIzaSyDpasiFnj0UQpNKndmya4__C1J8bJxGN4g",
@@ -2916,7 +2916,6 @@ let _settingsUnsub = null;
 let _couponsUnsub = null;
 let _membersUnsub = null;
 let _membersRetryTimer = null;
-let _membersPermRetried = false;
 let _hasBeenLoggedIn = false;
 let _authUser = null; // 由 _handleAuthLogin/_handleAuthLogout 維護，比 currentUser 更穩定
 
@@ -2970,23 +2969,12 @@ function _startOrdersListener() {
     (err) => {
       console.error('[orders realtime error]', err.code, err.message);
       _stopOrdersListener();
-      if (err.code === 'permission-denied' && _isAdminUser(_authUser)) {
-        if (_ordersListenerRetryCount < 1 && !_ordersRetryTimer) {
-          _ordersListenerRetryCount++;
-          console.warn('[orders realtime] permission-denied，等待 token 刷新後重試一次');
-          _ordersRetryTimer = setTimeout(async () => {
-            _ordersRetryTimer = null;
-            if (!_isAdminUser(_authUser) || _ordersUnsub) return;
-            try { await _authUser.getIdToken(true); } catch(e) { return; }
-            if (_isAdminUser(_authUser) && !_ordersUnsub) _startOrdersListener();
-          }, 5000);
-        } else {
-          _ordersListenerRetryCount = 0;
-          console.warn('[orders realtime] permission-denied 重試後仍失敗，停止監聽');
-        }
-      } else {
-        _ordersListenerRetryCount = 0;
-        if (_isAdminUser(_authUser)) _startOrdersPolling();
+      _ordersListenerRetryCount = 0;
+      if (err.code === 'permission-denied') {
+        console.warn('[orders realtime] permission-denied，等待 token 刷新後自動重啟');
+        // onIdTokenChanged 在 token 刷新後會自動重啟監聽器
+      } else if (_isAdminUser(_authUser)) {
+        _startOrdersPolling();
       }
     }
   );
@@ -3007,7 +2995,6 @@ function _startMembersListener() {
   if (_membersRetryTimer) { clearTimeout(_membersRetryTimer); _membersRetryTimer = null; }
   if (_membersUnsub) return; // 已有監聽器，不重複建立
   _membersUnsub = onSnapshot(collection(_fbDb, 'members'), (snap) => {
-    _membersPermRetried = false;
     const list = [];
     snap.forEach(docSnap => list.push(docSnap.data()));
     if (typeof _membersCache !== 'undefined') window._membersCache = list;
@@ -3017,22 +3004,10 @@ function _startMembersListener() {
     console.error('[Firebase] 監聽會員失敗:', err.message);
     _membersUnsub = null;
     if (err.code === 'permission-denied') {
-      if (_isAdminUser(_authUser) && !_membersPermRetried && !_membersRetryTimer) {
-        _membersPermRetried = true;
-        console.warn('[Firebase] members permission-denied，等待 token 刷新後重試一次');
-        _membersRetryTimer = setTimeout(async () => {
-          _membersRetryTimer = null;
-          if (!_isAdminUser(_authUser) || _membersUnsub) return;
-          try { await _authUser.getIdToken(true); } catch(e) { return; }
-          if (_isAdminUser(_authUser) && !_membersUnsub) _startMembersListener();
-        }, 5000);
-      } else {
-        _membersPermRetried = false;
-        console.warn('[Firebase] members permission-denied 重試後仍失敗，停止監聽');
-      }
+      console.warn('[Firebase] members permission-denied，等待 token 刷新後自動重啟');
+      // onIdTokenChanged 在 token 刷新後會自動重啟監聽器
       return;
     }
-    _membersPermRetried = false;
     if (!_membersRetryTimer && _isAdminUser(_authUser)) {
       _membersRetryTimer = setTimeout(() => {
         _membersRetryTimer = null;
@@ -3108,7 +3083,6 @@ async function _handleAuthLogin(user) {
   _startOrdersListener();
   _startPublicAdminListeners();
   if (_membersRetryTimer) { clearTimeout(_membersRetryTimer); _membersRetryTimer = null; }
-  _membersPermRetried = false;
   if (!_membersUnsub) _startMembersListener();
 }
 
@@ -3121,7 +3095,6 @@ function _handleAuthLogout() {
   _stopOrdersPolling();
   _stopPublicAdminListeners();
   if (_membersRetryTimer) { clearTimeout(_membersRetryTimer); _membersRetryTimer = null; }
-  _membersPermRetried = false;
   if (_membersUnsub) { _membersUnsub(); _membersUnsub = null; }
 }
 
@@ -3145,7 +3118,22 @@ _fbAuth.authStateReady().then(() => {
     } else if (!_hasBeenLoggedIn) {
       console.log('[Firebase Auth] 後台未登入');
     }
-    // 已登入後收到 null：Firebase token 刷新中，忽略，監聽器失敗重試機制會自動恢復
+    // 已登入後收到 null：Firebase token 刷新中，忽略，onIdTokenChanged 會在新 token 就緒後重啟監聽器
+  });
+
+  // token 刷新完成後，自動重啟因 permission-denied 停止的監聽器
+  onIdTokenChanged(_fbAuth, (user) => {
+    if (!_isAdminUser(user) || !_hasBeenLoggedIn) return;
+    _authUser = user;
+    if (!_ordersUnsub && !_ordersPollTimer && !_ordersRetryTimer) {
+      console.log('[Firebase] token 已刷新，重啟 orders 監聽');
+      _ordersListenerRetryCount = 0;
+      _startOrdersListener();
+    }
+    if (!_membersUnsub && !_membersRetryTimer) {
+      console.log('[Firebase] token 已刷新，重啟 members 監聽');
+      _startMembersListener();
+    }
   });
 }).catch(err => {
   console.error('[Firebase Auth] 初始化失敗:', err.message);
