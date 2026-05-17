@@ -2831,7 +2831,7 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
 import { getFirestore, doc, setDoc, getDoc, getDocs, collection, query, orderBy, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
-import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js";
 
 const _fbCfg = {
   apiKey: "AIzaSyDpasiFnj0UQpNKndmya4__C1J8bJxGN4g",
@@ -2871,6 +2871,29 @@ window._fbAdminLogin = async function() {
       e.code === 'auth/invalid-credential' ? '帳號或密碼錯誤，請重試' :
       e.code === 'auth/invalid-email'       ? '請輸入有效的信箱'       : '登入失敗，請稍後再試';
     console.error('[Firebase Auth] 後台登入失敗:', e.code);
+  }
+};
+
+// ── Google 登入（後台專用，強制帳號選擇）──
+window._fbAdminGoogleLogin = async function() {
+  const provider = new GoogleAuthProvider();
+  provider.setCustomParameters({ prompt: 'select_account' });
+  try {
+    const cred = await signInWithPopup(_fbAuth, provider);
+    const ADMIN_UID = 'NxSBeTLWZbQk54e9vnUkvCS8m942';
+    if (cred.user.uid !== ADMIN_UID) {
+      console.warn('[Firebase Auth] 非管理員 Google 帳號，自動登出:', cred.user.email);
+      document.getElementById('login-error').textContent = '此 Google 帳號非管理員，請使用正確帳號';
+      document.getElementById('login-error').classList.remove('hidden');
+      try { await signOut(_fbAuth); } catch(e) {}
+    }
+    // 驗證通過 → onAuthStateChanged 會自動觸發 _handleAuthLogin
+  } catch(e) {
+    if (e.code !== 'auth/popup-closed-by-user') {
+      console.error('[Firebase Auth] Google 登入失敗:', e.code);
+      document.getElementById('login-error').textContent = 'Google 登入失敗，請重試';
+      document.getElementById('login-error').classList.remove('hidden');
+    }
   }
 };
 
