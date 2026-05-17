@@ -2983,10 +2983,10 @@ function _startPublicAdminListeners() {
 }
 
 function _stopPublicAdminListeners() {
-  if (_productsUnsub)   { _productsUnsub();   _productsUnsub   = null; }
-  if (_categoriesUnsub) { _categoriesUnsub(); _categoriesUnsub = null; }
-  if (_settingsUnsub)   { _settingsUnsub();   _settingsUnsub   = null; }
-  if (_couponsUnsub)    { _couponsUnsub();    _couponsUnsub    = null; }
+  if (_productsUnsub)   { try { _productsUnsub();   } catch(e) { console.error('[Firebase] products unsub 失敗:', e.message); } _productsUnsub   = null; }
+  if (_categoriesUnsub) { try { _categoriesUnsub(); } catch(e) { console.error('[Firebase] categories unsub 失敗:', e.message); } _categoriesUnsub = null; }
+  if (_settingsUnsub)   { try { _settingsUnsub();   } catch(e) { console.error('[Firebase] settings unsub 失敗:', e.message); } _settingsUnsub   = null; }
+  if (_couponsUnsub)    { try { _couponsUnsub();    } catch(e) { console.error('[Firebase] coupons unsub 失敗:', e.message); } _couponsUnsub    = null; }
 }
 
 async function _handleAuthLogin(user) {
