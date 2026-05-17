@@ -2850,6 +2850,9 @@ const _fbCatRef      = doc(_fbDb, 'store', 'categories');
 const _fbMembersRef  = doc(_fbDb, 'store', 'members');
 const _fbSettingsRef = doc(_fbDb, 'store', 'settings');
 
+const ADMIN_UID = 'NxSBeTLWZbQk54e9vnUkvCS8m942';
+function _isAdminUser(user) { return !!user && user.uid === ADMIN_UID; }
+
 // ── 後台管理員 Email 登入 ──
 window._fbAdminLogin = async function() {
   const email    = document.getElementById('admin-password').value.trim();
@@ -2880,8 +2883,7 @@ window._fbAdminGoogleLogin = async function() {
   provider.setCustomParameters({ prompt: 'select_account' });
   try {
     const cred = await signInWithPopup(_fbAuth, provider);
-    const ADMIN_UID = 'NxSBeTLWZbQk54e9vnUkvCS8m942';
-    if (cred.user.uid !== ADMIN_UID) {
+    if (!_isAdminUser(cred.user)) {
       console.warn('[Firebase Auth] 非管理員 Google 帳號，自動登出:', cred.user.email);
       document.getElementById('login-error').textContent = '此 Google 帳號非管理員，請使用正確帳號';
       document.getElementById('login-error').classList.remove('hidden');
@@ -2934,6 +2936,7 @@ async function _fetchOrders() {
 }
 
 function _startOrdersPolling() {
+  if (!_isAdminUser(_authUser)) return;
   if (_ordersPollTimer) return;
   _fetchOrders();
   _ordersPollTimer = setInterval(_fetchOrders, 15000);
@@ -2945,8 +2948,8 @@ function _stopOrdersPolling() {
 
 function _startOrdersListener() {
   if (_ordersUnsub) return;
-  if (!_authUser || !_authUser.uid) {
-    console.warn('[orders realtime] 未登入，略過啟動');
+  if (!_isAdminUser(_authUser)) {
+    console.warn('[orders realtime] 未登入或非管理員，略過啟動');
     return;
   }
   const uid = _authUser.uid;
@@ -2966,15 +2969,10 @@ function _startOrdersListener() {
     (err) => {
       console.error('[orders realtime error]', err.code, err.message);
       _stopOrdersListener();
-      if (err.code === 'permission-denied' && _authUser && _authUser.uid && _ordersListenerRetryCount < 2) {
-        _ordersListenerRetryCount++;
-        _ordersRetryTimer = setTimeout(() => {
-          _ordersRetryTimer = null;
-          if (!_authUser || !_authUser.uid) return;
-          if (!_ordersUnsub) _startOrdersListener();
-        }, 4000);
-      } else {
-        _ordersListenerRetryCount = 0;
+      _ordersListenerRetryCount = 0;
+      if (err.code === 'permission-denied') {
+        console.warn('[orders realtime] permission-denied，停止監聽');
+      } else if (_isAdminUser(_authUser)) {
         _startOrdersPolling();
       }
     }
@@ -2989,6 +2987,10 @@ function _stopOrdersListener() {
 }
 
 function _startMembersListener() {
+  if (!_isAdminUser(_authUser)) {
+    console.warn('[members] 未登入或非管理員，略過啟動');
+    return;
+  }
   if (_membersRetryTimer) { clearTimeout(_membersRetryTimer); _membersRetryTimer = null; }
   if (_membersUnsub) return; // 已有監聽器，不重複建立
   _membersUnsub = onSnapshot(collection(_fbDb, 'members'), (snap) => {
@@ -3000,16 +3002,21 @@ function _startMembersListener() {
   }, (err) => {
     console.error('[Firebase] 監聽會員失敗:', err.message);
     _membersUnsub = null;
-    if (!_membersRetryTimer && _authUser && _authUser.uid) {
+    if (err.code === 'permission-denied') {
+      console.warn('[Firebase] members permission-denied，停止監聽');
+      return;
+    }
+    if (!_membersRetryTimer && _isAdminUser(_authUser)) {
       _membersRetryTimer = setTimeout(() => {
         _membersRetryTimer = null;
-        if (_authUser && _authUser.uid) _startMembersListener();
+        if (_isAdminUser(_authUser)) _startMembersListener();
       }, 5000);
     }
   });
 }
 
 function _startPublicAdminListeners() {
+  if (!_isAdminUser(_authUser)) return;
   if (!_productsUnsub) {
     _productsUnsub = onSnapshot(_fbProdsRef, (snap) => {
       if (snap.exists()) {
@@ -3061,6 +3068,10 @@ function _stopPublicAdminListeners() {
 }
 
 async function _handleAuthLogin(user) {
+  if (!_isAdminUser(user)) {
+    console.warn('[Firebase Auth] 非管理員，略過後台初始化');
+    return;
+  }
   console.log('[Firebase Auth] 後台已登入:', user.email);
   _hasBeenLoggedIn = true;
   _authUser = user;
@@ -3095,6 +3106,12 @@ document.addEventListener('visibilitychange', () => {
 _fbAuth.authStateReady().then(() => {
   onAuthStateChanged(_fbAuth, (user) => {
     if (user) {
+      if (!_isAdminUser(user)) {
+        console.warn('[Firebase Auth] 非管理員帳號，已拒絕登入:', user.email);
+        _handleAuthLogout();
+        signOut(_fbAuth);
+        return;
+      }
       _handleAuthLogin(user);
     } else if (!_hasBeenLoggedIn) {
       console.log('[Firebase Auth] 後台未登入');
