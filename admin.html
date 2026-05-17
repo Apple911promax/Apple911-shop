@@ -2883,6 +2883,7 @@ window._fbAdminSignOut = async function() {
 // ── Auth 處理 ──
 let _ordersPollTimer = null;
 let _ordersUnsub = null;
+let _ordersListenerRetryCount = 0;
 let _productsUnsub = null;
 let _categoriesUnsub = null;
 let _settingsUnsub = null;
@@ -2904,6 +2905,7 @@ async function _fetchOrders() {
     if (typeof loadOrders === 'function') loadOrders();
   } catch(e) {
     console.error('[Firebase] 訂單抓取失敗:', e.message);
+    if (e.code === 'permission-denied') _stopOrdersPolling();
   }
 }
 
@@ -2924,6 +2926,7 @@ function _startOrdersListener() {
   _ordersUnsub = onSnapshot(
     collection(_fbDb, 'orders'),
     (snap) => {
+      _ordersListenerRetryCount = 0;
       console.log('[orders realtime] snapshot size:', snap.size);
       const realList = [];
       snap.forEach(docSnap => realList.push(docSnap.data()));
@@ -2935,7 +2938,13 @@ function _startOrdersListener() {
     (err) => {
       console.error('[orders realtime error]', err.code, err.message);
       _stopOrdersListener();
-      _startOrdersPolling();
+      if (err.code === 'permission-denied' && _fbAuth.currentUser && _ordersListenerRetryCount < 2) {
+        _ordersListenerRetryCount++;
+        setTimeout(() => { if (_fbAuth.currentUser && !_ordersUnsub) _startOrdersListener(); }, 4000);
+      } else {
+        _ordersListenerRetryCount = 0;
+        _startOrdersPolling();
+      }
     }
   );
 }
@@ -2959,7 +2968,6 @@ function _startMembersListener() {
   }, (err) => {
     console.error('[Firebase] 監聽會員失敗:', err.message);
     _membersUnsub = null;
-    if (err.code === 'permission-denied') return;
     if (!_membersRetryTimer && _fbAuth.currentUser) {
       _membersRetryTimer = setTimeout(() => {
         _membersRetryTimer = null;
