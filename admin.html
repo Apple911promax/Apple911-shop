@@ -2882,6 +2882,7 @@ window._fbAdminSignOut = async function() {
 
 // ── Auth 處理 ──
 let _ordersPollTimer = null;
+let _ordersUnsub = null;
 let _productsUnsub = null;
 let _categoriesUnsub = null;
 let _settingsUnsub = null;
@@ -2914,6 +2915,33 @@ function _startOrdersPolling() {
 
 function _stopOrdersPolling() {
   if (_ordersPollTimer) { clearInterval(_ordersPollTimer); _ordersPollTimer = null; }
+}
+
+function _startOrdersListener() {
+  if (_ordersUnsub) return;
+  if (!_fbAuth.currentUser) return;
+  _ordersUnsub = onSnapshot(
+    query(collection(_fbDb, 'orders'), orderBy('time', 'desc')),
+    (snap) => {
+      const realList = [];
+      snap.forEach(docSnap => realList.push(docSnap.data()));
+      orders = realList;
+      console.log('[Firebase] 訂單即時更新，共', orders.length, '筆');
+      if (typeof loadOrders === 'function') loadOrders();
+    },
+    (err) => {
+      console.error('[Firebase] 訂單監聽失敗:', err.code, err.message);
+      _stopOrdersListener();
+      _startOrdersPolling();
+    }
+  );
+}
+
+function _stopOrdersListener() {
+  if (_ordersUnsub) {
+    try { _ordersUnsub(); } catch(e) { console.error('[Firebase] orders unsub 失敗:', e.message); }
+    _ordersUnsub = null;
+  }
 }
 
 function _startMembersListener() {
@@ -2994,7 +3022,7 @@ async function _handleAuthLogin(user) {
   _hasBeenLoggedIn = true;
   _authUser = user;
   if (typeof _doShowAdmin === 'function') _doShowAdmin();
-  _startOrdersPolling();
+  _startOrdersListener();
   _startPublicAdminListeners();
   if (_membersRetryTimer) { clearTimeout(_membersRetryTimer); _membersRetryTimer = null; }
   if (!_membersUnsub) _startMembersListener();
@@ -3003,6 +3031,7 @@ async function _handleAuthLogin(user) {
 function _handleAuthLogout() {
   console.log('[Firebase Auth] 後台登出');
   _authUser = null;
+  _stopOrdersListener();
   _stopOrdersPolling();
   _stopPublicAdminListeners();
   if (_membersRetryTimer) { clearTimeout(_membersRetryTimer); _membersRetryTimer = null; }
