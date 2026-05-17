@@ -2971,7 +2971,15 @@ function _startOrdersListener() {
       _stopOrdersListener();
       _ordersListenerRetryCount = 0;
       if (err.code === 'permission-denied') {
-        console.warn('[orders realtime] permission-denied，停止監聽');
+        console.warn('[orders realtime] permission-denied，等待 token 刷新後重試一次');
+        if (_isAdminUser(_authUser) && !_ordersRetryTimer) {
+          _ordersRetryTimer = setTimeout(async () => {
+            _ordersRetryTimer = null;
+            if (!_isAdminUser(_authUser) || _ordersUnsub) return;
+            try { await _authUser.getIdToken(true); } catch(e) { return; }
+            if (_isAdminUser(_authUser) && !_ordersUnsub) _startOrdersListener();
+          }, 3000);
+        }
       } else if (_isAdminUser(_authUser)) {
         _startOrdersPolling();
       }
@@ -3003,7 +3011,15 @@ function _startMembersListener() {
     console.error('[Firebase] 監聽會員失敗:', err.message);
     _membersUnsub = null;
     if (err.code === 'permission-denied') {
-      console.warn('[Firebase] members permission-denied，停止監聽');
+      console.warn('[Firebase] members permission-denied，等待 token 刷新後重試一次');
+      if (_isAdminUser(_authUser) && !_membersRetryTimer) {
+        _membersRetryTimer = setTimeout(async () => {
+          _membersRetryTimer = null;
+          if (!_isAdminUser(_authUser) || _membersUnsub) return;
+          try { await _authUser.getIdToken(true); } catch(e) { return; }
+          if (_isAdminUser(_authUser) && !_membersUnsub) _startMembersListener();
+        }, 3000);
+      }
       return;
     }
     if (!_membersRetryTimer && _isAdminUser(_authUser)) {
@@ -3098,7 +3114,7 @@ function _handleAuthLogout() {
 
 // 切回頁面時立刻抓一次最新訂單（僅在 polling 模式，realtime 監聽中不需要）
 document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible' && !_ordersUnsub) _fetchOrders();
+  if (document.visibilityState === 'visible' && _ordersPollTimer) _fetchOrders();
 });
 
 // authStateReady() 等初始化完成後才註冊 onAuthStateChanged
