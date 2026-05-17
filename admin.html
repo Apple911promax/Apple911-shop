@@ -2922,11 +2922,12 @@ function _startOrdersListener() {
   if (!_fbAuth.currentUser) return;
   console.log('[orders realtime] 啟動監聽，uid:', _fbAuth.currentUser.uid);
   _ordersUnsub = onSnapshot(
-    query(collection(_fbDb, 'orders'), orderBy('time', 'desc')),
+    collection(_fbDb, 'orders'),
     (snap) => {
       console.log('[orders realtime] snapshot size:', snap.size);
       const realList = [];
       snap.forEach(docSnap => realList.push(docSnap.data()));
+      realList.sort((a, b) => (b.time || 0) - (a.time || 0));
       orders = realList;
       console.log('[Firebase] 訂單即時更新，共', orders.length, '筆');
       if (typeof loadOrders === 'function') loadOrders();
